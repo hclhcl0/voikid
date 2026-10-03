@@ -520,9 +520,9 @@ export default function LearnPage() {
             className="mt-4 grid grid-cols-2 gap-3"
           >
             <button
-              onClick={() => router.push(`/quiz/${cat.id}`)}
-              className="py-3 rounded-2xl font-bold text-sm bg-amber-400 text-white shadow"
-            >🧩 Làm bài đố vui</button>
+              onClick={() => router.push(`/test/${cat.id}`)}
+              className="py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md flex items-center justify-center gap-1.5"
+            >🎯 8 Dạng Bài Tập & Thi</button>
             <button
               onClick={() => router.push(`/speak/${cat.id}`)}
               className="py-3 rounded-2xl font-bold text-sm bg-rose-400 text-white shadow"

@@ -21,6 +21,94 @@ export const GRADE_LEVELS: GradeLevel[] = [
   { id: 'lop5',    label: 'Lớp 5',     description: '10–11 tuổi' },
 ];
 
+export interface GradeMeta {
+  name: string;
+  badge: string;
+  sub: string;
+  age: string;
+  gradient: string;
+  heroBg: string;
+  accent: string;
+  border: string;
+  icon: string;
+  summary: string;
+}
+
+export const GRADE_METAS: Record<string, GradeMeta> = {
+  maugiao: {
+    name: 'Mẫu Giáo',
+    badge: 'Mầm non',
+    sub: 'Động vật, Trái cây, Màu sắc...',
+    age: '3 – 5 tuổi',
+    gradient: 'from-pink-400 via-rose-400 to-pink-500',
+    heroBg: 'bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600',
+    accent: 'bg-pink-100 text-pink-700',
+    border: 'border-pink-200',
+    icon: '🌸',
+    summary: 'Làm quen từ vựng đầu đời qua hình ảnh & âm thanh vui nhộn',
+  },
+  lop1: {
+    name: 'Lớp 1',
+    badge: 'Khởi động',
+    sub: 'Trường lớp, Đồ chơi, Món ăn...',
+    age: '6 – 7 tuổi',
+    gradient: 'from-amber-400 via-orange-400 to-amber-500',
+    heroBg: 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600',
+    accent: 'bg-amber-100 text-amber-800',
+    border: 'border-amber-200',
+    icon: '🌻',
+    summary: 'Chuẩn bị hành trang vào lớp 1 tự tin, phát âm chuẩn',
+  },
+  lop2: {
+    name: 'Lớp 2',
+    badge: 'Tăng tốc',
+    sub: 'Số đếm, Quần áo, Thời tiết, Nhà cửa...',
+    age: '7 – 8 tuổi',
+    gradient: 'from-lime-400 via-emerald-400 to-teal-500',
+    heroBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600',
+    accent: 'bg-emerald-100 text-emerald-800',
+    border: 'border-emerald-200',
+    icon: '🌟',
+    summary: 'Phát triển phản xạ nghe - đọc câu ngắn tiếng Anh',
+  },
+  lop3: {
+    name: 'Lớp 3',
+    badge: 'Mở rộng',
+    sub: 'Thể thao, Giao thông, Nghề nghiệp...',
+    age: '8 – 9 tuổi',
+    gradient: 'from-teal-400 via-cyan-400 to-blue-500',
+    heroBg: 'bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-600',
+    accent: 'bg-teal-100 text-teal-800',
+    border: 'border-teal-200',
+    icon: '🌿',
+    summary: 'Bám sát khung chương trình mới Bộ Giáo Dục & Đào Tạo',
+  },
+  lop4: {
+    name: 'Lớp 4',
+    badge: 'SGK Tập 1 & 2',
+    sub: '20 Unit đầy đủ Tập 1 & Tập 2',
+    age: '9 – 10 tuổi',
+    gradient: 'from-cyan-400 via-blue-500 to-indigo-600',
+    heroBg: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600',
+    accent: 'bg-blue-100 text-blue-800',
+    border: 'border-blue-200',
+    icon: '🌊',
+    summary: 'Toàn bộ 20 bài học chuẩn SGK Tiếng Anh 4 Global Success',
+  },
+  lop5: {
+    name: 'Lớp 5',
+    badge: 'SGK Tập 1 & 2',
+    sub: '20 Unit đầy đủ Tập 1 & Tập 2',
+    age: '10 – 11 tuổi',
+    gradient: 'from-violet-400 via-purple-500 to-fuchsia-600',
+    heroBg: 'bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600',
+    accent: 'bg-violet-100 text-violet-800',
+    border: 'border-violet-200',
+    icon: '🔮',
+    summary: 'Toàn bộ 20 bài học chuẩn SGK Tiếng Anh 5 Global Success',
+  },
+};
+
 export type CategoryWithGrade = Category & { gradeId: string };
 
 export const CATEGORIES: CategoryWithGrade[] = [

@@ -3,101 +3,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRef, useState, useEffect, useMemo } from 'react';
-import { CATEGORIES, GRADE_LEVELS, GradeLevel } from '@/lib/vocabulary';
+import { CATEGORIES, GRADE_LEVELS, GradeLevel, GradeMeta, GRADE_METAS } from '@/lib/vocabulary';
 import { useProgress } from '@/hooks/useProgress';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
 import { useAdminContext } from '@/context/AdminContext';
 import { ChildBadge } from '@/components/ChildBadge';
 import { Category } from '@/types';
-
-// ── Grade Hub & Theme Metadata ───────────────────────────────────────────────
-export interface GradeMeta {
-  name: string;
-  badge: string;
-  sub: string;
-  age: string;
-  gradient: string;
-  heroBg: string;
-  accent: string;
-  border: string;
-  icon: string;
-  summary: string;
-}
-
-const GRADE_METAS: Record<string, GradeMeta> = {
-  maugiao: {
-    name: 'Mẫu Giáo',
-    badge: 'Mầm non',
-    sub: 'Động vật, Trái cây, Màu sắc...',
-    age: '3 – 5 tuổi',
-    gradient: 'from-pink-400 via-rose-400 to-pink-500',
-    heroBg: 'bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600',
-    accent: 'bg-pink-100 text-pink-700',
-    border: 'border-pink-200',
-    icon: '🌸',
-    summary: 'Làm quen từ vựng đầu đời qua hình ảnh & âm thanh vui nhộn',
-  },
-  lop1: {
-    name: 'Lớp 1',
-    badge: 'Khởi động',
-    sub: 'Trường lớp, Đồ chơi, Món ăn...',
-    age: '6 – 7 tuổi',
-    gradient: 'from-amber-400 via-orange-400 to-amber-500',
-    heroBg: 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600',
-    accent: 'bg-amber-100 text-amber-800',
-    border: 'border-amber-200',
-    icon: '🌻',
-    summary: 'Chuẩn bị hành trang vào lớp 1 tự tin, phát âm chuẩn',
-  },
-  lop2: {
-    name: 'Lớp 2',
-    badge: 'Tăng tốc',
-    sub: 'Số đếm, Quần áo, Thời tiết, Nhà cửa...',
-    age: '7 – 8 tuổi',
-    gradient: 'from-lime-400 via-emerald-400 to-teal-500',
-    heroBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600',
-    accent: 'bg-emerald-100 text-emerald-800',
-    border: 'border-emerald-200',
-    icon: '🌟',
-    summary: 'Phát triển phản xạ nghe - đọc câu ngắn tiếng Anh',
-  },
-  lop3: {
-    name: 'Lớp 3',
-    badge: 'Mở rộng',
-    sub: 'Thể thao, Giao thông, Nghề nghiệp...',
-    age: '8 – 9 tuổi',
-    gradient: 'from-teal-400 via-cyan-400 to-blue-500',
-    heroBg: 'bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-600',
-    accent: 'bg-teal-100 text-teal-800',
-    border: 'border-teal-200',
-    icon: '🌿',
-    summary: 'Bám sát khung chương trình mới Bộ Giáo Dục & Đào Tạo',
-  },
-  lop4: {
-    name: 'Lớp 4',
-    badge: 'SGK Tập 1 & 2',
-    sub: '20 Unit đầy đủ Tập 1 & Tập 2',
-    age: '9 – 10 tuổi',
-    gradient: 'from-cyan-400 via-blue-500 to-indigo-600',
-    heroBg: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600',
-    accent: 'bg-blue-100 text-blue-800',
-    border: 'border-blue-200',
-    icon: '🌊',
-    summary: 'Toàn bộ 20 bài học chuẩn SGK Tiếng Anh 4 Global Success',
-  },
-  lop5: {
-    name: 'Lớp 5',
-    badge: 'SGK Tập 1 & 2',
-    sub: '20 Unit đầy đủ Tập 1 & Tập 2',
-    age: '10 – 11 tuổi',
-    gradient: 'from-violet-400 via-purple-500 to-fuchsia-600',
-    heroBg: 'bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600',
-    accent: 'bg-violet-100 text-violet-800',
-    border: 'border-violet-200',
-    icon: '🔮',
-    summary: 'Toàn bộ 20 bài học chuẩn SGK Tiếng Anh 5 Global Success',
-  },
-};
 
 // ── Unit Category Card ────────────────────────────────────────────────────────
 function UnitCard({
@@ -177,19 +88,15 @@ function UnitCard({
           className={`py-2 px-2.5 rounded-2xl font-black text-xs text-center text-white bg-gradient-to-r ${gradeMeta.gradient} shadow-xs hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-1`}
         >
           <span>▶</span>
-          <span>Học</span>
+          <span>Học từ</span>
         </Link>
         <Link
           href={`/test/${cat.id}`}
-          className={`py-2 px-2 rounded-2xl font-black text-xs text-center transition-all flex items-center justify-center gap-1 ${
-            canTest
-              ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
-              : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100'
-          }`}
+          className="py-2 px-2 rounded-2xl font-black text-xs text-center transition-all flex items-center justify-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xs hover:opacity-95"
           title="Luyện tập 8 dạng bài & làm bài thi nhận Sticker"
         >
           <span>🎯</span>
-          <span>Luyện & Thi {canTest ? '⭐' : ''}</span>
+          <span>8 Dạng Bài Tập</span>
         </Link>
       </div>
     </motion.div>
@@ -521,6 +428,36 @@ export default function HomePage() {
                   </div>
                   <span className="text-sm font-black bg-white text-orange-600 px-3 py-1.5 rounded-xl shadow-xs shrink-0 ml-2">
                     Xem →
+                  </span>
+                </div>
+              </Link>
+
+              {/* 8 Exercise Stations Banner */}
+              <Link
+                href="/test"
+                className="block bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 rounded-3xl p-4 text-white shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl shadow-inner shrink-0">
+                      🎯
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-white/25 px-2 py-0.5 rounded-full">
+                          Mới • 8 Dạng Bài Tập Chuẩn Sư Phạm
+                        </span>
+                      </div>
+                      <h3 className="text-base font-black leading-tight mt-0.5">
+                        Phòng Luyện 8 Dạng Bài & Thi
+                      </h3>
+                      <p className="text-xs text-white/90 font-medium">
+                        Nghe chọn hình, ghép cặp, điền chữ, lật thẻ, luyện nói, xếp tranh...
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-black bg-white text-violet-700 px-3 py-1.5 rounded-xl shadow-xs shrink-0 ml-2">
+                    Luyện ngay →
                   </span>
                 </div>
               </Link>

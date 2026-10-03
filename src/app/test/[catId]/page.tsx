@@ -233,8 +233,8 @@ export default function UnitTestPage() {
     return getCategoryById(params.catId) || null;
   }, [params.catId, customCats, mounted]);
 
-  // View Mode: 'test' (10-question challenge) vs 'stations' (practice by type)
-  const [mode, setMode] = useState<'test' | 'stations'>('test');
+  // View Mode: 'stations' (practice 8 types by default) vs 'test' (10-question challenge)
+  const [mode, setMode] = useState<'stations' | 'test'>('stations');
   const [activeStation, setActiveStation] = useState<ExerciseType | null>(null);
 
   // ── Test Challenge States ──
@@ -403,34 +403,37 @@ export default function UnitTestPage() {
           <ChildBadge />
         </div>
 
-        {/* Mode Switcher: Bài thi 10 câu vs 8 Dạng bài tập */}
-        <div className="flex bg-white/80 p-1.5 rounded-2xl shadow-sm border border-violet-100">
+        {/* Mode Switcher: 8 Dạng bài tập vs Bài thi 10 câu */}
+        <div className="flex bg-white/90 p-1.5 rounded-2xl shadow-sm border border-violet-100">
+          <button
+            type="button"
+            onClick={() => setMode('stations')}
+            className={`flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 ${
+              mode === 'stations'
+                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm scale-101'
+                : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            <span>🎯</span>
+            <span>8 Dạng Bài Tập</span>
+            <span className="text-[10px] px-1.5 py-0.2 bg-amber-400 text-amber-950 rounded-full font-black">
+              Mới
+            </span>
+          </button>
           <button
             type="button"
             onClick={() => {
               setMode('test');
               setActiveStation(null);
             }}
-            className={`flex-1 py-2 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 ${
               mode === 'test'
-                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm'
+                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm scale-101'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
             <span>🏆</span>
             <span>Bài Thi (10 câu)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('stations')}
-            className={`flex-1 py-2 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 ${
-              mode === 'stations'
-                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            <span>🎯</span>
-            <span>8 Dạng Bài Tập</span>
           </button>
         </div>
 
