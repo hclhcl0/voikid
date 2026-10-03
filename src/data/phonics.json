@@ -1,0 +1,1831 @@
+{
+  "mango": {
+    "text": "MENG-gâu",
+    "syllables": [
+      "MENG",
+      "gâu"
+    ],
+    "mouth_tip": "Mở miệng cười xinh đọc 'MENG' rồi chúm môi nhỏ lại 'gâu' nhé! 🥭",
+    "audio_slow_text": "MENG ... gâu"
+  },
+  "watermelon": {
+    "text": "WOA-tờ-me-lần",
+    "syllables": [
+      "WOA",
+      "tờ",
+      "me",
+      "lần"
+    ],
+    "mouth_tip": "Tròn môi 'WOA' thật to rồi hạ giọng đọc nhẹ 'tờ-me-lần' nào! 🍉",
+    "audio_slow_text": "WOA ... tờ ... me ... lần"
+  },
+  "pear": {
+    "text": "PHE-(r)",
+    "syllables": [
+      "PHE-(r)"
+    ],
+    "mouth_tip": "Mím hai môi bật hơi 'PHE' rồi cong nhẹ đầu lưỡi 'r' lên nha! 🍐",
+    "audio_slow_text": "PHE ... r"
+  },
+  "cherry": {
+    "text": "CHE-ri",
+    "syllables": [
+      "CHE",
+      "ri"
+    ],
+    "mouth_tip": "Chu môi bật hơi giòn tan 'CHE' rồi cười tươi 'ri' một cái! 🍒",
+    "audio_slow_text": "CHE ... ri"
+  },
+  "pineapple": {
+    "text": "PHAI-náp-pồl",
+    "syllables": [
+      "PHAI",
+      "náp",
+      "pồl"
+    ],
+    "mouth_tip": "Bật mạnh hơi 'PHAI' rồi đọc nhanh 'náp' và khẽ uốn lưỡi 'pồl' nghen! 🍍",
+    "audio_slow_text": "PHAI ... náp ... pồl"
+  },
+  "red": {
+    "text": "RÉT-(d)",
+    "syllables": [
+      "RÉT-(d)"
+    ],
+    "mouth_tip": "Đọc chữ 'RÉT' xong bé gõ nhẹ đầu lưỡi lên vòm họng kêu 'd' siêu đỉnh! 🎈",
+    "audio_slow_text": "RÉT ... d"
+  },
+  "blue": {
+    "text": "bờ-LU",
+    "syllables": [
+      "bờ",
+      "LU"
+    ],
+    "mouth_tip": "Bặm môi nói khẽ 'bờ' rồi chu mỏ thổi sáo 'LU' thật dài! 🐬",
+    "audio_slow_text": "bờ ... LU"
+  },
+  "green": {
+    "text": "gờ-RIN",
+    "syllables": [
+      "gờ",
+      "RIN"
+    ],
+    "mouth_tip": "Nói thật nhanh 'gờ' trong cổ họng rồi nhe răng cười tươi 'RIN'! 🌿",
+    "audio_slow_text": "gờ ... RIN"
+  },
+  "yellow": {
+    "text": "DÉ-lầu",
+    "syllables": [
+      "DÉ",
+      "lầu"
+    ],
+    "mouth_tip": "Mở to miệng hô 'DÉ' thật vang rồi thả lỏng môi 'lầu' xuống nha! 🌻",
+    "audio_slow_text": "DÉ ... lầu"
+  },
+  "pink": {
+    "text": "PHINH-(k)",
+    "syllables": [
+      "PHINH-(k)"
+    ],
+    "mouth_tip": "Mím môi bật hơi 'PHINH' rồi khựng hơi trong cuống họng bật nhẹ 'k'! 🌸",
+    "audio_slow_text": "PHINH ... k"
+  },
+  "purple": {
+    "text": "PHƠ-pồl",
+    "syllables": [
+      "PHƠ",
+      "pồl"
+    ],
+    "mouth_tip": "Bật môi nói 'PHƠ' thật cao giọng rồi đưa lưỡi chạm chân răng trên 'pồl'! 🍇",
+    "audio_slow_text": "PHƠ ... pồl"
+  },
+  "white": {
+    "text": "OAI-(t)",
+    "syllables": [
+      "OAI-(t)"
+    ],
+    "mouth_tip": "Mở to miệng đọc 'OAI' rồi chạm đầu lưỡi lên răng trên bật 't' tí hon! ☁️",
+    "audio_slow_text": "OAI ... t"
+  },
+  "black": {
+    "text": "bờ-LÉC-(k)",
+    "syllables": [
+      "bờ",
+      "LÉC-(k)"
+    ],
+    "mouth_tip": "Nhép môi 'bờ' một tí rồi mở miệng rộng đọc 'LÉC' khựng 'k' lại nè! 🐈‍⬛",
+    "audio_slow_text": "bờ ... LÉC ... k"
+  },
+  "brown": {
+    "text": "bờ-RAO-(n)",
+    "syllables": [
+      "bờ",
+      "RAO-(n)"
+    ],
+    "mouth_tip": "Bật khẽ 'bờ' rồi há to 'RAO' và khép răng chặn luồng hơi lại chữ 'n'! 🐻",
+    "audio_slow_text": "bờ ... RAO ... n"
+  },
+  "ball": {
+    "text": "BO-(l)",
+    "syllables": [
+      "BO-(l)"
+    ],
+    "mouth_tip": "Tròn xoe miệng hô 'BO' rồi uốn cong đầu lưỡi chạm vòm miệng kêu 'l' nhé! ⚽",
+    "audio_slow_text": "BO ... l"
+  },
+  "bike": {
+    "text": "BAI-(k)",
+    "syllables": [
+      "BAI-(k)"
+    ],
+    "mouth_tip": "Đọc chữ 'bai' rồi khựng lại khè nhẹ chữ 'k' ở cuống họng nhé! 🚲",
+    "audio_slow_text": "BAI ... k"
+  },
+  "book": {
+    "text": "BÚC-(k)",
+    "syllables": [
+      "BÚC-(k)"
+    ],
+    "mouth_tip": "Đọc chữ 'búc' thật gọn rồi bật nhẹ âm 'k' như gõ cốc cốc vào cửa! 📖",
+    "audio_slow_text": "BÚC ... k"
+  },
+  "bell": {
+    "text": "BEO-(l)",
+    "syllables": [
+      "BEO-(l)"
+    ],
+    "mouth_tip": "Nói chữ 'beo' rồi cong tít đầu lưỡi chạm trần miệng rung chuông leng keng! 🔔",
+    "audio_slow_text": "BEO ... l"
+  },
+  "pen": {
+    "text": "PEN",
+    "syllables": [
+      "PEN"
+    ],
+    "mouth_tip": "Mím chặt hai môi lại rồi bật mạnh hơi kêu 'pen' thật giòn giã! 🖊️",
+    "audio_slow_text": "P ... EN"
+  },
+  "pencil": {
+    "text": "PEN-sồl",
+    "syllables": [
+      "PEN",
+      "sồl"
+    ],
+    "mouth_tip": "Bật môi đọc 'PEN' thật to rồi thì thầm chữ 'sồl' nhẹ như gió thổi! ✏️",
+    "audio_slow_text": "PEN ... sồl"
+  },
+  "desk": {
+    "text": "ĐÉT-(sk)",
+    "syllables": [
+      "ĐÉT-(sk)"
+    ],
+    "mouth_tip": "Đọc chữ 'đét' rồi xì 's' một tiếng và bật khẽ âm 'k' liền tay nha! 🪑",
+    "audio_slow_text": "ĐÉT ... s ... k"
+  },
+  "bag": {
+    "text": "BÉC-(g)",
+    "syllables": [
+      "BÉC-(g)"
+    ],
+    "mouth_tip": "Mở to miệng đọc 'béc' rồi gằn nhẹ âm 'g' dưới cổ như chú cún con gừ gừ! 🎒",
+    "audio_slow_text": "BÉC ... g"
+  },
+  "hi": {
+    "text": "HAI",
+    "syllables": [
+      "HAI"
+    ],
+    "mouth_tip": "Mở miệng cười thật tươi và ngân dài chữ 'hai' để chào mọi người nào! 👋",
+    "audio_slow_text": "HAI"
+  },
+  "bye": {
+    "text": "BAI",
+    "syllables": [
+      "BAI"
+    ],
+    "mouth_tip": "Mím môi rồi bật ra chữ 'bai' ngọt ngào để vẫy tay tạm biệt bạn nhé! 🙋",
+    "audio_slow_text": "BAI"
+  },
+  "cake": {
+    "text": "KẾI-(k)",
+    "syllables": [
+      "KẾI-(k)"
+    ],
+    "mouth_tip": "Đọc chữ 'kếi' hơi kéo dài rồi bật nhẹ âm 'k' giòn tan như đang nhai bánh quy! 🎂",
+    "audio_slow_text": "KẾI ... k"
+  },
+  "cup": {
+    "text": "CẮP-(p)",
+    "syllables": [
+      "CẮP-(p)"
+    ],
+    "mouth_tip": "Hô chữ 'cắp' rồi ngậm chặt hai môi lại giữ bí mật không cho hơi bay ra! 🥛",
+    "audio_slow_text": "CẮP ... p"
+  },
+  "chicken": {
+    "text": "CHÍCH-kìn",
+    "syllables": [
+      "CHÍCH",
+      "kìn"
+    ],
+    "mouth_tip": "Chu mỏ bật hơi 'CHÍCH' thật to rồi hạ giọng đọc khẽ chữ 'kìn' nha bé! 🍗",
+    "audio_slow_text": "CHÍCH ... kìn"
+  },
+  "chips": {
+    "text": "CHÍP-(s)",
+    "syllables": [
+      "CHÍP-(s)"
+    ],
+    "mouth_tip": "Đọc 'chíp' rồi khép răng xì nhẹ chữ 's' như tiếng khoai tây đang chiên xèo xèo! 🍟",
+    "audio_slow_text": "CHÍP ... s"
+  },
+  "milk": {
+    "text": "MÍU-(k)",
+    "syllables": [
+      "MÍU-(k)"
+    ],
+    "mouth_tip": "Đọc chữ 'míu' cong lưỡi chạm hàm trên rồi bật khẽ âm 'k' ở cổ họng nào! 🥛",
+    "audio_slow_text": "MÍU ... k"
+  },
+  "noodles": {
+    "text": "NU-đồl-(z)",
+    "syllables": [
+      "NU",
+      "đồl-(z)"
+    ],
+    "mouth_tip": "Đọc 'NU' thật cao rồi hạ giọng đọc 'đồl' rung nhẹ hai hàm răng kêu 'z'! 🍜",
+    "audio_slow_text": "NU ... đồl ... z"
+  },
+  "cat": {
+    "text": "CÁT-(t)",
+    "syllables": [
+      "CÁT-(t)"
+    ],
+    "mouth_tip": "Đọc chữ 'cát' rồi bật nhẹ đầu lưỡi kêu 't' một cái! 👅",
+    "audio_slow_text": "CÁT ... t"
+  },
+  "dog": {
+    "text": "ĐÓC-(g)",
+    "syllables": [
+      "ĐÓC-(g)"
+    ],
+    "mouth_tip": "Đọc chữ 'đóc' rồi chặn hơi sâu dưới cổ họng rung nhẹ chữ 'g' nha! 🐶",
+    "audio_slow_text": "ĐÓC ... g"
+  },
+  "bird": {
+    "text": "BỚT-(d)",
+    "syllables": [
+      "BỚT-(d)"
+    ],
+    "mouth_tip": "Chu môi đọc 'bớt' rồi gõ nhẹ đầu lưỡi lên chân răng kêu 'd'! 🐦",
+    "audio_slow_text": "BỚT ... d"
+  },
+  "fish": {
+    "text": "PHÍT-(s*)",
+    "syllables": [
+      "PHÍT-(s*)"
+    ],
+    "mouth_tip": "Cắn nhẹ môi đọc 'phít' rồi chu tròn môi suỵt gió 's*' im lặng nào! 🤫",
+    "audio_slow_text": "PHÍT ... s*"
+  },
+  "elephant": {
+    "text": "É-li-phần-(t)",
+    "syllables": [
+      "É",
+      "li",
+      "phần-(t)"
+    ],
+    "mouth_tip": "Hô to 'É' rồi đọc nhanh 'li-phần', cuối cùng chạm lưỡi bật 't'! 🐘",
+    "audio_slow_text": "É ... li ... phần ... t"
+  },
+  "lion": {
+    "text": "LAI-ơn",
+    "syllables": [
+      "LAI",
+      "ơn"
+    ],
+    "mouth_tip": "Mở to miệng gầm chữ 'LAI' thật vang rồi thả lỏng đọc chữ 'ơn'! 🦁",
+    "audio_slow_text": "LAI ... ơn"
+  },
+  "rabbit": {
+    "text": "RÁP-bít-(t)",
+    "syllables": [
+      "RÁP",
+      "bít-(t)"
+    ],
+    "mouth_tip": "Đọc mạnh 'RÁP' rồi chuyển sang 'bít' và tặc lưỡi bật chữ 't'! 🐰",
+    "audio_slow_text": "RÁP ... bít ... t"
+  },
+  "duck": {
+    "text": "ĐẮC-(k)",
+    "syllables": [
+      "ĐẮC-(k)"
+    ],
+    "mouth_tip": "Đọc chữ 'đắc' rồi nâng cuống họng bật nhẹ âm 'k' giòn tan! 🦆",
+    "audio_slow_text": "ĐẮC ... k"
+  },
+  "monkey": {
+    "text": "MĂNG-ki",
+    "syllables": [
+      "MĂNG",
+      "ki"
+    ],
+    "mouth_tip": "Đọc to rõ 'MĂNG' rồi nhoẻn miệng cười tươi đọc 'ki'! 🐵",
+    "audio_slow_text": "MĂNG ... ki"
+  },
+  "tiger": {
+    "text": "TAI-gờ",
+    "syllables": [
+      "TAI",
+      "gờ"
+    ],
+    "mouth_tip": "Nhấn giọng cao chữ 'TAI' rồi hạ giọng êm ru chữ 'gờ' gầm gừ! 🐯",
+    "audio_slow_text": "TAI ... gờ"
+  },
+  "apple": {
+    "text": "ÁP-pờl",
+    "syllables": [
+      "ÁP",
+      "pờl"
+    ],
+    "mouth_tip": "Há to miệng cắn táo 'ÁP' rồi đưa đầu lưỡi chạm vòm họng 'pờl'! 🍎",
+    "audio_slow_text": "ÁP ... pờl"
+  },
+  "banana": {
+    "text": "bờ-NEN-nờ",
+    "syllables": [
+      "bờ",
+      "NEN",
+      "nờ"
+    ],
+    "mouth_tip": "Nói khẽ 'bờ', hô to 'NEN' xong thả lỏng miệng đọc 'nờ' nhé! 🍌",
+    "audio_slow_text": "bờ ... NEN ... nờ"
+  },
+  "orange": {
+    "text": "Ó-rìn-(ch)",
+    "syllables": [
+      "Ó",
+      "rìn-(ch)"
+    ],
+    "mouth_tip": "Nhấn mạnh 'Ó', đọc 'rìn' rồi chu môi bật luồng hơi 'ch' thật giòn! 🍊",
+    "audio_slow_text": "Ó ... rìn ... ch"
+  },
+  "strawberry": {
+    "text": "S-TRÓ-bờ-ri",
+    "syllables": [
+      "S-TRÓ",
+      "bờ",
+      "ri"
+    ],
+    "mouth_tip": "Xì gió 's' thật lẹ sang 'TRÓ' rồi đọc lướt nhanh 'bờ-ri' ngọt ngào! 🍓",
+    "audio_slow_text": "S ... TRÓ ... bờ ... ri"
+  },
+  "grape": {
+    "text": "G-RẾP-(p)",
+    "syllables": [
+      "G-RẾP-(p)"
+    ],
+    "mouth_tip": "Lướt nhẹ 'g-r', đọc to 'rếp' rồi mím hai môi lại bật khẽ 'p'! 🍇",
+    "audio_slow_text": "G ... RẾP ... p"
+  },
+  "clock": {
+    "text": "KLÓC-(k)",
+    "syllables": [
+      "KLÓC-(k)"
+    ],
+    "mouth_tip": "Đọc chữ 'lóc' rồi ngậm miệng bật nhẹ âm 'k' từ cổ họng nhé! 🗣️",
+    "audio_slow_text": "KLÓC ... k"
+  },
+  "pot": {
+    "text": "PÓT-(t)",
+    "syllables": [
+      "PÓT-(t)"
+    ],
+    "mouth_tip": "Đọc 'pót' rồi bật đầu lưỡi 't' nhẹ thôi nha con! 👅",
+    "audio_slow_text": "PÓT ... t"
+  },
+  "door": {
+    "text": "DÓR",
+    "syllables": [
+      "DÓR"
+    ],
+    "mouth_tip": "Tròn môi lại và kéo dài âm 'o' thật oai nha! 👄",
+    "audio_slow_text": "DÓR"
+  },
+  "window": {
+    "text": "UÍN-đô",
+    "syllables": [
+      "UÍN",
+      "đô"
+    ],
+    "mouth_tip": "Uốn lưỡi nhẹ đọc 'uín', rồi chu môi 'đô' nè! 🌬️",
+    "audio_slow_text": "UÍN ... đô"
+  },
+  "water": {
+    "text": "UÓ-tờ",
+    "syllables": [
+      "UÓ",
+      "tờ"
+    ],
+    "mouth_tip": "Chu môi 'uó' thật tròn rồi đọc nhẹ 'tờ' nha con! 💦",
+    "audio_slow_text": "UÓ ... tờ"
+  },
+  "wash": {
+    "text": "UÓS*-(s*)",
+    "syllables": [
+      "UÓS*-(s*)"
+    ],
+    "mouth_tip": "Chu môi đọc 'uós', rồi xì hơi 's*' một cái nha! 🤫",
+    "audio_slow_text": "UÓS* ... s*"
+  },
+  "car": {
+    "text": "KÁR",
+    "syllables": [
+      "KÁR"
+    ],
+    "mouth_tip": "Mở miệng to đọc 'kár' như đang gọi xe hơi nha! 🚗",
+    "audio_slow_text": "KÁR"
+  },
+  "bus": {
+    "text": "BẮT-(s)",
+    "syllables": [
+      "BẮT-(s)"
+    ],
+    "mouth_tip": "Đọc 'bắt' rồi xì hơi 's' nhẹ ở cuối nha! 🚌",
+    "audio_slow_text": "BẮT ... s"
+  },
+  "truck": {
+    "text": "TRẮC-(k)",
+    "syllables": [
+      "TRẮC-(k)"
+    ],
+    "mouth_tip": "Đọc 'trắc' rồi ngậm miệng bật âm 'k' từ cổ họng nè! 🚛",
+    "audio_slow_text": "TRẮC ... k"
+  },
+  "sun": {
+    "text": "SĂN",
+    "syllables": [
+      "SĂN"
+    ],
+    "mouth_tip": "Mở miệng cười đọc 'săn' như mặt trời đang cười nha! ☀️",
+    "audio_slow_text": "SĂN"
+  },
+  "run": {
+    "text": "RĂN",
+    "syllables": [
+      "RĂN"
+    ],
+    "mouth_tip": "Cuộn lưỡi nhẹ đọc 'răn' rồi chạy nhanh như gió nha! 🏃‍♂️",
+    "audio_slow_text": "RĂN"
+  },
+  "hat": {
+    "text": "HÉT-(t)",
+    "syllables": [
+      "HÉT-(t)"
+    ],
+    "mouth_tip": "Đọc 'hét' rồi bật nhẹ đầu lưỡi 't' để đội mũ lên nào! 👒",
+    "audio_slow_text": "HÉT ... t"
+  },
+  "garden": {
+    "text": "GÁR-đần",
+    "syllables": [
+      "GÁR",
+      "đần"
+    ],
+    "mouth_tip": "Mở miệng to 'gár', rồi nhẹ nhàng 'đần' như đi dạo vườn hoa! 🌷",
+    "audio_slow_text": "GÁR ... đần"
+  },
+  "gate": {
+    "text": "GHẾT-(t)",
+    "syllables": [
+      "GHẾT-(t)"
+    ],
+    "mouth_tip": "Đọc 'ghết' rồi bật nhẹ đầu lưỡi 't' để mở cổng vào nhà nha! 🏡",
+    "audio_slow_text": "GHẾT ... t"
+  },
+  "goat": {
+    "text": "GÔU-(t)",
+    "syllables": [
+      "GÔU-(t)"
+    ],
+    "mouth_tip": "Chu môi 'gôu' rồi bật đầu lưỡi 't' như tiếng dê kêu 'bê-ê-ê' nha! 🐐",
+    "audio_slow_text": "GÔU ... t"
+  },
+  "horse": {
+    "text": "HÓR-(s)",
+    "syllables": [
+      "HÓR-(s)"
+    ],
+    "mouth_tip": "Đọc 'ho' cong lưỡi lên một chút, rồi khẽ xì ra âm 's' giống như tiếng rắn hổ mang! 🐍",
+    "audio_slow_text": "HÓR ... s"
+  },
+  "mouse": {
+    "text": "MAU-(s)",
+    "syllables": [
+      "MAU-(s)"
+    ],
+    "mouth_tip": "Đọc 'mau' rồi xì hơi thật nhẹ ở cuối môi giống chuột kêu chít chít! 🐭",
+    "audio_slow_text": "MAU ... s"
+  },
+  "turtle": {
+    "text": "TƠR-tồl",
+    "syllables": [
+      "TƠR-tồl"
+    ],
+    "mouth_tip": "Đọc 'tơr' cong lưỡi lên, rồi đọc 'tồl' nhẹ nhàng như rùa bò! 🐢",
+    "audio_slow_text": "TƠR ... tồl"
+  },
+  "teddy bear": {
+    "text": "TÉ-đi-BÉ-ờ",
+    "syllables": [
+      "TÉ-đi",
+      "BÉ-ờ"
+    ],
+    "mouth_tip": "Đọc 'té-đi' thật nhẹ, rồi đọc 'bé-ờ' kéo dài giọng một chút như đang ôm gấu bông ấm áp! 🧸",
+    "audio_slow_text": "TÉ ... đi ... BÉ ... ờ"
+  },
+  "head": {
+    "text": "HÉT-(d)",
+    "syllables": [
+      "HÉT-(d)"
+    ],
+    "mouth_tip": "Đọc 'hét' rồi bật nhẹ đầu lưỡi tạo âm 'd' như gật đầu cái 'cụp'! 🧑‍🦰",
+    "audio_slow_text": "HÉT ... d"
+  },
+  "hair": {
+    "text": "HE-ờ",
+    "syllables": [
+      "HE-ờ"
+    ],
+    "mouth_tip": "Đọc 'he-ờ' kéo dài giọng một chút, tưởng tượng đang vuốt ve mái tóc mượt mà! 💇‍♀️",
+    "audio_slow_text": "HE ... ờ"
+  },
+  "hand": {
+    "text": "HÉN-(d)",
+    "syllables": [
+      "HÉN-(d)"
+    ],
+    "mouth_tip": "Đọc 'hén' rồi bật nhẹ đầu lưỡi 'd' cái thật nhanh như vẫy tay chào! 👋",
+    "audio_slow_text": "HÉN ... d"
+  },
+  "face": {
+    "text": "PHÊI-(s)",
+    "syllables": [
+      "PHÊI-(s)"
+    ],
+    "mouth_tip": "Đọc 'phêi' rồi mím môi nhẹ, bật âm 's' ra giống như cười mỉm chi thật xinh! 😊",
+    "audio_slow_text": "PHÊI ... s"
+  },
+  "foot": {
+    "text": "PHÚT-(t)",
+    "syllables": [
+      "PHÚT-(t)"
+    ],
+    "mouth_tip": "Đọc 'phút' rồi đá nhẹ lưỡi vào răng trên để bật âm 't' như đá bóng! ⚽",
+    "audio_slow_text": "PHÚT ... t"
+  },
+  "football": {
+    "text": "PHÚT-bòl",
+    "syllables": [
+      "PHÚT",
+      "bòl"
+    ],
+    "mouth_tip": "Đọc 'phút' thật mạnh, rồi nhẹ nhàng 'bòl' như đang chuyền bóng cho bạn! 🥅",
+    "audio_slow_text": "PHÚT ... bòl"
+  },
+  "father": {
+    "text": "PHÁ-đờ",
+    "syllables": [
+      "PHÁ-đờ"
+    ],
+    "mouth_tip": "Đọc 'phá' thật rõ, rồi nhẹ nhàng 'đờ' giống như gọi bố yêu thương! 👨‍👧‍👦",
+    "audio_slow_text": "PHÁ ... đờ"
+  },
+  "mother": {
+    "text": "MẮ-đờ",
+    "syllables": [
+      "MẮ-đờ"
+    ],
+    "mouth_tip": "Đọc 'mắ' thật ấm áp, rồi nhẹ nhàng 'đờ' giống như ôm mẹ thật chặt! 👩‍👦‍👦",
+    "audio_slow_text": "MẮ ... đờ"
+  },
+  "girl": {
+    "text": "GỜL",
+    "syllables": [
+      "GỜL"
+    ],
+    "mouth_tip": "Đọc 'gờl' cong lưỡi lên một chút, giống như gọi một cô bé xinh xắn! 👧",
+    "audio_slow_text": "GỜL"
+  },
+  "lake": {
+    "text": "LÊI-(k)",
+    "syllables": [
+      "LÊI-(k)"
+    ],
+    "mouth_tip": "Đọc 'lêi' rồi bật nhẹ cuống lưỡi kêu 'k' một cái như tiếng ếch kêu bên hồ! 🐸",
+    "audio_slow_text": "LÊI ... k"
+  },
+  "bicycle": {
+    "text": "BAI-sì-cồl",
+    "syllables": [
+      "BAI",
+      "sì",
+      "cồl"
+    ],
+    "mouth_tip": "Đọc 'bai-sì' thật nhanh, rồi 'cồl' nhẹ nhàng như đạp xe bon bon trên đường! 🚴‍♂️",
+    "audio_slow_text": "BAI ... sì ... cồl"
+  },
+  "airplane": {
+    "text": "ÉR-plên",
+    "syllables": [
+      "ÉR",
+      "plên"
+    ],
+    "mouth_tip": "Đọc 'e' rồi cong lưỡi lên như chuẩn bị nói 'r', xong là 'plên' nhẹ nhàng nhé! ✈️",
+    "audio_slow_text": "ÉR ... plên"
+  },
+  "ship": {
+    "text": "S*ÍT-(p)",
+    "syllables": [
+      "S*ÍT-(p)"
+    ],
+    "mouth_tip": "Miệng chu ra như hôn gió, nói 's*ít' rồi khép môi 'p' một cái nha! 🚢",
+    "audio_slow_text": "S*ÍT ... p"
+  },
+  "train": {
+    "text": "TRÊN",
+    "syllables": [
+      "TRÊN"
+    ],
+    "mouth_tip": "Tròn môi đọc 'trên' như đọc chữ 'trên' trong tiếng Việt nhé! 🚂",
+    "audio_slow_text": "TRÊN"
+  },
+  "motorcycle": {
+    "text": "MÔ-tơ-XAI-kồ",
+    "syllables": [
+      "MÔ",
+      "tơ",
+      "XAI",
+      "kồ"
+    ],
+    "mouth_tip": "Môi tròn, nói 'mô' rồi bật nhẹ 'tơ', kéo dài 'xai' và kết thúc với 'kồ' như gọi tên bạn 'Kồ' nhé! 🏍️",
+    "audio_slow_text": "MÔ ... tơ ... XAI ... kồ"
+  },
+  "helicopter": {
+    "text": "HE-li-CÓP-(p)-tơ",
+    "syllables": [
+      "HE",
+      "li",
+      "CÓP-(p)",
+      "tơ"
+    ],
+    "mouth_tip": "Nói 'he' nhẹ nhàng, 'li' vui vẻ, 'cóp' xong ngậm môi 'p', rồi 'tơ' một cái nha! 🚁",
+    "audio_slow_text": "HE ... li ... CÓP ... p ... tơ"
+  },
+  "boat": {
+    "text": "BÔT-(t)",
+    "syllables": [
+      "BÔT-(t)"
+    ],
+    "mouth_tip": "Môi chu tròn nói 'bô', rồi nhẹ nhàng chạm đầu lưỡi vào răng để kêu 't' nhé! ⛵",
+    "audio_slow_text": "BÔT ... t"
+  },
+  "school": {
+    "text": "SKUL",
+    "syllables": [
+      "SKUL"
+    ],
+    "mouth_tip": "Miệng hơi chu, đọc 'skul' như vần 'cun' rồi cong lưỡi nhẹ cuối từ nhé! 🏫",
+    "audio_slow_text": "SKUL"
+  },
+  "classroom": {
+    "text": "KLÁT-(s)-rum",
+    "syllables": [
+      "KLÁT-(s)",
+      "rum"
+    ],
+    "mouth_tip": "Mở miệng to nói 'klát', cười tươi bật 's' rồi chu môi 'rum' như tiếng mèo gừ nhé! 🧑‍🏫",
+    "audio_slow_text": "KLÁT ... s ... rum"
+  },
+  "teacher": {
+    "text": "TI-chơ",
+    "syllables": [
+      "TI",
+      "chơ"
+    ],
+    "mouth_tip": "Nói 'ti' thật dài như 'ti vi', rồi cong môi 'chơ' như tiếng chim hót nhé! 👩‍🏫",
+    "audio_slow_text": "TI ... chơ"
+  },
+  "student": {
+    "text": "STU-đần-(t)",
+    "syllables": [
+      "STU",
+      "đần-(t)"
+    ],
+    "mouth_tip": "Miệng chu nói 'stu' như tiếng huýt sáo, rồi hạ giọng 'đần' và bật 't' cuối cùng nha! 🧑‍🎓",
+    "audio_slow_text": "STU ... đần ... t"
+  },
+  "ruler": {
+    "text": "RU-lơ",
+    "syllables": [
+      "RU",
+      "lơ"
+    ],
+    "mouth_tip": "Môi chu tròn nói 'ru', rồi nhẹ nhàng 'lơ' như gọi bạn 'Lơ' nhé! 📏",
+    "audio_slow_text": "RU ... lơ"
+  },
+  "blackboard": {
+    "text": "BLÁC-(k)-boọc-(d)",
+    "syllables": [
+      "BLÁC-(k)",
+      "boọc-(d)"
+    ],
+    "mouth_tip": "Mở miệng to nói 'blác', khép lại 'k', rồi tròn môi 'boọc' và bật 'd' nhé!  chalkboard",
+    "audio_slow_text": "BLÁC ... k ... boọc ... d"
+  },
+  "reading": {
+    "text": "RI-đinh",
+    "syllables": [
+      "RI",
+      "đinh"
+    ],
+    "mouth_tip": "Mở miệng cười tươi nói 'ri', rồi nhẹ nhàng 'đinh' như tiếng chuông reo nhé! 📖",
+    "audio_slow_text": "RI ... đinh"
+  },
+  "drawing": {
+    "text": "DRÓ-inh",
+    "syllables": [
+      "DRÓ",
+      "inh"
+    ],
+    "mouth_tip": "Môi chu tròn nói 'dró' như tiếng xe chạy, rồi nhẹ nhàng 'inh' như gọi bạn 'Inh' nha! 🎨",
+    "audio_slow_text": "DRÓ ... inh"
+  },
+  "singing": {
+    "text": "SINH-inh",
+    "syllables": [
+      "SINH",
+      "inh"
+    ],
+    "mouth_tip": "Cười tươi nói 'sinh' thật dài, rồi nhẹ nhàng 'inh' như tiếng chim hót nhé! 🎤",
+    "audio_slow_text": "SINH ... inh"
+  },
+  "dancing": {
+    "text": "ĐAN-(s)-ing",
+    "syllables": [
+      "ĐAN-(s)",
+      "ing"
+    ],
+    "mouth_tip": "Đọc 'Đan' và giữ hơi gió 's' ở cuối, rồi thêm 'ing' nhé! 💃",
+    "audio_slow_text": "ĐAN ... s ... ing"
+  },
+  "swimming": {
+    "text": "SWÌM-mình",
+    "syllables": [
+      "SWÌM",
+      "mình"
+    ],
+    "mouth_tip": "Mím môi đọc 'swìm', rồi thêm 'mình' nhỏ nhẹ! 🏊",
+    "audio_slow_text": "SWÌM ... mình"
+  },
+  "cycling": {
+    "text": "SAI-clìng",
+    "syllables": [
+      "SAI",
+      "clìng"
+    ],
+    "mouth_tip": "Đọc 'sai', rồi tròn môi 'clìng' như đang đạp xe! 🚴",
+    "audio_slow_text": "SAI ... clìng"
+  },
+  "cooking": {
+    "text": "CÚC-(k)-ing",
+    "syllables": [
+      "CÚC-(k)",
+      "ing"
+    ],
+    "mouth_tip": "Đọc 'cúc', bật hơi 'k' một cái, rồi thêm 'ing' như đang nấu ăn! 🍳",
+    "audio_slow_text": "CÚC ... k ... ing"
+  },
+  "gaming": {
+    "text": "GÊM-ing",
+    "syllables": [
+      "GÊM",
+      "ing"
+    ],
+    "mouth_tip": "Mím môi đọc 'gêm', rồi thêm 'ing' thật ngầu nha! 🎮",
+    "audio_slow_text": "GÊM ... ing"
+  },
+  "painting": {
+    "text": "PÊN-(t)-ing",
+    "syllables": [
+      "PÊN-(t)",
+      "ing"
+    ],
+    "mouth_tip": "Đọc 'pên', bật nhẹ đầu lưỡi 't' một cái, rồi thêm 'ing' để tô màu đẹp nào! 🎨",
+    "audio_slow_text": "PÊN ... t ... ing"
+  },
+  "gardening": {
+    "text": "GA-đần-ing",
+    "syllables": [
+      "GA",
+      "đần",
+      "ing"
+    ],
+    "mouth_tip": "Đọc 'ga', rồi 'đần', thêm 'ing' như đang trồng cây! 🧑‍🌾",
+    "audio_slow_text": "GA ... đần ... ing"
+  },
+  "sunny": {
+    "text": "SĂN-ni",
+    "syllables": [
+      "SĂN",
+      "ni"
+    ],
+    "mouth_tip": "Đọc 'săn', rồi 'ni' thật tươi như trời nắng! ☀️",
+    "audio_slow_text": "SĂN ... ni"
+  },
+  "rainy": {
+    "text": "RÂY-ni",
+    "syllables": [
+      "RÂY",
+      "ni"
+    ],
+    "mouth_tip": "Đọc 'rây', rồi 'ni' như hạt mưa tí tách! 🌧️",
+    "audio_slow_text": "RÂY ... ni"
+  },
+  "cloudy": {
+    "text": "CLAU-đi",
+    "syllables": [
+      "CLAU",
+      "đi"
+    ],
+    "mouth_tip": "Tròn miệng đọc 'clau', rồi 'đi' như mây trôi bồng bềnh! ☁️",
+    "audio_slow_text": "CLAU ... đi"
+  },
+  "windy": {
+    "text": "WIN-đi",
+    "syllables": [
+      "WIN",
+      "đi"
+    ],
+    "mouth_tip": "Đọc 'win', rồi 'đi' như gió thổi vù vù! 🌬️",
+    "audio_slow_text": "WIN ... đi"
+  },
+  "cold": {
+    "text": "CÔL-(d)",
+    "syllables": [
+      "CÔL-(d)"
+    ],
+    "mouth_tip": "Đọc 'côl', rồi bật đầu lưỡi 'd' nhẹ một cái, răng run lẩy bẩy! 🥶",
+    "audio_slow_text": "CÔL ... d"
+  },
+  "hot": {
+    "text": "HÓT-(t)",
+    "syllables": [
+      "HÓT-(t)"
+    ],
+    "mouth_tip": "Đọc 'hót', rồi bật đầu lưỡi 't' nhẹ một cái, mồ hôi chảy ròng ròng! 🥵",
+    "audio_slow_text": "HÓT ... t"
+  },
+  "snowy": {
+    "text": "SNÔ-i",
+    "syllables": [
+      "SNÔ",
+      "i"
+    ],
+    "mouth_tip": "Tròn miệng đọc 'snô', rồi 'i' thật trắng tinh như tuyết! ❄️",
+    "audio_slow_text": "SNÔ ... i"
+  },
+  "foggy": {
+    "text": "FÓC-ghi",
+    "syllables": [
+      "FÓC",
+      "ghi"
+    ],
+    "mouth_tip": "Đọc 'fóc' như thổi sương, rồi 'ghi' như mờ ảo! 🌫️",
+    "audio_slow_text": "FÓC ... ghi"
+  },
+  "storm": {
+    "text": "XTÓM",
+    "syllables": [
+      "XTÓM"
+    ],
+    "mouth_tip": "Đọc chữ 'xờ' rồi liền ngay 'tóm' như đang ôm quả bóng! ⚽",
+    "audio_slow_text": "XTÓM"
+  },
+  "rainbow": {
+    "text": "REN-BÔU",
+    "syllables": [
+      "REN",
+      "BÔU"
+    ],
+    "mouth_tip": "Đọc 'ren' như 'ren cửa' rồi tròn môi đọc 'bâu' như 'bầu trời'! 🌈",
+    "audio_slow_text": "REN ... BÔU"
+  },
+  "viet nam": {
+    "text": "VI-ợt-NAM",
+    "syllables": [
+      "VI",
+      "ợt",
+      "NAM"
+    ],
+    "mouth_tip": "Đọc 'Vi' như 'viết', rồi hơi mở miệng 'ợt', cuối cùng kéo dài 'Nam' như tên nước mình! 🇻🇳",
+    "audio_slow_text": "VI ... ợt ... NAM"
+  },
+  "america": {
+    "text": "Ơ-ME-RI-KƠ",
+    "syllables": [
+      "Ơ",
+      "ME",
+      "RI",
+      "KƠ"
+    ],
+    "mouth_tip": "Mở miệng 'ơ' rồi nhanh chóng đọc 'Me-ri-kơ' như gọi tên bạn! 🇺🇸",
+    "audio_slow_text": "Ơ ... ME ... RI ... KƠ"
+  },
+  "britain": {
+    "text": "BỜ-RÍT-TẦN",
+    "syllables": [
+      "BỜ",
+      "RÍT",
+      "TẦN"
+    ],
+    "mouth_tip": "Đọc 'bờ' nhẹ rồi bật mạnh 'rít', cuối cùng thả lỏng 'tần' như 'tần ngần' nhé! 🇬🇧",
+    "audio_slow_text": "BỜ ... RÍT ... TẦN"
+  },
+  "australia": {
+    "text": "Ó-SỜ-TRÂY-LI-Ơ",
+    "syllables": [
+      "Ó",
+      "SỜ",
+      "TRÂY",
+      "LI",
+      "Ơ"
+    ],
+    "mouth_tip": "Mở miệng tròn 'ó', nhẹ nhàng 'sờ', rồi uốn lưỡi đọc 'trây-li-ơ' thật duyên dáng! 🇦🇺",
+    "audio_slow_text": "Ó ... SỜ ... TRÂY ... LI ... Ơ"
+  },
+  "japan": {
+    "text": "DỜ-PAN",
+    "syllables": [
+      "DỜ",
+      "PAN"
+    ],
+    "mouth_tip": "Đọc 'dờ' như 'dờ-tay', rồi cười tươi đọc 'pan' như 'banh' (quả banh)! 🇯🇵",
+    "audio_slow_text": "DỜ ... PAN"
+  },
+  "malaysia": {
+    "text": "MƠ-LÂY-ZI-Ơ",
+    "syllables": [
+      "MƠ",
+      "LÂY",
+      "ZI",
+      "Ơ"
+    ],
+    "mouth_tip": "Đọc 'mơ' màng, rồi kéo dài 'lây' như đang bay, cuối cùng 'zi-ơ' thật mềm mại! 🇲🇾",
+    "audio_slow_text": "MƠ ... LÂY ... ZI ... Ơ"
+  },
+  "singapore": {
+    "text": "SÌNG-Ơ-PÓ",
+    "syllables": [
+      "SÌNG",
+      "Ơ",
+      "PÓ"
+    ],
+    "mouth_tip": "Đọc 'sìng' như 'sình lầy', rồi đọc 'ơ-pó' như đang nói 'à-pó' (ngã)! 🇸🇬",
+    "audio_slow_text": "SÌNG ... Ơ ... PÓ"
+  },
+  "thailand": {
+    "text": "TAI-LEN-(d)",
+    "syllables": [
+      "TAI",
+      "LEN-(d)"
+    ],
+    "mouth_tip": "Đọc 'tai' như tai mình, rồi bật nhẹ đầu lưỡi 'len' như 'len lỏi', kết thúc với 'd' thật khẽ! 🇹🇭",
+    "audio_slow_text": "TAI ... LEN ... d"
+  },
+  "china": {
+    "text": "CHAI-NƠ",
+    "syllables": [
+      "CHAI",
+      "NƠ"
+    ],
+    "mouth_tip": "Đọc 'chai' như 'chai nước', rồi tròn môi đọc 'nơ' như cái nơ trên tóc! 🇨🇳",
+    "audio_slow_text": "CHAI ... NƠ"
+  },
+  "korea": {
+    "text": "KƠ-RÌ-Ơ",
+    "syllables": [
+      "KƠ",
+      "RÌ",
+      "Ơ"
+    ],
+    "mouth_tip": "Đọc 'kơ' như 'cờ', rồi kéo dài 'rì-ơ' như đang gọi tên ai đó! 🇰🇷",
+    "audio_slow_text": "KƠ ... RÌ ... Ơ"
+  },
+  "monday": {
+    "text": "MÂN-ĐÂY",
+    "syllables": [
+      "MÂN",
+      "ĐÂY"
+    ],
+    "mouth_tip": "Mở miệng đọc 'mân' như 'mần ruộng', rồi cười tươi đọc 'đây' như 'đây rồi'! 📅",
+    "audio_slow_text": "MÂN ... ĐÂY"
+  },
+  "tuesday": {
+    "text": "TIU-(s)-ĐÂY",
+    "syllables": [
+      "TIU-(s)",
+      "ĐÂY"
+    ],
+    "mouth_tip": "Chu môi đọc 'tiu', giữ hơi lại bật 's' nhẹ, rồi cười 'đây' tươi rói! 📅",
+    "audio_slow_text": "TIU ... s ... ĐÂY"
+  },
+  "wednesday": {
+    "text": "OUEN-(s)-ĐÂY",
+    "syllables": [
+      "OUEN-(s)",
+      "ĐÂY"
+    ],
+    "mouth_tip": "Chu môi đọc 'ouen', giữ hơi bật 's' nhẹ nhàng, rồi cười 'đây' thật vui! 📅",
+    "audio_slow_text": "OUEN ... s ... ĐÂY"
+  },
+  "thursday": {
+    "text": "THƠS-ĐÂY",
+    "syllables": [
+      "THƠS",
+      "ĐÂY"
+    ],
+    "mouth_tip": "Đọc 'thơ' nhưng thè nhẹ lưỡi ra giữa răng, bật hơi 's' một cái, sau đó nói 'đây'!",
+    "audio_slow_text": "THƠS ... ĐÂY"
+  },
+  "friday": {
+    "text": "FRÁI-ĐÂY",
+    "syllables": [
+      "FRÁI",
+      "ĐÂY"
+    ],
+    "mouth_tip": "Đọc 'frái' giống 'trái' nhưng không tròn môi, rồi nói 'đây'!",
+    "audio_slow_text": "FRÁI ... ĐÂY"
+  },
+  "saturday": {
+    "text": "SÁT-(t)-Ơ-ĐÂY",
+    "syllables": [
+      "SÁT-(t)",
+      "Ơ",
+      "ĐÂY"
+    ],
+    "mouth_tip": "Đọc 'sát' rồi bật nhẹ đầu lưỡi kêu 't' một cái, nói 'ơ' rồi 'đây'!",
+    "audio_slow_text": "SÁT ... t ... Ơ ... ĐÂY"
+  },
+  "sunday": {
+    "text": "SĂN-ĐÂY",
+    "syllables": [
+      "SĂN",
+      "ĐÂY"
+    ],
+    "mouth_tip": "Đọc 'săn' như 'ăn' nhưng có 'sờ' đằng trước, rồi nói 'đây'!",
+    "audio_slow_text": "SĂN ... ĐÂY"
+  },
+  "morning": {
+    "text": "MÓR-NINH",
+    "syllables": [
+      "MÓR",
+      "NINH"
+    ],
+    "mouth_tip": "Tròn môi nói 'mór' (như 'mò' thêm 'r'), rồi nói 'ninh'!",
+    "audio_slow_text": "MÓR ... NINH"
+  },
+  "afternoon": {
+    "text": "ép-tơ-NUN",
+    "syllables": [
+      "ép",
+      "tơ",
+      "NUN"
+    ],
+    "mouth_tip": "Đọc 'ép' nhẹ thôi, 'tơ' cũng nhẹ, rồi kéo dài 'nun' ra thật mạnh mẽ nha!",
+    "audio_slow_text": "ép ... tơ ... NUN"
+  },
+  "evening": {
+    "text": "Í-NINH",
+    "syllables": [
+      "Í",
+      "NINH"
+    ],
+    "mouth_tip": "Đọc 'í' thật kéo dài, rồi nối nhanh với 'ninh' nha!",
+    "audio_slow_text": "Í ... NINH"
+  },
+  "swim": {
+    "text": "SUÝM",
+    "syllables": [
+      "SUÝM"
+    ],
+    "mouth_tip": "Chu môi nói 'súym' như chuẩn bị bơi lội vậy! 🏊",
+    "audio_slow_text": "SUÝM"
+  },
+  "cook": {
+    "text": "CÚC-(k)",
+    "syllables": [
+      "CÚC-(k)"
+    ],
+    "mouth_tip": "Đọc 'cúc' rồi bật nhẹ cuống lưỡi kêu 'k' một cái! 🍳",
+    "audio_slow_text": "CÚC ... k"
+  },
+  "draw": {
+    "text": "ĐRÒ",
+    "syllables": [
+      "ĐRÒ"
+    ],
+    "mouth_tip": "Môi hơi tròn, nói 'đrò' như đang vẽ một bức tranh to vậy! 🎨",
+    "audio_slow_text": "ĐRÒ"
+  },
+  "ride a bike": {
+    "text": "RÁI-(d)-Ơ-BÁI-(k)",
+    "syllables": [
+      "RÁI-(d)",
+      "Ơ",
+      "BÁI-(k)"
+    ],
+    "mouth_tip": "Đọc 'rái' rồi bật nhẹ đầu lưỡi 'd', nói 'ơ' rồi 'bái' và bật 'k' nhanh nha! 🚴‍♀️",
+    "audio_slow_text": "RÁI ... d ... Ơ ... BÁI ... k"
+  },
+  "play the guitar": {
+    "text": "plây-đờ-ghi-TAR",
+    "syllables": [
+      "plây",
+      "đờ",
+      "ghi",
+      "TAR"
+    ],
+    "mouth_tip": "Đọc 'plây' nhẹ nhàng, rồi 'đờ' và 'ghi' cũng nhẹ, sau đó kéo dài 'tar' thật mạnh nha! 🎸",
+    "audio_slow_text": "plây ... đờ ... ghi ... TAR"
+  },
+  "play the piano": {
+    "text": "plây-đờ-pi-Á-NÔ",
+    "syllables": [
+      "plây",
+      "đờ",
+      "pi",
+      "Á",
+      "NÔ"
+    ],
+    "mouth_tip": "Đọc 'plây', 'đờ', 'pi' nhẹ thôi, rồi nhấn mạnh 'á-nô' thật hay nha! 🎹",
+    "audio_slow_text": "plây ... đờ ... pi ... Á ... NÔ"
+  },
+  "maths": {
+    "text": "MÁT-(s)",
+    "syllables": [
+      "MÁT-(s)"
+    ],
+    "mouth_tip": "Đọc 'mát' rồi thè nhẹ lưỡi ra giữa răng, bật hơi 's' một cái thật nhanh nha! ➕",
+    "audio_slow_text": "MÁT ... s"
+  },
+  "science": {
+    "text": "SÁI-ƠN-(s)",
+    "syllables": [
+      "SÁI",
+      "ƠN-(s)"
+    ],
+    "mouth_tip": "Đọc 'sái' rồi nói 'ơn' và bật 's' ra một cái nha! 🧪",
+    "audio_slow_text": "SÁI ... ƠN ... s"
+  },
+  "art": {
+    "text": "ÁT-(t)",
+    "syllables": [
+      "ÁT-(t)"
+    ],
+    "mouth_tip": "Đọc chữ 'át' kéo dài, rồi bật nhẹ đầu lưỡi kêu 't' một cái! 👅",
+    "audio_slow_text": "ÁT ... t"
+  },
+  "music": {
+    "text": "MIU-díc-(k)",
+    "syllables": [
+      "MIU",
+      "díc-(k)"
+    ],
+    "mouth_tip": "Kéo dài chữ 'miu', rồi nói 'díc' và ngậm nhẹ họng lại kêu 'k'! 🎼",
+    "audio_slow_text": "MIU ... díc ... k"
+  },
+  "doctor": {
+    "text": "ĐÓK-(k)-tờ",
+    "syllables": [
+      "ĐÓK-(k)",
+      "tờ"
+    ],
+    "mouth_tip": "Đọc chữ 'đók' thật vang, rồi nhẹ nhàng nói 'tờ' như thì thầm nha! 👨‍⚕️",
+    "audio_slow_text": "ĐÓK ... k ... tờ"
+  },
+  "nurse": {
+    "text": "NƠ-(s)",
+    "syllables": [
+      "NƠ-(s)"
+    ],
+    "mouth_tip": "Mở miệng nói 'nơ' thật xinh, rồi xì nhẹ hơi gió 's' ra nha! 👩‍⚕️",
+    "audio_slow_text": "NƠ ... s"
+  },
+  "farmer": {
+    "text": "PHÁ-mờ",
+    "syllables": [
+      "PHÁ",
+      "mờ"
+    ],
+    "mouth_tip": "Vừa nói 'phá' vừa cười tươi, rồi nhẹ nhàng 'mờ' một cái là ra bác nông dân rồi! 👨‍🌾",
+    "audio_slow_text": "PHÁ ... mờ"
+  },
+  "policeman": {
+    "text": "Pờ-LÍS-(s)-mần",
+    "syllables": [
+      "Pờ",
+      "LÍS-(s)",
+      "mần"
+    ],
+    "mouth_tip": "Đọc 'pờ' thật nhẹ, rồi 'LÍS' thật mạnh và xì hơi 's' ra, cuối cùng 'mần' nhẹ thôi nhé! 👮‍♂️",
+    "audio_slow_text": "Pờ ... LÍS ... s ... mần"
+  },
+  "actor": {
+    "text": "ÉK-(k)-tờ",
+    "syllables": [
+      "ÉK-(k)",
+      "tờ"
+    ],
+    "mouth_tip": "Nói 'ék' thật to như đang diễn kịch, rồi nhẹ nhàng 'tờ' một tiếng! 🎭",
+    "audio_slow_text": "ÉK ... k ... tờ"
+  },
+  "engineer": {
+    "text": "En-gi-NÍA",
+    "syllables": [
+      "En",
+      "gi",
+      "NÍA"
+    ],
+    "mouth_tip": "Đọc 'en-gi' thật nhanh, rồi kéo dài chữ 'NÍA' thật oách! 👷‍♀️",
+    "audio_slow_text": "En ... gi ... NÍA"
+  },
+  "artist": {
+    "text": "Á-tít-(s)",
+    "syllables": [
+      "Á",
+      "tít-(s)"
+    ],
+    "mouth_tip": "Đọc chữ 'á' thật thanh, rồi nói 'tít' và xì hơi 's' thật khẽ nha! 🎨",
+    "audio_slow_text": "Á ... tít ... s"
+  },
+  "pilot": {
+    "text": "PAI-lợt-(t)",
+    "syllables": [
+      "PAI",
+      "lợt-(t)"
+    ],
+    "mouth_tip": "Vừa nói 'pai' thật oai, vừa nhẹ nhàng 'lợt' rồi bật lưỡi kêu 't' nhé! ✈️",
+    "audio_slow_text": "PAI ... lợt ... t"
+  },
+  "office worker": {
+    "text": "Ó-phít-(s) Quơ-kờ",
+    "syllables": [
+      "Ó",
+      "phít-(s)",
+      "Quơ",
+      "kờ"
+    ],
+    "mouth_tip": "Đọc 'ó-phít' thật nhanh rồi xì 's' nhẹ, sau đó nói 'quơ' rồi 'kờ' nhẹ nhàng nhé! 🧑‍💻",
+    "audio_slow_text": "Ó ... phít ... s ... Quơ ... kờ"
+  },
+  "road": {
+    "text": "RÔ-(đ)",
+    "syllables": [
+      "RÔ-(đ)"
+    ],
+    "mouth_tip": "Tròn môi nói 'rô' kéo dài, rồi bật nhẹ đầu lưỡi 'đ' một cái nha! 🛣️",
+    "audio_slow_text": "RÔ ... đ"
+  },
+  "park": {
+    "text": "PÁK-(k)",
+    "syllables": [
+      "PÁK-(k)"
+    ],
+    "mouth_tip": "Mở miệng nói 'pák' thật to, rồi ngậm họng lại kêu 'k' nhỏ xíu nha! 🌳",
+    "audio_slow_text": "PÁK ... k"
+  },
+  "hospital": {
+    "text": "HÓS-(s)-pi-tồ",
+    "syllables": [
+      "HÓS-(s)",
+      "pi",
+      "tồ"
+    ],
+    "mouth_tip": "Đọc 'hós' thật mạnh rồi xì 's', tiếp theo 'pi-tồ' thật nhẹ nhàng nhé! 🏥",
+    "audio_slow_text": "HÓS ... s ... pi ... tồ"
+  },
+  "bookshop": {
+    "text": "BÚK-(k)-s*óp-(p)",
+    "syllables": [
+      "BÚK-(k)",
+      "s*óp-(p)"
+    ],
+    "mouth_tip": "Đọc 'búk' rồi ngậm miệng 'k', sau đó chu môi 's*óp' và mím môi 'p' cái chót nhé! 📚",
+    "audio_slow_text": "BÚK ... k ... s*óp ... p"
+  },
+  "bakery": {
+    "text": "BÊI-kơ-ri",
+    "syllables": [
+      "BÊI",
+      "kơ",
+      "ri"
+    ],
+    "mouth_tip": "Đọc nhanh chữ 'bây' rồi 'cơ ri' như vẹt múa nhé! 🦜",
+    "audio_slow_text": "BÊI ... kơ ... ri"
+  },
+  "market": {
+    "text": "MÁT-kít-(t)",
+    "syllables": [
+      "MÁT",
+      "kít-(t)"
+    ],
+    "mouth_tip": "Đọc chữ 'mát' thật nhanh, rồi thêm 'kít' và bật nhẹ 't' cuối cùng! ✨",
+    "audio_slow_text": "MÁT ... kít ... t"
+  },
+  "t-shirt": {
+    "text": "TÍ-sơt-(t)",
+    "syllables": [
+      "TÍ",
+      "sơt-(t)"
+    ],
+    "mouth_tip": "Đọc chữ 'Tí' rồi 'sơt' thật nhẹ, đừng quên bật 't' cuối cùng nhé! 😉",
+    "audio_slow_text": "TÍ ... sơt ... t"
+  },
+  "skirt": {
+    "text": "SKƠT-(t)",
+    "syllables": [
+      "SKƠT-(t)"
+    ],
+    "mouth_tip": "Đọc 'skơt' thật gọn, rồi bật 't' nhẹ nhàng như gió thoảng qua! 🌬️",
+    "audio_slow_text": "SKƠT ... t"
+  },
+  "cheap": {
+    "text": "CHIP-(p)",
+    "syllables": [
+      "CHIP-(p)"
+    ],
+    "mouth_tip": "Mím môi đọc 'chip', rồi bật 'p' nhẹ như bong bóng xì hơi! 🫧",
+    "audio_slow_text": "CHIP ... p"
+  },
+  "expensive": {
+    "text": "Íc-(k)-SPEN-siv",
+    "syllables": [
+      "Íc-(k)",
+      "SPEN",
+      "siv"
+    ],
+    "mouth_tip": "Đọc 'íc' rồi 'spen', sau đó 'siv' như đang đếm tiền tiêu xài! 💰",
+    "audio_slow_text": "Íc ... k ... SPEN ... siv"
+  },
+  "giraffe": {
+    "text": "Gi-RÁP",
+    "syllables": [
+      "Gi",
+      "RÁP"
+    ],
+    "mouth_tip": "Mím môi đọc 'gi' rồi 'rápp', như hươu cao cổ đang cười thật duyên! 😊",
+    "audio_slow_text": "Gi ... RÁP"
+  },
+  "hippo": {
+    "text": "HIP-(p)-ô",
+    "syllables": [
+      "HIP-(p)",
+      "ô"
+    ],
+    "mouth_tip": "Đọc 'hip' rồi bật 'p', sau đó kéo dài 'ô' như hà mã đang ngáp! 🥱",
+    "audio_slow_text": "HIP ... p ... ô"
+  },
+  "crocodile": {
+    "text": "KROC-(k)-ơ-đai",
+    "syllables": [
+      "KROC-(k)",
+      "ơ",
+      "đai"
+    ],
+    "mouth_tip": "Đọc 'kroc' rồi bật 'k', sau đó 'ơ đai' như cá sấu đang bơi! 🐊",
+    "audio_slow_text": "KROC ... k ... ơ ... đai"
+  },
+  "penguin": {
+    "text": "PENG-guin",
+    "syllables": [
+      "PENG",
+      "guin"
+    ],
+    "mouth_tip": "Đọc 'peng' rồi 'guin' như chim cánh cụt đang đi bộ lạch bạch! 🐧",
+    "audio_slow_text": "PENG ... guin"
+  },
+  "parrot": {
+    "text": "PÉ-rờt-(t)",
+    "syllables": [
+      "PÉ",
+      "rờt-(t)"
+    ],
+    "mouth_tip": "Đọc 'pé' rồi 'rờt', đừng quên bật 't' cuối cùng như vẹt đang nói! 🦜",
+    "audio_slow_text": "PÉ ... rờt ... t"
+  },
+  "run quickly": {
+    "text": "RĂN-QUÝC-(k)-li",
+    "syllables": [
+      "RĂN",
+      "QUÝC-(k)",
+      "li"
+    ],
+    "mouth_tip": "Đọc 'răn' rồi 'quýc', bật 'k' và nói 'li' như đang chạy thật nhanh! 💨",
+    "audio_slow_text": "RĂN ... QUÝC ... k ... li"
+  },
+  "roar loudly": {
+    "text": "RO-LAU-(d)-li",
+    "syllables": [
+      "RO",
+      "LAU-(d)",
+      "li"
+    ],
+    "mouth_tip": "Đọc 'ro' rồi 'lau', bật 'd' và 'li' như sư tử đang gầm thật to! 🦁",
+    "audio_slow_text": "RO ... LAU ... d ... li"
+  },
+  "dance beautifully": {
+    "text": "DAN-(s)-BIU-TÍP-ơ-li",
+    "syllables": [
+      "DAN-(s)",
+      "BIU",
+      "TÍP",
+      "ơ",
+      "li"
+    ],
+    "mouth_tip": "Đọc 'dan' rồi bật 's', sau đó 'biu típ ơ li' như đang nhảy múa thật đẹp! 💃",
+    "audio_slow_text": "DAN ... s ... BIU ... TÍP ... ơ ... li"
+  },
+  "campfire": {
+    "text": "KEM-phai-ơ",
+    "syllables": [
+      "KEM",
+      "phai",
+      "ơ"
+    ],
+    "mouth_tip": "Đọc 'kem' rồi 'phai ơ', như đang ngồi bên lửa trại ấm áp! 🔥",
+    "audio_slow_text": "KEM ... phai ... ơ"
+  },
+  "tent": {
+    "text": "TÉNT-(t)",
+    "syllables": [
+      "TÉNT-(t)"
+    ],
+    "mouth_tip": "Đọc chữ 'tén' rồi nhấc nhẹ đầu lưỡi kêu 't' một cái! 🏕️",
+    "audio_slow_text": "TÉNT ... t"
+  },
+  "basketball": {
+    "text": "BÁT-(s)-kịt-bòl",
+    "syllables": [
+      "BÁT-(s)",
+      "kịt",
+      "bòl"
+    ],
+    "mouth_tip": "Đọc 'bát-s', 'kịt', 'bòl' nhanh nhẹn như nhảy bóng rổ! 🏀",
+    "audio_slow_text": "BÁT ... s ... kịt ... bòl"
+  },
+  "volleyball": {
+    "text": "VÓ-li-bòl",
+    "syllables": [
+      "VÓ",
+      "li",
+      "bòl"
+    ],
+    "mouth_tip": "Nói 'vó-li-bòl' như đang chuyền bóng bay cao! 🏐",
+    "audio_slow_text": "VÓ ... li ... bòl"
+  },
+  "badminton": {
+    "text": "BÁT-(d)-mìn-tần",
+    "syllables": [
+      "BÁT-(d)",
+      "mìn",
+      "tần"
+    ],
+    "mouth_tip": "Nói 'bát-d', 'mìn', 'tần' rồi nhẹ nhàng vung vợt như đánh cầu lông! 🏸",
+    "audio_slow_text": "BÁT ... d ... mìn ... tần"
+  },
+  "tennis": {
+    "text": "TÉ-nít-(s)",
+    "syllables": [
+      "TÉ",
+      "nít-(s)"
+    ],
+    "mouth_tip": "Phát âm 'té', rồi 'nít-s' như quả bóng tennis nảy tưng tưng! 🎾",
+    "audio_slow_text": "TÉ ... nít ... s"
+  },
+  "running": {
+    "text": "RĂN-nin",
+    "syllables": [
+      "RĂN",
+      "nin"
+    ],
+    "mouth_tip": "Nói 'răn', 'nin' thật nhanh như đang chạy bộ về đích! 🏃‍♀️💨",
+    "audio_slow_text": "RĂN ... nin"
+  },
+  "martial arts": {
+    "text": "MÁR-sần ÁT-(s)",
+    "syllables": [
+      "MÁR",
+      "sần",
+      "ÁT-(s)"
+    ],
+    "mouth_tip": "Đọc 'már-sần' và 'át-s' thật mạnh mẽ như các võ sĩ! 🥋💥",
+    "audio_slow_text": "MÁR ... sần ... ÁT ... s"
+  },
+  "gymnastics": {
+    "text": "Gim-NÁT-(s)-tíc-(ks)",
+    "syllables": [
+      "Gim",
+      "NÁT-(s)",
+      "tíc-(ks)"
+    ],
+    "mouth_tip": "Nói 'gim-nát-s-tíc-ks' dẻo dai như một vận động viên thể dục! 🤸‍♀️",
+    "audio_slow_text": "Gim ... NÁT ... s ... tíc ... ks"
+  },
+  "yoga": {
+    "text": "YÔ-gà",
+    "syllables": [
+      "YÔ",
+      "gà"
+    ],
+    "mouth_tip": "Kêu 'yô-gà' thật êm ái, nhẹ nhàng như đang tập yoga! 🧘‍♀️",
+    "audio_slow_text": "YÔ ... gà"
+  },
+  "computer": {
+    "text": "Cầm-PJÚ-tờ",
+    "syllables": [
+      "Cầm",
+      "PJÚ",
+      "tờ"
+    ],
+    "mouth_tip": "Đọc 'cầm-pjú-tờ' rõ ràng như chiếc máy tính đang chạy! 💻",
+    "audio_slow_text": "Cầm ... PJÚ ... tờ"
+  },
+  "phone": {
+    "text": "PHÔN",
+    "syllables": [
+      "PHÔN"
+    ],
+    "mouth_tip": "Nói 'phôn' thật to để mẹ nghe máy nha! 📞",
+    "audio_slow_text": "PHÔN"
+  },
+  "tablet": {
+    "text": "TÁP-lịt-(t)",
+    "syllables": [
+      "TÁP",
+      "lịt-(t)"
+    ],
+    "mouth_tip": "Đọc 'táp', 'lịt-t' như đang lướt trên máy tính bảng! 📱✨",
+    "audio_slow_text": "TÁP ... lịt ... t"
+  },
+  "internet": {
+    "text": "IN-tờ-nét-(t)",
+    "syllables": [
+      "IN",
+      "tờ",
+      "nét-(t)"
+    ],
+    "mouth_tip": "Nói 'in-tờ-nét-t' nhanh như mạng internet vậy! 🌐",
+    "audio_slow_text": "IN ... tờ ... nét ... t"
+  },
+  "robot": {
+    "text": "RÔ-bót-(t)",
+    "syllables": [
+      "RÔ",
+      "bót-(t)"
+    ],
+    "mouth_tip": "Kêu 'rô-bót-t' thật ngộ nghĩnh như một chú người máy! 🤖",
+    "audio_slow_text": "RÔ ... bót ... t"
+  },
+  "camera": {
+    "text": "KÉM-mờ-ra",
+    "syllables": [
+      "KÉM",
+      "mờ",
+      "ra"
+    ],
+    "mouth_tip": "Đọc 'kém-mờ-ra' rồi giơ tay tạo dáng chụp ảnh! 📸",
+    "audio_slow_text": "KÉM ... mờ ... ra"
+  },
+  "television": {
+    "text": "TÉL-li-vi-zân",
+    "syllables": [
+      "TÉL",
+      "li",
+      "vi",
+      "zân"
+    ],
+    "mouth_tip": "Đọc 'tén' rồi kéo dài chữ 'l' ra chút xíu, xong đọc 'li-vi' và bật nhẹ 'zân' nhé!",
+    "audio_slow_text": "TÉL ... li ... vi ... zân"
+  },
+  "email": {
+    "text": "I-MÊO",
+    "syllables": [
+      "I",
+      "MÊO"
+    ],
+    "mouth_tip": "Kéo dài chữ 'i' rồi đọc 'mêu' như tiếng mèo kêu nhé!",
+    "audio_slow_text": "I ... MÊO"
+  },
+  "video": {
+    "text": "VÍD-(d)-i-ô",
+    "syllables": [
+      "VÍD-(d)",
+      "i",
+      "ô"
+    ],
+    "mouth_tip": "Nói 'vít' rồi bật nhẹ đầu lưỡi kêu 'dờ' một cái, như cái video clip vậy!",
+    "audio_slow_text": "VÍD ... d ... i ... ô"
+  },
+  "keyboard": {
+    "text": "KI-bórd-(d)",
+    "syllables": [
+      "KI",
+      "bórd-(d)"
+    ],
+    "mouth_tip": "Nói 'ki' rồi đọc 'boạt' và khép môi lại, bật 'dờ' một cái thật nhẹ ở cuối nhé!",
+    "audio_slow_text": "KI ... bórd ... d"
+  },
+  "forest": {
+    "text": "PHÓR-is-(t)",
+    "syllables": [
+      "PHÓR",
+      "is-(t)"
+    ],
+    "mouth_tip": "Nói 'pho' rồi cong lưỡi, xong đọc 'ít' và bật nhẹ 'tờ' ở cuối nha!",
+    "audio_slow_text": "PHÓR ... is ... t"
+  },
+  "ocean": {
+    "text": "Ô-SÂN",
+    "syllables": [
+      "Ô",
+      "SÂN"
+    ],
+    "mouth_tip": "Nói 'ô' tròn môi rồi chu môi thổi nhẹ chữ 'sân' ra, nghe như tiếng sóng biển nha!",
+    "audio_slow_text": "Ô ... SÂN"
+  },
+  "mountain": {
+    "text": "MAUN-tin",
+    "syllables": [
+      "MAUN",
+      "tin"
+    ],
+    "mouth_tip": "Nói 'mau' rồi ngậm miệng lại nhẹ nhàng, xong đọc 'tin' như 'tin tức' nha!",
+    "audio_slow_text": "MAUN ... tin"
+  },
+  "river": {
+    "text": "RÍV-ơ",
+    "syllables": [
+      "RÍV",
+      "ơ"
+    ],
+    "mouth_tip": "Nói 'ríp' rồi khép môi nhẹ, xong đọc 'ơ' như tiếng ngạc nhiên nhé!",
+    "audio_slow_text": "RÍV ... ơ"
+  },
+  "tree": {
+    "text": "TRÍ",
+    "syllables": [
+      "TRÍ"
+    ],
+    "mouth_tip": "Nói 'trí' như trong từ 'trí tuệ' mà kéo dài âm 'i' ra nhé!",
+    "audio_slow_text": "TRÍ"
+  },
+  "flower": {
+    "text": "FLAO-ơ",
+    "syllables": [
+      "FLAO",
+      "ơ"
+    ],
+    "mouth_tip": "Nói 'flao' như tiếng 'chao' rồi thổi nhẹ 'ơ' ra cuối nhé!",
+    "audio_slow_text": "FLAO ... ơ"
+  },
+  "recycle": {
+    "text": "ri-SAIK-(k)-cơl",
+    "syllables": [
+      "ri",
+      "SAIK-(k)",
+      "cơl"
+    ],
+    "mouth_tip": "Đọc 'ri' xong nói 'saik' và bật nhẹ 'kờ' ở cuối, cuối cùng là 'cơl' nha!",
+    "audio_slow_text": "ri ... SAIK ... k ... cơl"
+  },
+  "pollution": {
+    "text": "pơ-LU-SÂN",
+    "syllables": [
+      "pơ",
+      "LU",
+      "SÂN"
+    ],
+    "mouth_tip": "Đọc 'pơ' rồi nói 'lu' thật mạnh, cuối cùng chu môi thổi nhẹ chữ 'sân' ra nhé!",
+    "audio_slow_text": "pơ ... LU ... SÂN"
+  },
+  "save water": {
+    "text": "SEIV-WÓ-tơ",
+    "syllables": [
+      "SEIV",
+      "WÓ",
+      "tơ"
+    ],
+    "mouth_tip": "Đọc 'sêv' như 'sếp', rồi nói 'wó-tờ' như 'nước' chảy róc rách nha!",
+    "audio_slow_text": "SEIV ... WÓ ... tơ"
+  },
+  "solar energy": {
+    "text": "SÔ-lơ-ÉN-ơ-dzi",
+    "syllables": [
+      "SÔ",
+      "lơ",
+      "ÉN",
+      "ơ",
+      "dzi"
+    ],
+    "mouth_tip": "Đọc 'sô-lơ' như ánh mặt trời, rồi nói 'en-ơ-dzi' như 'năng lượng' mạnh mẽ nhé!",
+    "audio_slow_text": "SÔ ... lơ ... ÉN ... ơ ... dzi"
+  },
+  "happy": {
+    "text": "HÉP-pi",
+    "syllables": [
+      "HÉP",
+      "pi"
+    ],
+    "mouth_tip": "Nói 'hép' như 'kép' mà nhẹ nhàng, rồi đọc 'pi' như 'đi' mà bật hơi ra cho thật vui vẻ nhé!",
+    "audio_slow_text": "HÉP ... pi"
+  },
+  "sad": {
+    "text": "SÁT-(d)",
+    "syllables": [
+      "SÁT-(d)"
+    ],
+    "mouth_tip": "Đọc 'sát' xong bật đầu lưỡi nhẹ nhàng 'đ' một cái! 😢",
+    "audio_slow_text": "SÁT ... d"
+  },
+  "angry": {
+    "text": "ÁN-gờ-ri",
+    "syllables": [
+      "ÁN",
+      "gờ",
+      "ri"
+    ],
+    "mouth_tip": "Đọc 'án' thật to, sau đó kéo môi lại 'gờ-ri' nha con! 😠",
+    "audio_slow_text": "ÁN ... gờ ... ri"
+  },
+  "scared": {
+    "text": "SKÉ-R-(d)",
+    "syllables": [
+      "SKÉ-R-(d)"
+    ],
+    "mouth_tip": "Đọc 'skér' hơi kéo lưỡi về sau, rồi bật nhẹ đầu lưỡi 'đ' một cái! 😨",
+    "audio_slow_text": "SKÉ ... R ... d"
+  },
+  "excited": {
+    "text": "ÍCH-SÁI-TÍT-(d)",
+    "syllables": [
+      "ÍCH",
+      "SÁI",
+      "TÍT-(d)"
+    ],
+    "mouth_tip": "Đọc 'ích-sái' thật vui vẻ, xong bật đầu lưỡi 'tít-(d)' thật nhanh nha con! 🎉",
+    "audio_slow_text": "ÍCH ... SÁI ... TÍT ... d"
+  },
+  "bored": {
+    "text": "BÓR-(d)",
+    "syllables": [
+      "BÓR-(d)"
+    ],
+    "mouth_tip": "Môi tròn lại đọc 'bór' rồi bật đầu lưỡi 'đ' một cái là đúng liền! 🥱",
+    "audio_slow_text": "BÓR ... d"
+  },
+  "tired": {
+    "text": "TÁI-ỜD-(d)",
+    "syllables": [
+      "TÁI",
+      "ỜD-(d)"
+    ],
+    "mouth_tip": "Đọc 'tái' thật mệt, sau đó nhẹ nhàng 'ờd' rồi bật 'đ' một cái! 😴",
+    "audio_slow_text": "TÁI ... ỜD ... d"
+  },
+  "surprised": {
+    "text": "SƠ-PRÁI-S-(d)",
+    "syllables": [
+      "SƠ",
+      "PRÁI-S-(d)"
+    ],
+    "mouth_tip": "Đọc 'sơ-prái' thật ngạc nhiên, chu môi nhẹ 'sờ' rồi bật 'đ' một cái! 😲",
+    "audio_slow_text": "SƠ ... PRÁI ... S ... d"
+  },
+  "proud": {
+    "text": "PRÁO-(d)",
+    "syllables": [
+      "PRÁO-(d)"
+    ],
+    "mouth_tip": "Môi tròn lại đọc 'práo' thật tự hào rồi bật đầu lưỡi 'đ' một cái! ✨",
+    "audio_slow_text": "PRÁO ... d"
+  },
+  "nervous": {
+    "text": "NƠ-VỚ-(s)",
+    "syllables": [
+      "NƠ",
+      "VỚ-(s)"
+    ],
+    "mouth_tip": "Đọc 'nơ-vớ' xong chu môi nhẹ nhàng kêu 'sờ' một cái là hết lo lắng! 😟",
+    "audio_slow_text": "NƠ ... VỚ ... s"
+  }
+}

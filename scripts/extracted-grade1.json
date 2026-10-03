@@ -1,0 +1,397 @@
+{
+  "book": "Tiếng Anh 1 - Global Success",
+  "units": [
+    {
+      "unit": 1,
+      "title": "Unit 1: In the school playground / Unit 1: Trong sân trường",
+      "topic": "School objects, Greetings",
+      "words": [
+        {
+          "en": "ball",
+          "vi": "quả bóng",
+          "phonetic": "/bɔːl/",
+          "emoji": "⚽",
+          "example_en": "B, b, ball. A ball, a ball.",
+          "example_vi": "B, b, quả bóng. Một quả bóng, một quả bóng."
+        },
+        {
+          "en": "bike",
+          "vi": "xe đạp",
+          "phonetic": "/baɪk/",
+          "emoji": "🚲",
+          "example_en": "B, b, bike. A bike, a bike.",
+          "example_vi": "B, b, xe đạp. Một chiếc xe đạp, một chiếc xe đạp."
+        },
+        {
+          "en": "book",
+          "vi": "sách",
+          "phonetic": "/bʊk/",
+          "emoji": "📚",
+          "example_en": "B, b, book. A book, a book.",
+          "example_vi": "B, b, sách. Một cuốn sách, một cuốn sách."
+        },
+        {
+          "en": "Hi",
+          "vi": "Chào",
+          "phonetic": "/haɪ/",
+          "emoji": "👋",
+          "example_en": "Hi, I'm Bill.",
+          "example_vi": "Chào, mình là Bill."
+        },
+        {
+          "en": "Bye",
+          "vi": "Tạm biệt",
+          "phonetic": "/baɪ/",
+          "emoji": "👋",
+          "example_en": "Bye, Bill.",
+          "example_vi": "Tạm biệt, Bill."
+        }
+      ]
+    },
+    {
+      "unit": 2,
+      "title": "Unit 2: In the dining room / Unit 2: Trong phòng ăn",
+      "topic": "Food, Objects",
+      "words": [
+        {
+          "en": "cake",
+          "vi": "bánh ngọt",
+          "phonetic": "/keɪk/",
+          "emoji": "🍰",
+          "example_en": "C, c, a cake. A cup and a cake.",
+          "example_vi": "C, c, một cái bánh. Một cái cốc và một cái bánh."
+        },
+        {
+          "en": "car",
+          "vi": "xe ô tô",
+          "phonetic": "/kɑː/",
+          "emoji": "🚗",
+          "example_en": "C, c, a car. A cat and a car.",
+          "example_vi": "C, c, một chiếc ô tô. Một con mèo và một chiếc ô tô."
+        },
+        {
+          "en": "cat",
+          "vi": "mèo",
+          "phonetic": "/kæt/",
+          "emoji": "🐱",
+          "example_en": "C, c, a cat. A cat and a car.",
+          "example_vi": "C, c, một con mèo. Một con mèo và một chiếc ô tô."
+        },
+        {
+          "en": "cup",
+          "vi": "cốc",
+          "phonetic": "/kʌp/",
+          "emoji": "컵",
+          "example_en": "C, c, a cup. A cup and a cake.",
+          "example_vi": "C, c, một cái cốc. Một cái cốc và một cái bánh."
+        },
+        {
+          "en": "I have a car.",
+          "vi": "Tôi có một chiếc ô tô.",
+          "phonetic": "/aɪ hæv ə kɑː/",
+          "emoji": "🚗",
+          "example_en": "I have a car.",
+          "example_vi": "Tôi có một chiếc ô tô."
+        }
+      ]
+    },
+    {
+      "unit": 3,
+      "title": "Unit 3: At the street market / Unit 3: Ở chợ đường phố",
+      "topic": "Food, Clothing, Objects",
+      "words": [
+        {
+          "en": "apple",
+          "vi": "quả táo",
+          "phonetic": "/ˈæpl/",
+          "emoji": "🍎",
+          "example_en": "A, a, apple. There's an apple in the bag.",
+          "example_vi": "A, a, quả táo. Có một quả táo trong túi."
+        },
+        {
+          "en": "bag",
+          "vi": "túi",
+          "phonetic": "/bæɡ/",
+          "emoji": "👜",
+          "example_en": "A, a, bag. This is my bag.",
+          "example_vi": "A, a, túi. Đây là túi của tôi."
+        },
+        {
+          "en": "can",
+          "vi": "lon",
+          "phonetic": "/kæn/",
+          "emoji": "🥫",
+          "example_en": "This is my can.",
+          "example_vi": "Đây là lon của tôi."
+        },
+        {
+          "en": "hat",
+          "vi": "mũ",
+          "phonetic": "/hæt/",
+          "emoji": "👒",
+          "example_en": "A, a, hat. There's a cat on the hat.",
+          "example_vi": "A, a, mũ. Có một con mèo trên mũ."
+        },
+        {
+          "en": "This is my bag.",
+          "vi": "Đây là túi của tôi.",
+          "phonetic": "/ðɪs ɪz maɪ bæɡ/",
+          "emoji": "👜",
+          "example_en": "This is my bag.",
+          "example_vi": "Đây là túi của tôi."
+        }
+      ]
+    },
+    {
+      "unit": 4,
+      "title": "Unit 4: In the bedroom / Unit 4: Trong phòng ngủ",
+      "topic": "Household objects, Animals",
+      "words": [
+        {
+          "en": "desk",
+          "vi": "bàn học",
+          "phonetic": "/desk/",
+          "emoji": "🖥️",
+          "example_en": "D, d, desk. A door and a desk.",
+          "example_vi": "D, d, bàn học. Một cái cửa và một cái bàn học."
+        },
+        {
+          "en": "dog",
+          "vi": "chó",
+          "phonetic": "/dɒɡ/",
+          "emoji": "🐶",
+          "example_en": "D, d, dog. A duck and a dog.",
+          "example_vi": "D, d, chó. Một con vịt và một con chó."
+        },
+        {
+          "en": "door",
+          "vi": "cửa ra vào",
+          "phonetic": "/dɔː/",
+          "emoji": "🚪",
+          "example_en": "D, d, door. A door and a desk.",
+          "example_vi": "D, d, cửa ra vào. Một cái cửa và một cái bàn học."
+        },
+        {
+          "en": "duck",
+          "vi": "vịt",
+          "phonetic": "/dʌk/",
+          "emoji": "🦆",
+          "example_en": "D, d, duck. A duck and a dog.",
+          "example_vi": "D, d, vịt. Một con vịt và một con chó."
+        },
+        {
+          "en": "This is a dog.",
+          "vi": "Đây là một con chó.",
+          "phonetic": "/ðɪs ɪz ə dɒɡ/",
+          "emoji": "🐶",
+          "example_en": "This is a dog.",
+          "example_vi": "Đây là một con chó."
+        },
+        {
+          "en": "window",
+          "vi": "cửa sổ",
+          "phonetic": "/ˈwɪndəʊ/",
+          "emoji": "🪟",
+          "example_en": "It's near the window.",
+          "example_vi": "Nó ở gần cửa sổ."
+        }
+      ]
+    },
+    {
+      "unit": 5,
+      "title": "Unit 5: At the fish and chip shop / Unit 5: Ở cửa hàng cá và khoai tây chiên",
+      "topic": "Food",
+      "words": [
+        {
+          "en": "chicken",
+          "vi": "gà",
+          "phonetic": "/ˈtʃɪkɪn/",
+          "emoji": "🍗",
+          "example_en": "I, i, chicken. Milk and chicken.",
+          "example_vi": "I, i, gà. Sữa và gà."
+        },
+        {
+          "en": "chips",
+          "vi": "khoai tây chiên",
+          "phonetic": "/tʃɪps/",
+          "emoji": "🍟",
+          "example_en": "I, i, chips. Fish and chips.",
+          "example_vi": "I, i, khoai tây chiên. Cá và khoai tây chiên."
+        },
+        {
+          "en": "fish",
+          "vi": "cá",
+          "phonetic": "/fɪʃ/",
+          "emoji": "🐟",
+          "example_en": "I, i, fish. Fish and chips.",
+          "example_vi": "I, i, cá. Cá và khoai tây chiên."
+        },
+        {
+          "en": "milk",
+          "vi": "sữa",
+          "phonetic": "/mɪlk/",
+          "emoji": "🥛",
+          "example_en": "I, i, milk. I like milk.",
+          "example_vi": "I, i, sữa. Tôi thích sữa."
+        },
+        {
+          "en": "like",
+          "vi": "thích",
+          "phonetic": "/laɪk/",
+          "emoji": "👍",
+          "example_en": "I like milk.",
+          "example_vi": "Tôi thích sữa."
+        }
+      ]
+    },
+    {
+      "unit": 6,
+      "title": "Unit 6: In the classroom / Unit 6: Trong lớp học",
+      "topic": "School objects, Colors",
+      "words": [
+        {
+          "en": "bell",
+          "vi": "cái chuông",
+          "phonetic": "/bel/",
+          "emoji": "🔔",
+          "example_en": "It's a red bell.",
+          "example_vi": "Đó là một cái chuông màu đỏ."
+        },
+        {
+          "en": "pen",
+          "vi": "bút mực",
+          "phonetic": "/pen/",
+          "emoji": "🖊️",
+          "example_en": "E, e, pen. It's a red pen.",
+          "example_vi": "E, e, bút mực. Đó là một chiếc bút mực màu đỏ."
+        },
+        {
+          "en": "pencil",
+          "vi": "bút chì",
+          "phonetic": "/ˈpensl/",
+          "emoji": "✏️",
+          "example_en": "E, e, pencil. It's a red pencil.",
+          "example_vi": "E, e, bút chì. Đó là một chiếc bút chì màu đỏ."
+        },
+        {
+          "en": "red",
+          "vi": "màu đỏ",
+          "phonetic": "/red/",
+          "emoji": "🔴",
+          "example_en": "E, e, red. It's red.",
+          "example_vi": "E, e, màu đỏ. Nó màu đỏ."
+        },
+        {
+          "en": "It's a red pen.",
+          "vi": "Đó là một cây bút mực màu đỏ.",
+          "phonetic": "/ɪts ə red pen/",
+          "emoji": "🖊️🔴",
+          "example_en": "It's a red pen.",
+          "example_vi": "Đó là một cây bút mực màu đỏ."
+        }
+      ]
+    },
+    {
+      "unit": 7,
+      "title": "Unit 7: In the garden / Unit 7: Trong vườn",
+      "topic": "Places, Animals, People",
+      "words": [
+        {
+          "en": "garden",
+          "vi": "khu vườn",
+          "phonetic": "/ˈɡɑːdn/",
+          "emoji": "🌳",
+          "example_en": "G, g, garden. There's a garden.",
+          "example_vi": "G, g, khu vườn. Có một khu vườn."
+        },
+        {
+          "en": "gate",
+          "vi": "cổng",
+          "phonetic": "/ɡeɪt/",
+          "emoji": " गेट",
+          "example_en": "G, g, gate. A goat and a gate.",
+          "example_vi": "G, g, cổng. Một con dê và một cái cổng."
+        },
+        {
+          "en": "girl",
+          "vi": "cô bé",
+          "phonetic": "/ɡɜːl/",
+          "emoji": "👧",
+          "example_en": "G, g, girl. A girl and a garden.",
+          "example_vi": "G, g, cô bé. Một cô bé và một khu vườn."
+        },
+        {
+          "en": "goat",
+          "vi": "con dê",
+          "phonetic": "/ɡəʊt/",
+          "emoji": "🐐",
+          "example_en": "G, g, goat. A goat and a gate.",
+          "example_vi": "G, g, con dê. Một con dê và một cái cổng."
+        },
+        {
+          "en": "There's a garden.",
+          "vi": "Có một khu vườn.",
+          "phonetic": "/ðeəz ə ˈɡɑːdn/",
+          "emoji": "🌳",
+          "example_en": "There's a garden.",
+          "example_vi": "Có một khu vườn."
+        }
+      ]
+    },
+    {
+      "unit": 8,
+      "title": "Unit 8: In the park / Unit 8: Trong công viên",
+      "topic": "Body parts, Animals",
+      "words": [
+        {
+          "en": "hair",
+          "vi": "tóc",
+          "phonetic": "/heə/",
+          "emoji": "💇",
+          "example_en": "H, h, h. Head and hair.",
+          "example_vi": "H, h, h. Đầu và tóc."
+        },
+        {
+          "en": "hand",
+          "vi": "bàn tay",
+          "phonetic": "/hænd/",
+          "emoji": "✋",
+          "example_en": "H, h, h. Hat and hands.",
+          "example_vi": "H, h, h. Mũ và bàn tay."
+        },
+        {
+          "en": "head",
+          "vi": "đầu",
+          "phonetic": "/hed/",
+          "emoji": "👤",
+          "example_en": "H, h, h. Head and hair.",
+          "example_vi": "H, h, h. Đầu và tóc."
+        },
+        {
+          "en": "horse",
+          "vi": "ngựa",
+          "phonetic": "/hɔːs/",
+          "emoji": "🐎",
+          "example_en": "H, h, h. Horse.",
+          "example_vi": "H, h, h. Ngựa."
+        },
+        {
+          "en": "Touch your hair.",
+          "vi": "Chạm vào tóc của bạn.",
+          "phonetic": "/tʌtʃ jɔː heə/",
+          "emoji": "💇",
+          "example_en": "Touch your hair.",
+          "example_vi": "Chạm vào tóc của bạn."
+        },
+        {
+          "en": "Touch your hand.",
+          "vi": "Chạm vào bàn tay của bạn.",
+          "phonetic": "/tʌtʃ jɔː hænd/",
+          "emoji": "✋",
+          "example_en": "Touch your hand.",
+          "example_vi": "Chạm vào bàn tay của bạn."
+        }
+      ]
+    }
+  ]
+}
