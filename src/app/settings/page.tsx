@@ -3,10 +3,17 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '@/hooks/useSettings';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useAdminContext } from '@/context/AdminContext';
+import {
+  getSupabaseConfig,
+  saveSupabaseConfig,
+  isSupabaseConfigured,
+  testSupabaseConnection,
+} from '@/lib/supabase';
+import { syncAllLocalToCloud } from '@/lib/supabaseSync';
 
 // ── Status badge ────────────────────────────────────────────────────────────
 function StatusBadge({ hasKey }: { hasKey: boolean }) {
@@ -41,6 +48,131 @@ export default function SettingsPage() {
   const [testResult, setTestResult] = useState<'ok' | 'fail' | null>(null);
   const [testError,  setTestError]  = useState<string>('');
   const [deleted,   setDeleted]   = useState(false);
+
+  // ── Supabase Cloud Database States ──
+  const [sbUrl, setSbUrl] = useState('');
+  const [sbKey, setSbKey] = useState('');
+  const [showSbKey, setShowSbKey] = useState(false);
+  const [sbTesting, setSbTesting] = useState(false);
+  const [sbSyncing, setSbSyncing] = useState(false);
+  const [sbStatus, setSbStatus] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [isSbConnected, setIsSbConnected] = useState(false);
+  const [copiedSchema, setCopiedSchema] = useState(false);
+
+  useEffect(() => {
+    const cfg = getSupabaseConfig();
+    setSbUrl(cfg.url);
+    setSbKey(cfg.anonKey);
+    setIsSbConnected(isSupabaseConfigured());
+  }, []);
+
+  const handleSaveSupabase = async () => {
+    const url = sbUrl.trim();
+    const key = sbKey.trim();
+    if (!url || !key) {
+      setSbStatus({ type: 'err', text: 'Vui lòng nhập cả Supabase URL và Anon Key!' });
+      return;
+    }
+
+    setSbTesting(true);
+    setSbStatus(null);
+    saveSupabaseConfig(url, key);
+
+    const testRes = await testSupabaseConnection(url, key);
+    setSbTesting(false);
+
+    if (testRes.success) {
+      setIsSbConnected(true);
+      setSbStatus({ type: 'ok', text: testRes.message });
+    } else {
+      setIsSbConnected(false);
+      setSbStatus({ type: 'err', text: testRes.message });
+    }
+  };
+
+  const handleSyncAllToCloud = async () => {
+    setSbSyncing(true);
+    setSbStatus(null);
+    const res = await syncAllLocalToCloud();
+    setSbSyncing(false);
+    if (res.success) {
+      setSbStatus({ type: 'ok', text: res.message });
+    } else {
+      setSbStatus({ type: 'err', text: res.message });
+    }
+  };
+
+  const handleCopySchema = () => {
+    const schemaSql = `-- VocaKids Database Schema
+CREATE TABLE IF NOT EXISTS public.user_profiles (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  avatar TEXT NOT NULL DEFAULT '🐰',
+  grade_id TEXT NOT NULL DEFAULT 'lop1',
+  color TEXT NOT NULL DEFAULT 'from-orange-400 to-amber-500',
+  code TEXT UNIQUE,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE TABLE IF NOT EXISTS public.user_progress (
+  id TEXT PRIMARY KEY,
+  profile_id TEXT NOT NULL,
+  cat_id TEXT NOT NULL,
+  word_id TEXT NOT NULL,
+  stars INTEGER NOT NULL DEFAULT 0,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  best_score INTEGER NOT NULL DEFAULT 0,
+  last_practiced TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE TABLE IF NOT EXISTS public.user_stickers (
+  id TEXT PRIMARY KEY,
+  profile_id TEXT NOT NULL,
+  sticker_id TEXT NOT NULL,
+  unlocked_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE TABLE IF NOT EXISTS public.user_daily_stats (
+  id TEXT PRIMARY KEY,
+  profile_id TEXT NOT NULL,
+  date TEXT NOT NULL,
+  words_studied INTEGER NOT NULL DEFAULT 0,
+  total_stars INTEGER NOT NULL DEFAULT 0,
+  streak INTEGER NOT NULL DEFAULT 1,
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE TABLE IF NOT EXISTS public.custom_categories (
+  id TEXT PRIMARY KEY,
+  name_vi TEXT NOT NULL,
+  name_en TEXT NOT NULL,
+  emoji TEXT NOT NULL DEFAULT '📚',
+  grade_id TEXT NOT NULL DEFAULT 'custom',
+  words JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_stickers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_daily_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.custom_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public user_profiles" ON public.user_profiles FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public user_progress" ON public.user_progress FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public user_stickers" ON public.user_stickers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public user_daily_stats" ON public.user_daily_stats FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public custom_categories" ON public.custom_categories FOR ALL USING (true) WITH CHECK (true);`;
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(schemaSql);
+      setCopiedSchema(true);
+      setTimeout(() => setCopiedSchema(false), 3000);
+    }
+  };
 
   const handleSave = () => {
     const key = input.trim();
@@ -527,6 +659,159 @@ export default function SettingsPage() {
               🗑️ Xóa API Key hiện tại
             </button>
           )}
+        </motion.div>
+
+        {/* ── Supabase Cloud Database ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-white rounded-3xl p-5 shadow border border-emerald-100 relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⚡</span>
+              <div>
+                <h3 className="font-black text-gray-800 text-base flex items-center gap-2">
+                  Cơ sở dữ liệu Supabase Cloud
+                </h3>
+                <p className="text-xs text-gray-500 font-medium">Đồng bộ hồ sơ, sao & sticker đa thiết bị (PostgreSQL)</p>
+              </div>
+            </div>
+            <span className={`px-2.5 py-1 rounded-full text-xs font-black ${
+              isSbConnected ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-gray-100 text-gray-500'
+            }`}>
+              {isSbConnected ? '🟢 Đã kết nối' : '⚪ Chưa kết nối'}
+            </span>
+          </div>
+
+          <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-3 mb-4 text-xs text-emerald-800 space-y-1">
+            <p className="font-bold flex items-center gap-1.5">
+              <span>💡</span> Đồng bộ dữ liệu mọi lúc, mọi nơi:
+            </p>
+            <p className="text-emerald-700 leading-relaxed">
+              Dùng <strong>Supabase (PostgreSQL Cloud)</strong> miễn phí để bé học trên điện thoại hay máy tính đều giữ nguyên điểm số, sticker và từ vựng! Nếu chưa cài, hệ thống vẫn tự lưu trên máy (Offline-first).
+            </p>
+          </div>
+
+          {/* Setup Guide Steps */}
+          <div className="bg-gray-50 rounded-2xl p-3.5 mb-4 border border-gray-100 text-xs text-gray-600 space-y-2">
+            <div className="font-bold text-gray-700 flex items-center justify-between">
+              <span>🚀 3 bước cài đặt nhanh:</span>
+              <button
+                type="button"
+                onClick={handleCopySchema}
+                className={`px-2.5 py-1 rounded-xl font-bold transition-all text-xs flex items-center gap-1 ${
+                  copiedSchema
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50'
+                }`}
+              >
+                {copiedSchema ? '✓ Đã sao chép SQL!' : '📋 Copy mã SQL Schema'}
+              </button>
+            </div>
+            <ol className="list-decimal pl-4 space-y-1 text-gray-600">
+              <li>Đăng ký/đăng nhập <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-bold underline">supabase.com ↗</a> tạo New Project.</li>
+              <li>Mở menu <strong>SQL Editor</strong>, bấm nút <em>"Copy mã SQL Schema"</em> ở trên rồi dán vào nhấn <strong>Run</strong>.</li>
+              <li>Vào <strong>Project Settings → API</strong>, copy <strong>Project URL</strong> và <strong>anon key</strong> dán vào 2 ô dưới:</li>
+            </ol>
+          </div>
+
+          {/* Form fields */}
+          <div className="space-y-3 mb-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">
+                Supabase Project URL
+              </label>
+              <input
+                type="text"
+                value={sbUrl}
+                onChange={(e) => setSbUrl(e.target.value)}
+                placeholder="https://xyzcompany.supabase.co"
+                className="w-full rounded-2xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none px-4 py-2.5 font-mono text-xs bg-gray-50 focus:bg-white transition-all"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-gray-600">
+                  Supabase Anon Public Key
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowSbKey((v) => !v)}
+                  className="text-[11px] font-bold text-gray-400 hover:text-gray-600"
+                >
+                  {showSbKey ? '🙈 Ẩn' : '👁 Xem'}
+                </button>
+              </div>
+              <input
+                type={showSbKey ? 'text' : 'password'}
+                value={sbKey}
+                onChange={(e) => setSbKey(e.target.value)}
+                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                className="w-full rounded-2xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none px-4 py-2.5 font-mono text-xs bg-gray-50 focus:bg-white transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              type="button"
+              onClick={handleSaveSupabase}
+              disabled={sbTesting}
+              className="flex-1 py-3 px-4 rounded-2xl font-black text-sm bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-200 hover:opacity-95 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+            >
+              {sbTesting ? (
+                <>
+                  <span className="animate-spin inline-block">⏳</span> Đang kiểm tra...
+                </>
+              ) : (
+                <>
+                  <span>💾</span> Lưu & Thử kết nối
+                </>
+              )}
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              type="button"
+              onClick={handleSyncAllToCloud}
+              disabled={sbSyncing || !isSbConnected}
+              className="py-3 px-4 rounded-2xl font-bold text-sm bg-emerald-50 text-emerald-700 border-2 border-emerald-200 hover:bg-emerald-100 disabled:opacity-40 transition-colors flex items-center justify-center gap-1.5"
+            >
+              {sbSyncing ? (
+                <>
+                  <span className="animate-spin inline-block">🔄</span> Đang đồng bộ...
+                </>
+              ) : (
+                <>
+                  <span>☁️</span> Đẩy dữ liệu máy lên Cloud
+                </>
+              )}
+            </motion.button>
+          </div>
+
+          {/* Status alerts */}
+          <AnimatePresence>
+            {sbStatus && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className={`mt-3 p-3 rounded-2xl border flex items-start gap-2 text-xs font-semibold ${
+                  sbStatus.type === 'ok'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                    : 'bg-rose-50 border-rose-300 text-rose-800'
+                }`}
+              >
+                <span className="text-base">{sbStatus.type === 'ok' ? '🎉' : '⚠️'}</span>
+                <p className="mt-0.5">{sbStatus.text}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* ── Security note ── */}

@@ -1,3 +1,4 @@
+import type { Metadata, Viewport } from 'next';
 import { Nunito, Baloo_2, Lexend, Andika } from 'next/font/google';
 import { AppProviders } from '@/components/AppProviders';
 import './globals.css';

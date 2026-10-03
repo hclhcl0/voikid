@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { UserProfile, AppProgress } from '@/types';
+import { getSupabase, testSupabaseConnection } from '@/lib/supabase';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const STORE_FILE = path.join(DATA_DIR, 'profiles_store.json');
@@ -76,7 +77,6 @@ function saveStore(data: StoreData) {
 
 /** Generate a friendly, memorable code for a child like BONG88, AN26, KID12 */
 function generateCode(name: string, existingCodes: Set<string>): string {
-  // Remove Vietnamese diacritics and non-alphanumeric
   const clean = name
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -88,7 +88,7 @@ function generateCode(name: string, existingCodes: Set<string>): string {
   const prefix = clean.replace(/^BE/, '').slice(0, 5) || 'KID';
   
   for (let i = 0; i < 50; i++) {
-    const num = Math.floor(10 + Math.random() * 90); // 2-digit number (10-99)
+    const num = Math.floor(10 + Math.random() * 90);
     const candidate = `${prefix}${num}`;
     if (!existingCodes.has(candidate)) {
       return candidate;
@@ -103,8 +103,67 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('q')?.trim().toLowerCase() || '';
 
-  const store = ensureStore();
+  // 1. Thử truy vấn từ Supabase Cloud trước nếu đã cấu hình
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .order('created_at', { ascending: true });
 
+      if (!error && Array.isArray(data) && data.length > 0) {
+        // Lấy tổng số sao từ bảng user_progress
+        const { data: progRows } = await supabase
+          .from('user_progress')
+          .select('profile_id, stars');
+
+        const starsMap: Record<string, number> = {};
+        if (progRows) {
+          for (const row of progRows) {
+            starsMap[row.profile_id] = (starsMap[row.profile_id] || 0) + (row.stars || 0);
+          }
+        }
+
+        let cloudProfiles: UserProfile[] = data.map((row: any) => ({
+          id: row.id,
+          name: row.name,
+          avatar: row.avatar || '🐰',
+          gradeId: row.grade_id || 'lop1',
+          color: row.color || 'from-orange-400 to-amber-500',
+          code: row.code,
+          createdAt: row.created_at ? row.created_at.split('T')[0] : '2026-10-02',
+        }));
+
+        if (query) {
+          cloudProfiles = cloudProfiles.filter((p) => {
+            const matchName = p.name.toLowerCase().includes(query);
+            const matchCode = (p.code || '').toLowerCase().includes(query);
+            const matchId = p.id.toLowerCase() === query;
+            return matchName || matchCode || matchId;
+          });
+        }
+
+        const profilesWithStars = cloudProfiles.map((p) => ({
+          ...p,
+          totalStars: starsMap[p.id] || 0,
+          streak: 1,
+        }));
+
+        return NextResponse.json({
+          success: true,
+          profiles: profilesWithStars,
+          totalCount: cloudProfiles.length,
+          source: 'supabase_cloud',
+        });
+      }
+    } catch (err) {
+      console.warn('Supabase GET profiles failed, fallback to local store:', err);
+    }
+  }
+
+  // 2. Fallback sang local store (JSON file)
+  const store = ensureStore();
   let list = store.profiles;
   if (query) {
     list = list.filter((p) => {
@@ -115,7 +174,6 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Attach totalStars to each profile summary
   const profilesWithStars = list.map((p) => {
     const prog = store.progresses[p.id];
     return {
@@ -129,6 +187,7 @@ export async function GET(req: NextRequest) {
     success: true,
     profiles: profilesWithStars,
     totalCount: store.profiles.length,
+    source: 'local_file',
   });
 }
 
@@ -139,6 +198,13 @@ export async function POST(req: NextRequest) {
     const { action } = body;
     const store = ensureStore();
     const existingCodes = new Set(store.profiles.map((p) => (p.code || '').toUpperCase()));
+    const supabase = getSupabase();
+
+    // ── Action: TEST_SUPABASE ──
+    if (action === 'test_supabase') {
+      const result = await testSupabaseConnection(body.url, body.anonKey);
+      return NextResponse.json(result);
+    }
 
     // ── Action: LOGIN (by name or account code) ──
     if (action === 'login') {
@@ -153,7 +219,83 @@ export async function POST(req: NextRequest) {
       const qNorm = query.toLowerCase();
       const qCode = query.toUpperCase();
 
-      // Find by exact code match first, then by name match
+      // Kiểm tra Supabase Cloud trước nếu có
+      if (supabase) {
+        try {
+          const { data: cloudMatches } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .or(`code.eq.${qCode},name.ilike.%${query}%`);
+
+          if (cloudMatches && cloudMatches.length > 0) {
+            const matchedRow = cloudMatches[0];
+            const p: UserProfile = {
+              id: matchedRow.id,
+              name: matchedRow.name,
+              avatar: matchedRow.avatar || '🐰',
+              gradeId: matchedRow.grade_id || 'lop1',
+              color: matchedRow.color || 'orange',
+              code: matchedRow.code,
+              createdAt: matchedRow.created_at ? matchedRow.created_at.split('T')[0] : '2026-10-02',
+            };
+
+            // Lấy progress từ user_progress
+            const { data: progData } = await supabase
+              .from('user_progress')
+              .select('*')
+              .eq('profile_id', p.id);
+
+            const wpMap: Record<string, any> = {};
+            let totalStars = 0;
+            if (progData) {
+              for (const row of progData) {
+                wpMap[row.word_id] = {
+                  wordId: row.word_id,
+                  catId: row.cat_id,
+                  stars: row.stars,
+                  attempts: row.attempts,
+                  bestScore: row.best_score,
+                  lastPracticed: row.last_practiced,
+                };
+                totalStars += row.stars || 0;
+              }
+            }
+
+            // Lấy stickers từ user_stickers
+            const { data: stickerRows } = await supabase
+              .from('user_stickers')
+              .select('sticker_id')
+              .eq('profile_id', p.id);
+
+            const stickers = stickerRows ? stickerRows.map((r: any) => r.sticker_id) : [];
+
+            const progress: AppProgress = {
+              totalStars,
+              streak: 1,
+              lastActiveDate: new Date().toISOString().split('T')[0],
+              wordProgress: wpMap,
+              dailyStats: [],
+              stickers,
+              badges: [],
+              unitTestResults: {},
+              unlockedUnits: [],
+              totalPoints: totalStars * 10,
+            };
+
+            return NextResponse.json({
+              success: true,
+              profile: p,
+              progress,
+              source: 'supabase_cloud',
+              message: `Chào mừng ${p.name} đã đăng nhập từ Supabase Cloud! 🎉`,
+            });
+          }
+        } catch (err) {
+          console.warn('Supabase login check error:', err);
+        }
+      }
+
+      // Local fallback
       let matched = store.profiles.find((p) => (p.code || '').toUpperCase() === qCode);
       if (!matched) {
         matched = store.profiles.find((p) => p.name.toLowerCase() === qNorm);
@@ -181,6 +323,7 @@ export async function POST(req: NextRequest) {
         success: true,
         profile: matched,
         progress,
+        source: 'local_file',
         message: `Chào mừng ${matched.name} đã đăng nhập! 🎉`,
       });
     }
@@ -203,7 +346,7 @@ export async function POST(req: NextRequest) {
         name: pData.name.trim(),
         avatar: pData.avatar || '🐰',
         gradeId: pData.gradeId || 'lop1',
-        color: pData.color || 'orange',
+        color: pData.color || 'from-orange-400 to-amber-500',
         createdAt: pData.createdAt || new Date().toISOString().split('T')[0],
         code,
       };
@@ -218,8 +361,24 @@ export async function POST(req: NextRequest) {
         dailyStats: [],
       };
       store.progresses[id] = initialProg;
-
       saveStore(store);
+
+      // Đồng bộ ngay lên Supabase nếu có
+      if (supabase) {
+        try {
+          await supabase.from('user_profiles').upsert({
+            id: newProfile.id,
+            name: newProfile.name,
+            avatar: newProfile.avatar,
+            grade_id: newProfile.gradeId,
+            color: newProfile.color,
+            code: newProfile.code,
+            updated_at: new Date().toISOString(),
+          });
+        } catch (e) {
+          console.warn('Supabase upsert on create failed:', e);
+        }
+      }
 
       return NextResponse.json({
         success: true,
@@ -241,7 +400,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, message: 'Thiếu dữ liệu progress' }, { status: 400 });
       }
 
-      // If profile does not exist in store, but incoming has profile info, register it
+      // Đảm bảo profile tồn tại trong store
       if (!store.profiles.some((p) => p.id === profileId) && body.profile) {
         const p = body.profile;
         const code = p.code?.toUpperCase() || generateCode(p.name, existingCodes);
@@ -264,7 +423,6 @@ export async function POST(req: NextRequest) {
         dailyStats: [],
       };
 
-      // Smart merge: take higher stars, latest active date, merged wordProgress
       const mergedWordProgress = { ...current.wordProgress };
       for (const [key, wp] of Object.entries(incomingProg.wordProgress || {})) {
         if (!mergedWordProgress[key] || wp.stars > mergedWordProgress[key].stars) {
@@ -288,6 +446,54 @@ export async function POST(req: NextRequest) {
       store.progresses[profileId] = mergedProgress;
       saveStore(store);
 
+      // Đẩy lên Supabase Cloud
+      if (supabase) {
+        try {
+          // 1. Cập nhật profile
+          if (body.profile) {
+            await supabase.from('user_profiles').upsert({
+              id: profileId,
+              name: body.profile.name,
+              avatar: body.profile.avatar,
+              grade_id: body.profile.gradeId,
+              color: body.profile.color,
+              code: body.profile.code,
+              updated_at: new Date().toISOString(),
+            });
+          }
+
+          // 2. Cập nhật các từ vựng có sao
+          const progressRows = Object.values(mergedWordProgress).map((wp) => ({
+            id: `${profileId}:${wp.wordId}`,
+            profile_id: profileId,
+            cat_id: wp.catId,
+            word_id: wp.wordId,
+            stars: wp.stars,
+            attempts: wp.attempts,
+            best_score: wp.bestScore,
+            last_practiced: wp.lastPracticed,
+            updated_at: new Date().toISOString(),
+          }));
+
+          if (progressRows.length > 0) {
+            await supabase.from('user_progress').upsert(progressRows, { onConflict: 'id' });
+          }
+
+          // 3. Cập nhật sticker
+          if (mergedProgress.stickers && mergedProgress.stickers.length > 0) {
+            const stickerRows = mergedProgress.stickers.map((sid) => ({
+              id: `${profileId}:${sid}`,
+              profile_id: profileId,
+              sticker_id: sid,
+              unlocked_at: new Date().toISOString(),
+            }));
+            await supabase.from('user_stickers').upsert(stickerRows, { onConflict: 'id' });
+          }
+        } catch (e) {
+          console.warn('Supabase background sync failed:', e);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         progress: mergedProgress,
@@ -310,6 +516,22 @@ export async function POST(req: NextRequest) {
       };
 
       saveStore(store);
+
+      if (supabase) {
+        try {
+          await supabase.from('user_profiles').update({
+            name: store.profiles[idx].name,
+            avatar: store.profiles[idx].avatar,
+            grade_id: store.profiles[idx].gradeId,
+            color: store.profiles[idx].color,
+            code: store.profiles[idx].code,
+            updated_at: new Date().toISOString(),
+          }).eq('id', profileId);
+        } catch (e) {
+          console.warn('Supabase update profile failed:', e);
+        }
+      }
+
       return NextResponse.json({ success: true, profile: store.profiles[idx] });
     }
 
@@ -319,6 +541,18 @@ export async function POST(req: NextRequest) {
       store.profiles = store.profiles.filter((p) => p.id !== profileId);
       delete store.progresses[profileId];
       saveStore(store);
+
+      if (supabase) {
+        try {
+          await supabase.from('user_profiles').delete().eq('id', profileId);
+          await supabase.from('user_progress').delete().eq('profile_id', profileId);
+          await supabase.from('user_stickers').delete().eq('profile_id', profileId);
+          await supabase.from('user_daily_stats').delete().eq('profile_id', profileId);
+        } catch (e) {
+          console.warn('Supabase delete profile failed:', e);
+        }
+      }
+
       return NextResponse.json({ success: true });
     }
 

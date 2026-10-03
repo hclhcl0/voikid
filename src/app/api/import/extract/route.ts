@@ -238,8 +238,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Extraction failed', details: String(err) }, { status: 500 });
   }
 }
-
-// Increase body size limit to 20MB for PDFs
-export const config = {
-  api: { bodyParser: false },
-};
