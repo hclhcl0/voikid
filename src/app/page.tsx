@@ -186,10 +186,10 @@ function UnitCard({
               ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
               : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100'
           }`}
-          title="Làm bài kiểm tra 10 câu để nhận Sticker"
+          title="Luyện tập 8 dạng bài & làm bài thi nhận Sticker"
         >
-          <span>📋</span>
-          <span>Thi {canTest ? '⭐' : ''}</span>
+          <span>🎯</span>
+          <span>Luyện & Thi {canTest ? '⭐' : ''}</span>
         </Link>
       </div>
     </motion.div>

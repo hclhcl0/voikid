@@ -21,11 +21,507 @@
   ],
   "progresses": {
     "default": {
-      "totalStars": 0,
-      "streak": 0,
-      "lastActiveDate": "",
-      "wordProgress": {},
-      "dailyStats": []
+      "totalStars": 96,
+      "streak": 1,
+      "lastActiveDate": "2026-10-03",
+      "wordProgress": {
+        "lop4_u1_friends:l4_viet_nam": {
+          "wordId": "l4_viet_nam",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_america": {
+          "wordId": "l4_america",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_australia": {
+          "wordId": "l4_australia",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_britain": {
+          "wordId": "l4_britain",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 2,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_japan": {
+          "wordId": "l4_japan",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_malaysia": {
+          "wordId": "l4_malaysia",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_singapore": {
+          "wordId": "l4_singapore",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_thailand": {
+          "wordId": "l4_thailand",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_bangkok": {
+          "wordId": "l4_bangkok",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_london": {
+          "wordId": "l4_london",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_sydney": {
+          "wordId": "l4_sydney",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop4_u1_friends:l4_tokyo": {
+          "wordId": "l4_tokyo",
+          "catId": "lop4_u1_friends",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:cat": {
+          "wordId": "cat",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:dog": {
+          "wordId": "dog",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:bird": {
+          "wordId": "bird",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:fish": {
+          "wordId": "fish",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:elephant": {
+          "wordId": "elephant",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:lion": {
+          "wordId": "lion",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:rabbit": {
+          "wordId": "rabbit",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:duck": {
+          "wordId": "duck",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:monkey": {
+          "wordId": "monkey",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "animals:tiger": {
+          "wordId": "tiger",
+          "catId": "animals",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:reading": {
+          "wordId": "reading",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:drawing": {
+          "wordId": "drawing",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:singing": {
+          "wordId": "singing",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:dancing": {
+          "wordId": "dancing",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:swimming": {
+          "wordId": "swimming",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:cycling": {
+          "wordId": "cycling",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:cooking": {
+          "wordId": "cooking",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:gaming": {
+          "wordId": "gaming",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:painting": {
+          "wordId": "painting",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "hobbies:gardening": {
+          "wordId": "gardening",
+          "catId": "hobbies",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 0,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop5_unit1:l5_u1_city": {
+          "wordId": "l5_u1_city",
+          "catId": "lop5_unit1",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 90,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop5_unit1:l5_u1_class": {
+          "wordId": "l5_u1_class",
+          "catId": "lop5_unit1",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 90,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop5_unit1:l5_u1_countryside": {
+          "wordId": "l5_u1_countryside",
+          "catId": "lop5_unit1",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 90,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop5_unit1:l5_u1_dolphin": {
+          "wordId": "l5_u1_dolphin",
+          "catId": "lop5_unit1",
+          "stars": 0,
+          "attempts": 1,
+          "bestScore": 30,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop5_unit1:l5_u1_pink": {
+          "wordId": "l5_u1_pink",
+          "catId": "lop5_unit1",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 90,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop5_unit1:l5_u1_sandwich": {
+          "wordId": "l5_u1_sandwich",
+          "catId": "lop5_unit1",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 90,
+          "lastPracticed": "2026-10-03"
+        },
+        "lop5_unit1:l5_u1_table_tennis": {
+          "wordId": "l5_u1_table_tennis",
+          "catId": "lop5_unit1",
+          "stars": 3,
+          "attempts": 1,
+          "bestScore": 90,
+          "lastPracticed": "2026-10-03"
+        }
+      },
+      "dailyStats": [
+        {
+          "date": "2026-10-03",
+          "wordsStudied": 7,
+          "totalStars": 18,
+          "streak": 0
+        }
+      ],
+      "stickers": [
+        {
+          "id": "lop4_u2_time_test_excellent",
+          "name": "Ngôi Sao Xuất Sắc",
+          "emoji": "🌟",
+          "tier": "rare",
+          "setId": "unit_test",
+          "unitId": "lop4_u2_time",
+          "condition": "Đạt bài kiểm tra Unit 2: Thời Gian & Thói Quen hạng excellent",
+          "earnedAt": "2026-10-03T05:14:08.832Z"
+        },
+        {
+          "id": "lop4_u1_friends_test_excellent",
+          "name": "Ngôi Sao Xuất Sắc",
+          "emoji": "🌟",
+          "tier": "rare",
+          "setId": "unit_test",
+          "unitId": "lop4_u1_friends",
+          "condition": "Đạt bài kiểm tra Unit 1: Bạn Bè & Quốc Gia hạng excellent",
+          "earnedAt": "2026-10-03T05:15:24.547Z"
+        },
+        {
+          "id": "lop4_u3_week_test_pass",
+          "name": "Chiến Thắng!",
+          "emoji": "🎉",
+          "tier": "basic",
+          "setId": "unit_test",
+          "unitId": "lop4_u3_week",
+          "condition": "Đạt bài kiểm tra Unit 3: Các Ngày Trong Tuần hạng pass",
+          "earnedAt": "2026-10-03T05:16:42.992Z"
+        },
+        {
+          "id": "lop5_unit1_test_pass",
+          "name": "Chiến Thắng!",
+          "emoji": "🎉",
+          "tier": "basic",
+          "setId": "unit_test",
+          "unitId": "lop5_unit1",
+          "condition": "Đạt bài kiểm tra Unit 1: Tất Cả Về Tôi hạng pass",
+          "earnedAt": "2026-10-03T05:17:30.105Z"
+        },
+        {
+          "id": "lop4_u4_birthday_test_good",
+          "name": "Sao Học Giỏi",
+          "emoji": "⭐",
+          "tier": "star",
+          "setId": "unit_test",
+          "unitId": "lop4_u4_birthday",
+          "condition": "Đạt bài kiểm tra Unit 4: Sinh Nhật & 12 Tháng hạng good",
+          "earnedAt": "2026-10-03T05:18:50.711Z"
+        },
+        {
+          "id": "colors_test_excellent",
+          "name": "Ngôi Sao Xuất Sắc",
+          "emoji": "🌟",
+          "tier": "rare",
+          "setId": "unit_test",
+          "unitId": "colors",
+          "condition": "Đạt bài kiểm tra Màu Sắc hạng excellent",
+          "earnedAt": "2026-10-03T05:20:04.291Z"
+        },
+        {
+          "id": "lop5_unit2_test_pass",
+          "name": "Chiến Thắng!",
+          "emoji": "🎉",
+          "tier": "basic",
+          "setId": "unit_test",
+          "unitId": "lop5_unit2",
+          "condition": "Đạt bài kiểm tra Unit 2: Ngôi Nhà Của Chúng Tôi hạng pass",
+          "earnedAt": "2026-10-03T05:21:16.236Z"
+        }
+      ],
+      "badges": [],
+      "unitTestResults": {
+        "lop4_u1_friends": {
+          "unitId": "lop4_u1_friends",
+          "score": 97,
+          "grade": "excellent",
+          "attempts": 1,
+          "fastAnswers": 4,
+          "streak": 4,
+          "completedAt": "2026-10-03T05:15:24.546Z"
+        },
+        "animals": {
+          "unitId": "animals",
+          "score": 115,
+          "grade": "excellent",
+          "attempts": 1,
+          "fastAnswers": 5,
+          "streak": 6,
+          "completedAt": "2026-10-03T05:03:26.978Z"
+        },
+        "hobbies": {
+          "unitId": "hobbies",
+          "score": 164,
+          "grade": "excellent",
+          "attempts": 3,
+          "fastAnswers": 8,
+          "streak": 10,
+          "completedAt": "2026-10-03T05:12:45.497Z"
+        },
+        "lop4_u2_time": {
+          "unitId": "lop4_u2_time",
+          "score": 91,
+          "grade": "excellent",
+          "attempts": 1,
+          "fastAnswers": 2,
+          "streak": 5,
+          "completedAt": "2026-10-03T05:14:08.831Z"
+        },
+        "lop1_school": {
+          "unitId": "lop1_school",
+          "score": 167,
+          "grade": "excellent",
+          "attempts": 1,
+          "fastAnswers": 9,
+          "streak": 10,
+          "completedAt": "2026-10-03T05:16:08.479Z"
+        },
+        "lop4_u3_week": {
+          "unitId": "lop4_u3_week",
+          "score": 59,
+          "grade": "pass",
+          "attempts": 1,
+          "fastAnswers": 3,
+          "streak": 2,
+          "completedAt": "2026-10-03T05:16:42.991Z"
+        },
+        "lop5_unit1": {
+          "unitId": "lop5_unit1",
+          "score": 52,
+          "grade": "pass",
+          "attempts": 1,
+          "fastAnswers": 4,
+          "streak": 2,
+          "completedAt": "2026-10-03T05:17:30.105Z"
+        },
+        "lop1_body_play": {
+          "unitId": "lop1_body_play",
+          "score": 133,
+          "grade": "excellent",
+          "attempts": 1,
+          "fastAnswers": 6,
+          "streak": 6,
+          "completedAt": "2026-10-03T05:18:22.718Z"
+        },
+        "lop4_u4_birthday": {
+          "unitId": "lop4_u4_birthday",
+          "score": 86,
+          "grade": "good",
+          "attempts": 1,
+          "fastAnswers": 2,
+          "streak": 4,
+          "completedAt": "2026-10-03T05:18:50.710Z"
+        },
+        "colors": {
+          "unitId": "colors",
+          "score": 146,
+          "grade": "excellent",
+          "attempts": 1,
+          "fastAnswers": 2,
+          "streak": 10,
+          "completedAt": "2026-10-03T05:20:04.290Z"
+        },
+        "lop5_unit2": {
+          "unitId": "lop5_unit2",
+          "score": 59,
+          "grade": "pass",
+          "attempts": 1,
+          "fastAnswers": 3,
+          "streak": 4,
+          "completedAt": "2026-10-03T05:21:16.234Z"
+        }
+      },
+      "unlockedUnits": [],
+      "totalPoints": 350
     },
     "child_1790991294905_1jb3": {
       "totalStars": 18,
