@@ -19,7 +19,6 @@ scratch
 scripts
 data
 *.py
-*.mjs
 *.sh
 
 # Environment files (injected at runtime via Coolify)
