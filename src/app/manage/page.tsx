@@ -4,9 +4,10 @@ import { useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCustomCategories, CustomCategory } from '@/hooks/useCustomCategories';
+import { useCustomCategories, CustomCategory, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
 import { useAdminContext } from '@/context/AdminContext';
 import { Word } from '@/types';
+import { WordImage } from '@/components/WordImage';
 
 const EMOJIS_PRESET = ['📚','🎓','✏️','🌍','🏫','🎯','🌟','📖','🧠','🏆','🎪','🌈','🦁','🌺','🚀','🎵','🐶','🐱','🍎','🍌'];
 
@@ -41,10 +42,14 @@ export default function ManageVocabularyPage() {
     emoji: '📝',
     example_en: '',
     example_vi: '',
+    image_url: undefined,
   });
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // AI Image Generation state
+  const [generatingImage, setGeneratingImage] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ type, message });
@@ -76,6 +81,39 @@ export default function ManageVocabularyPage() {
       u.lang = 'en-US';
       u.rate = 0.85;
       window.speechSynthesis.speak(u);
+    }
+  };
+
+  // AI Image Generation Handler
+  const handleGenerateImage = async (enWord: string, viWord: string, emojiChar: string, isDraft: boolean) => {
+    if (!enWord.trim()) {
+      showToast('Vui lòng nhập từ tiếng Anh trước!', 'error');
+      return;
+    }
+    setGeneratingImage(true);
+    try {
+      const res = await fetch('/api/word/image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: enWord.trim(), vi: viWord, emoji: emojiChar }),
+      });
+      const data = await res.json();
+      if (data.success && data.imageUrl) {
+        if (isDraft) {
+          setNewWordDraft((prev) => ({ ...prev, image_url: data.imageUrl }));
+        } else if (editingWord) {
+          setEditingWord({ ...editingWord, word: { ...editingWord.word, image_url: data.imageUrl } });
+        }
+        showToast('AI đã tạo ảnh minh họa! 🎨');
+      } else if (data.error === 'NO_API_KEY') {
+        showToast('Chưa có API Key Gemini. Vào cài đặt để nhập key!', 'error');
+      } else {
+        showToast('Không tạo được ảnh. Thử lại sau!', 'error');
+      }
+    } catch {
+      showToast('Lỗi kết nối AI tạo ảnh.', 'error');
+    } finally {
+      setGeneratingImage(false);
     }
   };
 
@@ -211,7 +249,7 @@ export default function ManageVocabularyPage() {
       example_en: '',
       example_vi: '',
     });
-    showToast(`Đã thêm từ "${wordToAdd.en}" vào chủ đề! 👏`);
+    showToast(`Đã thêm từ "${wordToAdd.en}" vào chủ đề và tự động cập nhật vào mục Từ Mới! 👏`);
   };
 
   const { isAdmin, openAdminModal, logoutAdmin } = useAdminContext();
@@ -271,56 +309,58 @@ export default function ManageVocabularyPage() {
       />
 
       {/* ── HEADER ── */}
-      <header className="bg-white/90 backdrop-blur sticky top-0 z-40 border-b border-orange-100 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => router.back()}
-              className="w-9 h-9 rounded-2xl bg-orange-100/70 hover:bg-orange-200/70 flex items-center justify-center font-black text-orange-700 transition-colors"
-              title="Quay lại"
-            >
-              ←
-            </button>
-            <Link
-              href="/"
-              className="w-9 h-9 rounded-2xl bg-orange-100/70 hover:bg-orange-200/70 flex items-center justify-center font-black text-orange-700 transition-colors shadow-xs"
-              title="Về trang chủ"
-            >
-              🏠
-            </Link>
+      <header className="bg-white/90 backdrop-blur sticky top-0 z-40 border-b border-orange-100 px-4 py-3 shadow-2xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between w-full">
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => router.back()}
+                className="w-10 h-10 rounded-2xl bg-orange-100/70 hover:bg-orange-200/70 flex items-center justify-center font-black text-orange-700 transition-colors cursor-pointer"
+                title="Quay lại"
+              >
+                ←
+              </button>
+              <Link
+                href="/"
+                className="w-10 h-10 rounded-2xl bg-orange-100/70 hover:bg-orange-200/70 flex items-center justify-center font-black text-orange-700 transition-colors shadow-xs cursor-pointer"
+                title="Về trang chủ"
+              >
+                🏠
+              </Link>
+            </div>
+            <div>
+              <h1 className="font-black text-lg md:text-xl text-gray-800 leading-tight">📚 Quản lý từ vựng</h1>
+              <p className="text-xs text-gray-500 font-semibold truncate">Chỉnh sửa, xóa &amp; sao lưu từ tự thêm</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-black text-lg text-gray-800 leading-tight">📚 Quản lý từ vựng</h1>
-            <p className="text-xs text-gray-500 font-semibold truncate">Chỉnh sửa, xóa &amp; sao lưu từ tự thêm</p>
-          </div>
-        </div>
 
-        {/* Action icons */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={logoutAdmin}
-            title="Khóa quyền Admin"
-            className="px-2.5 py-1.5 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
-          >
-            <span>🔒</span>
-            <span className="hidden sm:inline">Khóa</span>
-          </button>
-          <button
-            onClick={handleExport}
-            title="Xuất file JSON sao lưu"
-            className="px-2.5 py-1.5 rounded-xl bg-orange-100/70 hover:bg-orange-200/80 text-orange-800 text-xs font-bold flex items-center gap-1 transition-all"
-          >
-            <span>📤</span>
-            <span className="hidden sm:inline">Xuất JSON</span>
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            title="Nhập file JSON sao lưu"
-            className="px-2.5 py-1.5 rounded-xl bg-violet-100/80 hover:bg-violet-200 text-violet-800 text-xs font-bold flex items-center gap-1 transition-all"
-          >
-            <span>📥</span>
-            <span className="hidden sm:inline">Nhập JSON</span>
-          </button>
+          {/* Action icons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={logoutAdmin}
+              title="Khóa quyền Admin"
+              className="px-3 py-2 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+            >
+              <span>🔒</span>
+              <span className="hidden sm:inline">Khóa</span>
+            </button>
+            <button
+              onClick={handleExport}
+              title="Xuất file JSON sao lưu"
+              className="px-3 py-2 rounded-xl bg-orange-100/70 hover:bg-orange-200/80 text-orange-800 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+            >
+              <span>📤</span>
+              <span className="hidden sm:inline">Xuất JSON</span>
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              title="Nhập file JSON sao lưu"
+              className="px-3 py-2 rounded-xl bg-violet-100/80 hover:bg-violet-200 text-violet-800 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+            >
+              <span>📥</span>
+              <span className="hidden sm:inline">Nhập JSON</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -343,22 +383,40 @@ export default function ManageVocabularyPage() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
+      <div className="max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
         {/* ── STATS CARD ── */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white/80 backdrop-blur rounded-3xl p-4 border-2 border-orange-100 shadow-sm flex items-center gap-3">
-            <span className="text-3xl p-2.5 bg-orange-100/60 rounded-2xl">🗂️</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+          <div className="bg-white/80 backdrop-blur rounded-3xl p-4 sm:p-5 border-2 border-orange-100 shadow-sm flex items-center gap-3">
+            <span className="text-3xl sm:text-4xl p-2.5 bg-orange-100/60 rounded-2xl">🗂️</span>
             <div>
-              <p className="font-black text-2xl text-gray-800 leading-none">{categories.length}</p>
+              <p className="font-black text-2xl sm:text-3xl text-gray-800 leading-none">{categories.length}</p>
               <p className="text-xs text-gray-500 font-bold mt-1">Chủ đề tự tạo</p>
             </div>
           </div>
-          <div className="bg-white/80 backdrop-blur rounded-3xl p-4 border-2 border-orange-100 shadow-sm flex items-center gap-3">
-            <span className="text-3xl p-2.5 bg-violet-100/60 rounded-2xl">📝</span>
+          <div className="bg-white/80 backdrop-blur rounded-3xl p-4 sm:p-5 border-2 border-orange-100 shadow-sm flex items-center gap-3">
+            <span className="text-3xl sm:text-4xl p-2.5 bg-violet-100/60 rounded-2xl">📝</span>
             <div>
-              <p className="font-black text-2xl text-gray-800 leading-none">{totalWords}</p>
+              <p className="font-black text-2xl sm:text-3xl text-gray-800 leading-none">{totalWords}</p>
               <p className="text-xs text-gray-500 font-bold mt-1">Từ vựng đã thêm</p>
+            </div>
+          </div>
+          <div className="bg-white/80 backdrop-blur rounded-3xl p-4 sm:p-5 border-2 border-orange-100 shadow-sm flex items-center gap-3">
+            <span className="text-3xl sm:text-4xl p-2.5 bg-emerald-100/60 rounded-2xl">🌟</span>
+            <div>
+              <p className="font-black text-2xl sm:text-3xl text-gray-800 leading-none">
+                {categories.find((c) => c.id === NEW_WORDS_CAT_ID)?.words.length ?? 0}
+              </p>
+              <p className="text-xs text-gray-500 font-bold mt-1">Từ mới của bé</p>
+            </div>
+          </div>
+          <div className="bg-white/80 backdrop-blur rounded-3xl p-4 sm:p-5 border-2 border-orange-100 shadow-sm flex items-center gap-3">
+            <span className="text-3xl sm:text-4xl p-2.5 bg-amber-100/60 rounded-2xl">🎯</span>
+            <div>
+              <p className="font-black text-2xl sm:text-3xl text-gray-800 leading-none">
+                {categories.filter((c) => c.id !== NEW_WORDS_CAT_ID).length}
+              </p>
+              <p className="text-xs text-gray-500 font-bold mt-1">Chủ đề bài học</p>
             </div>
           </div>
         </div>
@@ -407,38 +465,68 @@ export default function ManageVocabularyPage() {
         <div className="space-y-3">
           {filteredCategories.map((cat) => {
             const isExpanded = expandedCat === cat.id;
+            const isNewWordsCat = cat.id === NEW_WORDS_CAT_ID;
 
             return (
               <motion.div
                 key={cat.id}
                 layout
-                className="bg-white rounded-3xl border-2 border-orange-100 shadow-sm overflow-hidden"
+                className={`rounded-3xl border-2 shadow-sm overflow-hidden ${
+                  isNewWordsCat
+                    ? 'bg-gradient-to-r from-amber-50/50 via-white to-orange-50/50 border-amber-300 ring-2 ring-amber-200/50'
+                    : 'bg-white border-orange-100'
+                }`}
               >
                 {/* Category Header */}
                 <div
                   onClick={() => setExpandedCat(isExpanded ? null : cat.id)}
-                  className="p-4 flex items-center gap-3 cursor-pointer hover:bg-orange-50/40 transition-colors"
+                  className={`p-4 flex items-center gap-3 cursor-pointer transition-colors ${
+                    isNewWordsCat ? 'hover:bg-amber-100/40' : 'hover:bg-orange-50/40'
+                  }`}
                 >
-                  <span className="text-3xl shrink-0 p-1.5 bg-orange-50 rounded-2xl border border-orange-100">
+                  <span
+                    className={`text-3xl shrink-0 p-1.5 rounded-2xl border ${
+                      isNewWordsCat ? 'bg-amber-100 border-amber-200 shadow-xs' : 'bg-orange-50 border-orange-100'
+                    }`}
+                  >
                     {cat.emoji}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-black text-gray-800 text-sm truncate">{cat.name_vi}</h3>
-                      <span className="text-[10px] font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full shrink-0">
-                        {cat.words.length} từ
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
-                      {cat.sourceType && (
-                        <span className="text-[11px] font-semibold">
-                          {cat.sourceType === 'pdf' ? '📕 PDF' : cat.sourceType === 'image' ? '🖼️ Ảnh' : cat.sourceType === 'url' ? '🌐 Web' : '✏️ Nhập tay'}
+                      {isNewWordsCat ? (
+                        <span className="text-[10px] font-black bg-gradient-to-r from-amber-400 to-orange-500 text-white px-2 py-0.5 rounded-full shadow-xs">
+                          🌟 TỔNG HỢP TỰ ĐỘNG
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full shrink-0">
+                          {cat.words.length} từ
                         </span>
                       )}
-                      {cat.sourceLabel && (
-                        <span className="truncate max-w-[140px] text-[10px] opacity-75">
-                          • {cat.sourceLabel}
+                      {isNewWordsCat && (
+                        <span className="text-[10px] font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full shrink-0">
+                          {cat.words.length} từ
                         </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
+                      {isNewWordsCat ? (
+                        <span className="text-[11px] font-semibold text-amber-700">
+                          ⚡ Tự động gom từ mới từ tất cả các chủ đề để bé ôn tập
+                        </span>
+                      ) : (
+                        <>
+                          {cat.sourceType && (
+                            <span className="text-[11px] font-semibold">
+                              {cat.sourceType === 'pdf' ? '📕 PDF' : cat.sourceType === 'image' ? '🖼️ Ảnh' : cat.sourceType === 'url' ? '🌐 Web' : '✏️ Nhập tay'}
+                            </span>
+                          )}
+                          {cat.sourceLabel && (
+                            <span className="truncate max-w-[140px] text-[10px] opacity-75">
+                              • {cat.sourceLabel}
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -458,12 +546,15 @@ export default function ManageVocabularyPage() {
                     </button>
                     <button
                       onClick={() => {
-                        if (confirm(`Bạn có chắc chắn muốn xóa toàn bộ chủ đề "${cat.name_vi}" (${cat.words.length} từ)?`)) {
+                        const confirmMsg = isNewWordsCat
+                          ? `Bạn có chắc chắn muốn đặt lại danh mục "🌟 Từ mới của bé" (${cat.words.length} từ)?`
+                          : `Bạn có chắc chắn muốn xóa toàn bộ chủ đề "${cat.name_vi}" (${cat.words.length} từ)?`;
+                        if (confirm(confirmMsg)) {
                           deleteCategory(cat.id);
-                          showToast(`Đã xóa chủ đề "${cat.name_vi}"!`);
+                          showToast(isNewWordsCat ? 'Đã đặt lại danh mục Từ mới!' : `Đã xóa chủ đề "${cat.name_vi}"!`);
                         }
                       }}
-                      title="Xóa chủ đề này"
+                      title={isNewWordsCat ? 'Đặt lại danh mục từ mới' : 'Xóa chủ đề này'}
                       className="w-8 h-8 rounded-xl bg-gray-50 hover:bg-rose-100 text-gray-400 hover:text-rose-600 flex items-center justify-center text-xs transition-colors"
                     >
                       🗑️
@@ -471,7 +562,9 @@ export default function ManageVocabularyPage() {
                     <button
                       onClick={() => router.push(`/learn/${cat.id}`)}
                       title="Học chủ đề này"
-                      className="w-8 h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center text-xs font-bold transition-colors"
+                      className={`w-8 h-8 rounded-xl text-white flex items-center justify-center text-xs font-bold transition-colors ${
+                        isNewWordsCat ? 'bg-amber-500 hover:bg-amber-600 shadow-xs' : 'bg-orange-500 hover:bg-orange-600'
+                      }`}
                     >
                       ▶
                     </button>
@@ -512,21 +605,21 @@ export default function ManageVocabularyPage() {
                         </button>
                       </div>
 
-                      {/* Words rows */}
-                      <div className="divide-y divide-orange-100/60 max-h-96 overflow-y-auto">
+                      {/* Words grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 p-3.5 max-h-[30rem] overflow-y-auto">
                         {cat.words.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-gray-400">
+                          <div className="col-span-full p-4 text-center text-xs text-gray-400">
                             Chưa có từ nào trong chủ đề này.
                           </div>
                         ) : (
                           cat.words.map((word) => (
                             <div
                               key={word.id}
-                              className="p-3.5 flex items-start gap-3 hover:bg-white/70 transition-colors"
+                              className="p-3 bg-white rounded-2xl border border-orange-100/90 flex items-start gap-3 shadow-2xs hover:shadow-xs transition-all"
                             >
                               <span className="text-2xl shrink-0 mt-0.5">{word.emoji}</span>
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex items-center gap-1.5 flex-wrap">
                                   <span className="font-black text-gray-900 text-sm">{word.en}</span>
                                   {word.phonetic && (
                                     <span className="text-xs font-mono text-gray-400">{word.phonetic}</span>
@@ -534,7 +627,7 @@ export default function ManageVocabularyPage() {
                                   <button
                                     onClick={() => playWordAudio(word.en)}
                                     title="Nghe phát âm mẫu"
-                                    className="text-xs text-orange-500 hover:text-orange-700 font-bold px-1.5 py-0.5 bg-orange-50 rounded"
+                                    className="text-xs text-orange-500 hover:text-orange-700 font-bold px-1.5 py-0.5 bg-orange-50 rounded cursor-pointer"
                                   >
                                     🔊
                                   </button>
@@ -557,7 +650,7 @@ export default function ManageVocabularyPage() {
                                 <button
                                   onClick={() => setEditingWord({ catId: cat.id, word })}
                                   title="Chỉnh sửa từ này"
-                                  className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-orange-100 text-gray-500 hover:text-orange-700 flex items-center justify-center text-xs transition-colors"
+                                  className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-orange-100 text-gray-500 hover:text-orange-700 flex items-center justify-center text-xs transition-colors cursor-pointer"
                                 >
                                   ✏️
                                 </button>
@@ -569,7 +662,7 @@ export default function ManageVocabularyPage() {
                                     }
                                   }}
                                   title="Xóa từ này"
-                                  className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-rose-100 text-gray-400 hover:text-rose-600 flex items-center justify-center text-xs transition-colors"
+                                  className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-rose-100 text-gray-400 hover:text-rose-600 flex items-center justify-center text-xs transition-colors cursor-pointer"
                                 >
                                   ✕
                                 </button>
@@ -694,6 +787,44 @@ export default function ManageVocabularyPage() {
                   ✕
                 </button>
               </div>
+
+              {/* AI Image Preview for Edit Modal */}
+              {editingWord && (
+                <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-violet-50 to-pink-50 rounded-2xl border border-violet-100">
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-2 border-violet-200 flex items-center justify-center shrink-0 shadow-sm">
+                    <WordImage word={editingWord.word} size="lg" showSkeleton />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold text-violet-700 mb-1">Hình minh hoạ</p>
+                    {editingWord.word.image_url ? (
+                      <div className="flex gap-1.5 flex-wrap">
+                        <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">✓ Ảnh AI</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingWord({ ...editingWord, word: { ...editingWord.word, image_url: undefined } })}
+                          className="text-[10px] bg-rose-100 text-rose-600 font-bold px-2 py-0.5 rounded-full hover:bg-rose-200 transition-colors"
+                        >
+                          ✕ Xóa ảnh
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-gray-400 mb-1.5">Đang dùng emoji</p>
+                    )}
+                    <button
+                      type="button"
+                      disabled={!editingWord.word.en.trim() || generatingImage}
+                      onClick={() => handleGenerateImage(editingWord.word.en, editingWord.word.vi, editingWord.word.emoji, false)}
+                      className="text-[10px] font-black text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 px-2.5 py-1 rounded-full flex items-center gap-1 transition-all disabled:opacity-50 shadow-sm"
+                    >
+                      {generatingImage ? (
+                        <><span className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" /> Đang tạo...</>
+                      ) : (
+                        '🎨 AI tạo ảnh'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2.5">
                 <div className="flex gap-2">
@@ -839,6 +970,42 @@ export default function ManageVocabularyPage() {
                 >
                   ✕
                 </button>
+              </div>
+
+              {/* AI Image Preview for Add Word Modal */}
+              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-violet-50 to-pink-50 rounded-2xl border border-violet-100">
+                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-2 border-violet-200 flex items-center justify-center shrink-0 shadow-sm">
+                  <WordImage word={newWordDraft.en ? newWordDraft : { ...newWordDraft, en: 'word' }} size="lg" showSkeleton />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-violet-700 mb-1">Hình minh hoạ</p>
+                  {newWordDraft.image_url ? (
+                    <div className="flex gap-1.5 flex-wrap">
+                      <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">✓ Ảnh AI</span>
+                      <button
+                        type="button"
+                        onClick={() => setNewWordDraft((p) => ({ ...p, image_url: undefined }))}
+                        className="text-[10px] bg-rose-100 text-rose-600 font-bold px-2 py-0.5 rounded-full hover:bg-rose-200 transition-colors"
+                      >
+                        ✕ Xóa ảnh
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-gray-400 mb-1.5">Đang dùng emoji Twemoji</p>
+                  )}
+                  <button
+                    type="button"
+                    disabled={!newWordDraft.en.trim() || generatingImage}
+                    onClick={() => handleGenerateImage(newWordDraft.en, newWordDraft.vi, newWordDraft.emoji, true)}
+                    className="text-[10px] font-black text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 px-2.5 py-1 rounded-full flex items-center gap-1 transition-all disabled:opacity-50 shadow-sm"
+                  >
+                    {generatingImage ? (
+                      <><span className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" /> Đang tạo...</>
+                    ) : (
+                      '🎨 AI tạo ảnh'
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2.5">

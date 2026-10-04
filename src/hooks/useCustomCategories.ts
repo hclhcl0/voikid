@@ -11,10 +11,93 @@ import { Category, Word } from '@/types';
 
 const STORAGE_KEY = 'vocakids_custom_categories_v1';
 
+export const NEW_WORDS_CAT_ID = 'custom_new_words';
+
 export interface CustomCategory extends Category {
   createdAt: string;
   sourceType: 'txt' | 'pdf' | 'image' | 'url' | 'manual';
   sourceLabel?: string; // filename or URL
+  gradeId?: string;
+}
+
+export function createNewWordsCategory(words: Word[] = []): CustomCategory {
+  return {
+    id: NEW_WORDS_CAT_ID,
+    name_vi: '🌟 Từ mới của bé',
+    name_en: 'New Words',
+    emoji: '🌟',
+    color: 'from-amber-400 to-orange-500',
+    gradient: 'bg-gradient-to-br from-amber-100 to-orange-100',
+    words,
+    createdAt: new Date().toISOString(),
+    sourceType: 'manual',
+    sourceLabel: 'Tổng hợp từ mới tự động',
+  };
+}
+
+/**
+ * Tự động đồng bộ từ mới vào danh mục "🌟 Từ mới của bé"
+ * Đảm bảo từ vừa có trong chủ đề riêng (Động vật, Trái cây...)
+ * vừa luôn có mặt trong mục Từ mới để bé luyện tập ngay.
+ */
+function syncWordsToNewWordsCategory(
+  categoriesList: CustomCategory[],
+  wordsToSync: Word[]
+): CustomCategory[] {
+  if (!wordsToSync || wordsToSync.length === 0) return categoriesList;
+
+  let current = [...categoriesList];
+  let newWordsCatIdx = current.findIndex((c) => c.id === NEW_WORDS_CAT_ID);
+
+  if (newWordsCatIdx === -1) {
+    const newWordsCat = createNewWordsCategory([]);
+    current = [newWordsCat, ...current];
+    newWordsCatIdx = 0;
+  }
+
+  const newWordsCat = current[newWordsCatIdx];
+  const existingWordsMap = new Map<string, Word>();
+  newWordsCat.words.forEach((w) => {
+    existingWordsMap.set(w.en.toLowerCase().trim(), w);
+  });
+
+  const updatedList: Word[] = [];
+  const addedKeys = new Set<string>();
+
+  // Thêm các từ mới vào đầu danh sách (mới nhất lên trước)
+  wordsToSync.forEach((w) => {
+    const key = w.en.toLowerCase().trim();
+    if (!key || addedKeys.has(key)) return;
+    addedKeys.add(key);
+    const existing = existingWordsMap.get(key);
+    updatedList.push({
+      ...(existing || {}),
+      ...w,
+      id: w.id || existing?.id || `w_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    });
+  });
+
+  // Giữ lại các từ cũ trước đó trong "Từ mới"
+  newWordsCat.words.forEach((w) => {
+    const key = w.en.toLowerCase().trim();
+    if (key && !addedKeys.has(key)) {
+      addedKeys.add(key);
+      updatedList.push(w);
+    }
+  });
+
+  current[newWordsCatIdx] = {
+    ...newWordsCat,
+    words: updatedList,
+  };
+
+  // Đưa "Từ mới" lên đầu danh sách
+  if (newWordsCatIdx > 0) {
+    const [cat] = current.splice(newWordsCatIdx, 1);
+    current.unshift(cat);
+  }
+
+  return current;
 }
 
 const GRADIENTS = [
@@ -75,7 +158,7 @@ function loadCategoriesFromStorage(): CustomCategory[] {
       const parsed = JSON.parse(raw) as CustomCategory[];
       let changed = false;
 
-      const healedCats = parsed.map((c) => {
+      let healedCats = parsed.map((c) => {
         let catChanged = false;
         let name_vi = c.name_vi?.trim() || '';
         if (!name_vi) {
@@ -136,6 +219,31 @@ function loadCategoriesFromStorage(): CustomCategory[] {
         return c;
       });
 
+      // Đảm bảo danh mục "🌟 Từ mới của bé" luôn tồn tại nếu đã có từ vựng và đồng bộ đủ từ
+      const totalWords = healedCats.reduce((sum, c) => sum + c.words.length, 0);
+      const hasNewWordsCat = healedCats.some((c) => c.id === NEW_WORDS_CAT_ID);
+
+      if (totalWords > 0) {
+        const otherCatsWords = healedCats
+          .filter((c) => c.id !== NEW_WORDS_CAT_ID)
+          .flatMap((c) => c.words);
+        if (otherCatsWords.length > 0) {
+          healedCats = syncWordsToNewWordsCategory(healedCats, otherCatsWords);
+          changed = true;
+        } else if (!hasNewWordsCat) {
+          const newCat = createNewWordsCategory([]);
+          healedCats.unshift(newCat);
+          changed = true;
+        }
+      } else if (hasNewWordsCat) {
+        const idx = healedCats.findIndex((c) => c.id === NEW_WORDS_CAT_ID);
+        if (idx > 0) {
+          const [cat] = healedCats.splice(idx, 1);
+          healedCats.unshift(cat);
+          changed = true;
+        }
+      }
+
       if (changed) {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(healedCats));
@@ -188,6 +296,7 @@ export function useCustomCategories() {
     words: Word[],
     sourceType: CustomCategory['sourceType'],
     sourceLabel?: string,
+    gradeId?: string,
   ): CustomCategory => {
     const id       = `custom_${Date.now()}`;
     const gIdx     = categories.length;
@@ -196,9 +305,15 @@ export function useCustomCategories() {
       id, name_vi: name, name_en: name, emoji,
       color, gradient, words,
       createdAt:   new Date().toISOString(),
-      sourceType, sourceLabel,
+      sourceType, sourceLabel, gradeId,
     };
-    persist((prev) => [...prev, cat]);
+    persist((prev) => {
+      let next = [...prev, cat];
+      if (cat.id !== NEW_WORDS_CAT_ID) {
+        next = syncWordsToNewWordsCategory(next, words);
+      }
+      return next;
+    });
     return cat;
   }, [categories.length, persist]);
 
@@ -210,6 +325,7 @@ export function useCustomCategories() {
       words: Word[];
       sourceType: CustomCategory['sourceType'];
       sourceLabel?: string;
+      gradeId?: string;
     }[]
   ): CustomCategory[] => {
     const created: CustomCategory[] = [];
@@ -224,6 +340,7 @@ export function useCustomCategories() {
           const toAdd = item.words.filter((w) => !existingWords.has(w.en.toLowerCase().trim()));
           current[existingIdx] = {
             ...existingCat,
+            gradeId: item.gradeId || existingCat.gradeId,
             words: [...existingCat.words, ...toAdd]
           };
           created.push(current[existingIdx]);
@@ -242,11 +359,17 @@ export function useCustomCategories() {
             createdAt: new Date().toISOString(),
             sourceType: item.sourceType,
             sourceLabel: item.sourceLabel,
+            gradeId: item.gradeId,
           };
           current.push(cat);
           created.push(cat);
         }
       });
+
+      // ĐỒNG THỜI: Tự động gom toàn bộ từ mới vào mục "🌟 Từ mới của bé"
+      const allNewWords = catsToCreate.flatMap((c) => c.words);
+      current = syncWordsToNewWordsCategory(current, allNewWords);
+
       return current;
     });
     return created;
@@ -264,21 +387,46 @@ export function useCustomCategories() {
 
   /** Add words to existing category */
   const appendWords = useCallback((catId: string, newWords: Word[]) => {
-    persist((prev) => prev.map((c) => {
-      if (c.id !== catId) return c;
-      const existing = new Set(c.words.map((w) => w.en.toLowerCase()));
-      const toAdd    = newWords.filter((w) => !existing.has(w.en.toLowerCase()));
-      return { ...c, words: [...c.words, ...toAdd] };
-    }));
+    persist((prev) => {
+      let next = prev.map((c) => {
+        if (c.id !== catId) return c;
+        const existing = new Set(c.words.map((w) => w.en.toLowerCase()));
+        const toAdd    = newWords.filter((w) => !existing.has(w.en.toLowerCase()));
+        return { ...c, words: [...c.words, ...toAdd] };
+      });
+      // ĐỒNG THỜI: Thêm vào mục "🌟 Từ mới của bé"
+      if (catId !== NEW_WORDS_CAT_ID) {
+        next = syncWordsToNewWordsCategory(next, newWords);
+      }
+      return next;
+    });
   }, [persist]);
 
   /** Update a single word inside a category */
   const updateWord = useCallback((catId: string, wordId: string, updated: Word) => {
     persist((prev) => prev.map((c) => {
-      if (c.id !== catId) return c;
+      const hasWord = c.words.some((w) => w.id === wordId || w.en.toLowerCase().trim() === updated.en.toLowerCase().trim());
+      if (c.id === catId || (c.id === NEW_WORDS_CAT_ID && hasWord)) {
+        return {
+          ...c,
+          words: c.words.map((w) => (w.id === wordId || w.en.toLowerCase().trim() === updated.en.toLowerCase().trim()) ? updated : w),
+        };
+      }
+      return c;
+    }));
+  }, [persist]);
+
+  /**
+   * "Tốt nghiệp" một từ khỏi danh sách "🌟 Từ mới của bé".
+   * Từ vẫn còn trong category gốc (Động vật, Trái cây...) nhưng được xóa
+   * khỏi custom_new_words vì bé đã đọc đúng rồi.
+   */
+  const graduateWord = useCallback((wordId: string) => {
+    persist((prev) => prev.map((c) => {
+      if (c.id !== NEW_WORDS_CAT_ID) return c;
       return {
         ...c,
-        words: c.words.map((w) => w.id === wordId ? updated : w),
+        words: c.words.filter((w) => w.id !== wordId),
       };
     }));
   }, [persist]);
@@ -296,13 +444,20 @@ export function useCustomCategories() {
 
   /** Add a single word to a category */
   const addWord = useCallback((catId: string, word: Word) => {
-    persist((prev) => prev.map((c) => {
-      if (c.id !== catId) return c;
-      return {
-        ...c,
-        words: [word, ...c.words],
-      };
-    }));
+    persist((prev) => {
+      let next = prev.map((c) => {
+        if (c.id !== catId) return c;
+        return {
+          ...c,
+          words: [word, ...c.words],
+        };
+      });
+      // ĐỒNG THỜI: Tự động đưa từ mới vào mục "🌟 Từ mới của bé"
+      if (catId !== NEW_WORDS_CAT_ID) {
+        next = syncWordsToNewWordsCategory(next, [word]);
+      }
+      return next;
+    });
   }, [persist]);
 
   /** Export all custom categories as JSON */
@@ -332,7 +487,8 @@ export function useCustomCategories() {
       color:     c.color,
       gradient:  c.gradient,
       words:     c.words,
-    })),
+      gradeId:   c.gradeId,
+    } as any)),
   [categories]);
 
   return {
@@ -345,6 +501,7 @@ export function useCustomCategories() {
     appendWords,
     updateWord,
     deleteWord,
+    graduateWord,
     addWord,
     exportJSON,
     importJSON,

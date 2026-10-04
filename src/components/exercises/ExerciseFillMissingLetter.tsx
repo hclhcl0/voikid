@@ -10,6 +10,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
+import { WordImage } from '@/components/WordImage';
 
 interface Props {
   targetWord: Word;
@@ -98,8 +99,10 @@ export function ExerciseFillMissingLetter({ targetWord, onAnswer }: Props) {
       </div>
 
       {/* Word and missing letter box */}
-      <div className="bg-white rounded-3xl p-6 shadow-md border-2 border-amber-100 text-center">
-        <span className="text-7xl block mb-2 select-none">{targetWord.emoji}</span>
+      <div className="bg-white rounded-3xl p-6 shadow-md border-2 border-amber-100 text-center flex flex-col items-center">
+        <div className="mb-2 flex items-center justify-center">
+          <WordImage word={targetWord} size="lg" />
+        </div>
         <p className="text-xs text-gray-400 font-bold mb-4">
           🇻🇳 Nghĩa: <span className="text-amber-600 font-extrabold">{targetWord.vi}</span>
         </p>

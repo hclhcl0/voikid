@@ -105,33 +105,37 @@ export default function ParentPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-violet-50">
 
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3 flex items-center gap-2.5">
-        <div className="flex items-center gap-1.5">
-          <button onClick={() => router.back()} className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors" title="Quay lại">←</button>
-          <Link href="/" className="w-9 h-9 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs" title="Về trang chủ">🏠</Link>
+      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3 shadow-2xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2">
+            <button onClick={() => router.back()} className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer" title="Quay lại">←</button>
+            <Link href="/" className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs cursor-pointer" title="Về trang chủ">🏠</Link>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-black text-base md:text-lg text-gray-800 truncate flex items-center gap-2">
+              <span>👨‍👩‍👧 Tiến Trình: {activeProfile.name} {activeProfile.avatar}</span>
+              <span className="text-[10px] font-black bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
+                👑 Admin
+              </span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={logoutAdmin}
+              className="text-xs font-bold text-gray-500 hover:text-rose-600 flex items-center gap-1 px-3 py-2 rounded-xl bg-gray-100 hover:bg-rose-50 transition-colors cursor-pointer"
+              title="Khóa quyền phụ huynh"
+            >
+              <span>🔒 Khóa</span>
+            </button>
+            <button
+              onClick={() => { if (confirm(`Xóa toàn bộ số sao và dữ liệu học của bé "${activeProfile.name}"?`)) resetAll(); }}
+              className="text-xs text-gray-400 hover:text-rose-500 font-bold transition-colors shrink-0 px-2 py-1 cursor-pointer"
+            >Đặt lại</button>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-black text-base text-gray-800 truncate flex items-center gap-1.5">
-            <span>👨‍👩‍👧 Tiến Trình: {activeProfile.name} {activeProfile.avatar}</span>
-            <span className="text-[10px] font-black bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">
-              👑 Admin
-            </span>
-          </h1>
-        </div>
-        <button
-          onClick={logoutAdmin}
-          className="text-xs font-bold text-gray-400 hover:text-rose-600 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-gray-100 hover:bg-rose-50 transition-colors cursor-pointer"
-          title="Khóa quyền phụ huynh"
-        >
-          <span>🔒 Khóa</span>
-        </button>
-        <button
-          onClick={() => { if (confirm(`Xóa toàn bộ số sao và dữ liệu học của bé "${activeProfile.name}"?`)) resetAll(); }}
-          className="text-xs text-gray-400 hover:text-rose-500 font-bold transition-colors shrink-0"
-        >Đặt lại</button>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6 pb-24 space-y-5">
+      <div className="max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
 
         {/* Child Profile Switcher */}
         <div className="bg-white rounded-3xl p-3.5 shadow-xs border border-violet-100 space-y-2">
@@ -264,31 +268,35 @@ export default function ParentPage() {
         </div>
 
         {/* Per-category progress */}
-        <div className="bg-white rounded-3xl p-5 shadow border border-violet-100">
-          <h2 className="font-black text-gray-800 mb-4">🗂️ Tiến trình theo chủ đề</h2>
-          <div className="space-y-4">
+        <div className="bg-white rounded-3xl p-5 sm:p-6 shadow border border-violet-100">
+          <h2 className="font-black text-gray-800 text-base md:text-lg mb-4">🗂️ Tiến trình theo chủ đề</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {catStats.map(({ cat, stars, maxStars, attempts, pct }) => (
-              <Link key={cat.id} href={`/learn/${cat.id}`} className="block group">
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="text-2xl">{cat.emoji}</span>
+              <Link
+                key={cat.id}
+                href={`/learn/${cat.id}`}
+                className="block group p-3.5 bg-gray-50/70 hover:bg-violet-50/60 rounded-2xl border border-gray-100 hover:border-violet-200 transition-all"
+              >
+                <div className="flex items-center gap-3 mb-1.5">
+                  <span className="text-2xl p-1 bg-white rounded-xl shadow-2xs">{cat.emoji}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-sm text-gray-700 group-hover:text-violet-600 transition-colors">
+                      <span className="font-bold text-sm text-gray-800 group-hover:text-violet-600 transition-colors">
                         {cat.name_vi}
                       </span>
-                      <span className="text-xs font-bold text-gray-400">{pct}%</span>
+                      <span className="text-xs font-black text-violet-600">{pct}%</span>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                    <div className="h-2.5 bg-gray-200/80 rounded-full mt-1.5 overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
                         transition={{ duration: 0.7, delay: 0.1 }}
-                        className="h-full rounded-full bg-gradient-to-r from-violet-400 to-purple-500"
+                        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-500"
                       />
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-4 ml-9 text-xs text-gray-400 font-semibold">
+                <div className="flex gap-4 ml-10 text-xs text-gray-500 font-semibold">
                   <span>⭐ {stars}/{maxStars} sao</span>
                   <span>🔁 {attempts} lượt luyện</span>
                 </div>

@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { GRADE_LEVELS, GRADE_METAS, CATEGORIES } from '@/lib/vocabulary';
 import { useProfileContext } from '@/context/ProfileContext';
-import { useCustomCategories } from '@/hooks/useCustomCategories';
+import { useCustomCategories, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
 import { ChildBadge } from '@/components/ChildBadge';
 import { EXERCISE_METAS } from '@/components/exercises';
 
@@ -20,11 +20,18 @@ export default function TestHubPage() {
   const [selectedGrade, setSelectedGrade] = useState<string>(
     activeProfile?.gradeId || 'lop1'
   );
+  const [filterStation, setFilterStation] = useState<string>('all');
 
-  const allCategories = [...CATEGORIES, ...customCats];
-  const unitsInGrade = allCategories.filter(
-    (c: any) => (c.gradeId || c.grade) === selectedGrade
+  const newWordsCat = customCats.find((c) => c.id === NEW_WORDS_CAT_ID && c.words.length > 0);
+  const builtinInGrade = CATEGORIES.filter((c: any) => (c.gradeId || c.grade) === selectedGrade);
+  const customForGrade = customCats.filter(
+    (c: any) => c.id !== NEW_WORDS_CAT_ID && (!c.gradeId || c.gradeId === selectedGrade)
   );
+  const unitsInGrade = [
+    ...(newWordsCat ? [newWordsCat] : []),
+    ...customForGrade,
+    ...builtinInGrade,
+  ];
   const currentMeta = GRADE_METAS[selectedGrade] || GRADE_METAS.lop1;
 
   return (
@@ -61,23 +68,46 @@ export default function TestHubPage() {
                 8 Dạng Bài Tập Chuẩn Sư Phạm
               </h2>
               <p className="text-xs text-violet-200 font-medium">
-                Chọn một bài học dưới đây để bắt đầu luyện tập:
+                Chọn một dạng bài hoặc chọn bài học bên dưới để luyện tập:
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-white/20 text-xs">
-            {EXERCISE_METAS.slice(0, 4).map((m) => (
-              <span key={m.id} className="flex items-center gap-1 text-white/90 font-bold truncate">
-                <span>{m.icon}</span> {m.num}. {m.title}
-              </span>
-            ))}
-            {EXERCISE_METAS.slice(4, 8).map((m) => (
-              <span key={m.id} className="flex items-center gap-1 text-white/90 font-bold truncate">
-                <span>{m.icon}</span> {m.num}. {m.title}
-              </span>
-            ))}
+            {EXERCISE_METAS.map((m) => {
+              const isFiltered = filterStation === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setFilterStation(isFiltered ? 'all' : m.id)}
+                  className={`flex items-center gap-1 font-bold truncate p-1 rounded-xl transition-all text-left ${
+                    isFiltered
+                      ? 'bg-amber-400 text-amber-950 font-black ring-2 ring-white/50'
+                      : 'text-white/90 hover:bg-white/10'
+                  }`}
+                >
+                  <span>{m.icon}</span>
+                  <span className="truncate">{m.num}. {m.title}</span>
+                </button>
+              );
+            })}
           </div>
+
+          {filterStation !== 'all' && (
+            <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-xs">
+              <span className="text-amber-200 font-medium">
+                Đang lọc: <strong>{EXERCISE_METAS.find(m => m.id === filterStation)?.title}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setFilterStation('all')}
+                className="text-white underline font-bold"
+              >
+                Hiện tất cả ✕
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Grade Selector Tabs */}
@@ -113,31 +143,76 @@ export default function TestHubPage() {
           </div>
 
           <div className="grid gap-2.5">
-            {unitsInGrade.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/test/${cat.id}`}
-                className="bg-white rounded-2xl p-3.5 border-2 border-gray-100 hover:border-violet-300 shadow-xs flex items-center justify-between transition-all group"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
-                    {cat.emoji}
-                  </span>
-                  <div>
-                    <h3 className="font-black text-sm text-gray-800">
-                      {cat.name_vi}
-                    </h3>
-                    <p className="text-xs text-gray-400 font-medium">
-                      {cat.name_en} • {cat.words.length} từ
-                    </p>
+            {unitsInGrade.map((cat) => {
+              const targetUrl = filterStation !== 'all'
+                ? `/test/${cat.id}?station=${filterStation}`
+                : `/test/${cat.id}`;
+
+              const isNewWords = cat.id === NEW_WORDS_CAT_ID;
+
+              return (
+                <div
+                  key={cat.id}
+                  className={`rounded-3xl p-4 border-2 shadow-xs flex flex-col gap-3 transition-all ${
+                    isNewWords
+                      ? 'bg-gradient-to-r from-amber-50/50 via-white to-orange-50/50 border-amber-300 ring-2 ring-amber-200/50 shadow-md'
+                      : 'bg-white border-gray-100 hover:border-violet-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-3xl shrink-0 ${
+                          isNewWords ? 'bg-amber-100 border border-amber-200' : 'bg-violet-50'
+                        }`}
+                      >
+                        {cat.emoji}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="font-black text-sm text-gray-800 truncate">
+                            {cat.name_vi}
+                          </h3>
+                          {isNewWords && (
+                            <span className="text-[9px] bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black px-2 py-0.5 rounded-full shrink-0 shadow-xs">
+                              🌟 TỪ MỚI
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 font-medium truncate">
+                          {cat.name_en} • {cat.words.length} từ vựng
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+                    <Link
+                      href={targetUrl}
+                      className={`py-2.5 px-3 rounded-2xl text-white font-black text-xs text-center shadow-xs hover:opacity-95 flex items-center justify-center gap-1.5 ${
+                        isNewWords
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-md'
+                          : 'bg-gradient-to-r from-violet-600 to-indigo-600'
+                      }`}
+                    >
+                      <span>🎯</span>
+                      <span>{filterStation !== 'all' ? 'Luyện dạng này' : '8 Dạng bài tập'}</span>
+                    </Link>
+                    <Link
+                      href={`/test/${cat.id}#challenge`}
+                      onClick={() => {
+                        // Switch mode in target page
+                        sessionStorage.setItem('vocakids_open_mode', 'test');
+                      }}
+                      className="py-2.5 px-3 rounded-2xl bg-violet-50 text-violet-700 hover:bg-violet-100 font-black text-xs text-center border border-violet-200 flex items-center justify-center gap-1.5"
+                    >
+                      <span>🏆</span>
+                      <span>Làm bài thi (10 câu)</span>
+                    </Link>
                   </div>
                 </div>
-
-                <span className="py-2 px-3 rounded-xl bg-violet-600 text-white text-xs font-black shadow-xs group-hover:bg-violet-700 transition-colors">
-                  Vào Luyện 8 Dạng →
-                </span>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

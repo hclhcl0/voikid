@@ -10,6 +10,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
+import { WordImage } from '@/components/WordImage';
 
 type LetterMode = 'name' | 'sound';
 
@@ -173,7 +174,7 @@ export function ExerciseListenPickLetter({
 
         {/* Word illustration hint */}
         <div className="mt-2 flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-          <span className="text-xl">{targetWord.emoji}</span>
+          <WordImage word={targetWord} size="xs" />
           <span className="text-xs font-semibold text-gray-600">
             Từ gợi ý: <span className="font-bold text-gray-800">{targetWord.en}</span> ({targetWord.vi})
           </span>

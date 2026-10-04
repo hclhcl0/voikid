@@ -103,6 +103,9 @@ interface ProfileContextType {
     status: 'pass' | 'practice' | 'retry' | 'service_error'
   ) => void;
   getWordProgress: (catId: string, wordId: string) => WordProgress | null;
+  findWordProgress: (wordId: string) => WordProgress | null;
+  demoteWord: (catId: string, wordId: string) => void;
+  getDueReviewWords: () => { wordId: string; catId: string; progress: WordProgress }[];
   resetAll: () => void;
   todayStats: DailyStats | null;
 
@@ -469,7 +472,24 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Record a word attempt
+  // Helper for spaced repetition scheduling
+  const addDays = (dateStr: string, days: number): string => {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const getNextReviewInterval = (currentInterval: number = 1): number => {
+    const intervals = [1, 3, 7, 14, 30];
+    const idx = intervals.indexOf(currentInterval);
+    if (idx === -1) {
+      const next = intervals.find((i) => i > currentInterval);
+      return next ?? 30;
+    }
+    return intervals[Math.min(idx + 1, intervals.length - 1)];
+  };
+
+  // Record a word attempt with Consecutive Pass & Spaced Repetition logic
   const recordAttempt = useCallback(
     (catId: string, wordId: string, score: number | null, status: 'pass' | 'practice' | 'retry' | 'service_error') => {
       if (status === 'retry' || status === 'service_error') {
@@ -488,7 +508,42 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           attempts: 0,
           bestScore: 0,
           lastPracticed: '',
+          consecutivePasses: 0,
+          mastered: false,
         };
+
+        const prevPasses = existing.consecutivePasses ?? 0;
+        let consecutivePasses = prevPasses;
+        let mastered = existing.mastered ?? false;
+        let masteredAt = existing.masteredAt;
+        let intervalDays = existing.intervalDays ?? 1;
+        let reviewDueDate = existing.reviewDueDate;
+
+        if (status === 'pass') {
+          consecutivePasses = prevPasses + 1;
+          // Cơ chế tốt nghiệp: Đọc đúng 2 lần liên tiếp
+          if (consecutivePasses >= 2) {
+            if (!mastered) {
+              mastered = true;
+              masteredAt = today;
+              intervalDays = 1;
+              reviewDueDate = addDays(today, 1); // Hẹn ôn lại vào ngày mai (Chu kỳ 1)
+            } else {
+              // Ôn tập thành công định kỳ: tăng chu kỳ (1 -> 3 -> 7 -> 14 -> 30 ngày)
+              intervalDays = getNextReviewInterval(intervalDays);
+              reviewDueDate = addDays(today, intervalDays);
+            }
+          }
+        } else if (status === 'practice') {
+          // Bé đọc chưa đạt / phát âm sai:
+          consecutivePasses = 0; // Reset chuỗi liên tiếp (tránh ăn may)
+          if (mastered) {
+            // Cơ chế rớt hạng (Demotion): Đã từng tốt nghiệp nhưng đọc sai -> cần ôn lại ngay hôm nay
+            mastered = false;
+            intervalDays = 1;
+            reviewDueDate = today;
+          }
+        }
 
         const updated: WordProgress = {
           ...existing,
@@ -496,6 +551,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           attempts:       existing.attempts + 1,
           bestScore:      Math.max(existing.bestScore, scoreNum),
           lastPracticed:  today,
+          consecutivePasses,
+          mastered,
+          masteredAt,
+          reviewDueDate,
+          intervalDays,
         };
 
         // Update daily stats
@@ -539,6 +599,64 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       progress.wordProgress[`${catId}:${wordId}`] ?? null,
     [progress]
   );
+
+  const findWordProgress = useCallback(
+    (wordId: string): WordProgress | null => {
+      for (const key in progress.wordProgress) {
+        if (key.endsWith(`:${wordId}`) || progress.wordProgress[key]?.wordId === wordId) {
+          return progress.wordProgress[key];
+        }
+      }
+      return null;
+    },
+    [progress.wordProgress]
+  );
+
+  const demoteWord = useCallback((catId: string, wordId: string) => {
+    setProgress((prev) => {
+      const key = `${catId}:${wordId}`;
+      const existing = prev.wordProgress[key] || Object.values(prev.wordProgress).find((p) => p.wordId === wordId);
+      if (!existing) return prev;
+      const actualKey = `${existing.catId}:${existing.wordId}`;
+      const today = new Date().toISOString().slice(0, 10);
+      const updated: WordProgress = {
+        ...existing,
+        consecutivePasses: 0,
+        mastered: false,
+        intervalDays: 1,
+        reviewDueDate: today,
+        lastPracticed: today,
+      };
+      const next: AppProgress = {
+        ...prev,
+        wordProgress: { ...prev.wordProgress, [actualKey]: updated },
+      };
+      try {
+        const progKey = getProfileProgressKey(activeProfileId);
+        localStorage.setItem(progKey, JSON.stringify(next));
+      } catch (e) {
+        console.error('Error demoting word:', e);
+      }
+      syncToServer(activeProfileId, next, activeProfile);
+      return next;
+    });
+  }, [activeProfileId, syncToServer, activeProfile]);
+
+  const getDueReviewWords = useCallback((): { wordId: string; catId: string; progress: WordProgress }[] => {
+    const today = new Date().toISOString().slice(0, 10);
+    const results: { wordId: string; catId: string; progress: WordProgress }[] = [];
+    for (const key in progress.wordProgress) {
+      const p = progress.wordProgress[key];
+      if (p && p.attempts > 0) {
+        if (p.reviewDueDate && p.reviewDueDate <= today) {
+          results.push({ wordId: p.wordId, catId: p.catId, progress: p });
+        } else if (!p.reviewDueDate && p.lastPracticed && p.lastPracticed < today && (p.consecutivePasses ?? 0) >= 1) {
+          results.push({ wordId: p.wordId, catId: p.catId, progress: p });
+        }
+      }
+    }
+    return results;
+  }, [progress.wordProgress]);
 
   const resetAll = useCallback(() => {
     const next = defaultProgress();
@@ -627,6 +745,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       hydrated,
       recordAttempt,
       getWordProgress,
+      findWordProgress,
+      demoteWord,
+      getDueReviewWords,
       resetAll,
       todayStats,
       recordUnitTest,
@@ -652,6 +773,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       hydrated,
       recordAttempt,
       getWordProgress,
+      findWordProgress,
+      demoteWord,
+      getDueReviewWords,
       resetAll,
       todayStats,
       recordUnitTest,
@@ -685,6 +809,9 @@ export function useProfileContext() {
       hydrated: false,
       recordAttempt: () => {},
       getWordProgress: () => null,
+      findWordProgress: () => null,
+      demoteWord: () => {},
+      getDueReviewWords: () => [],
       resetAll: () => {},
       todayStats: null,
       recordUnitTest: () => {},

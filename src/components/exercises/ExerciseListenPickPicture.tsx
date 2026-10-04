@@ -10,6 +10,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
+import { WordImage } from '@/components/WordImage';
 
 interface Props {
   targetWord: Word;
@@ -120,9 +121,9 @@ export function ExerciseListenPickPicture({
               disabled={hasAnswered}
               className={`flex flex-col items-center justify-center p-4 rounded-3xl transition-all min-h-[130px] ${cardStyle}`}
             >
-              <span className="text-6xl mb-2 filter drop-shadow-sm select-none">
-                {opt.emoji}
-              </span>
+              <div className="mb-2 flex items-center justify-center min-h-[72px]">
+                <WordImage word={opt} size="md" />
+              </div>
 
               {/* Show text hint after answering */}
               <AnimatePresence>

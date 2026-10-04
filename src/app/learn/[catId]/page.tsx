@@ -13,6 +13,7 @@ import { useEnrichedWord } from '@/hooks/useEnrichedWord';
 import { KidsPhonicsDisplay, KidsPhonicsLoading } from '@/components/KidsPhonicsDisplay';
 import { IpaWordDecoderModal } from '@/components/IpaWordDecoderModal';
 import { ChildBadge } from '@/components/ChildBadge';
+import { WordImage } from '@/components/WordImage';
 import { Word } from '@/types';
 
 // ── Shared: Score star display ─────────────────────────────────────────────
@@ -51,7 +52,7 @@ function FlashCard({
         animate={{ opacity: 1, x: 0,  scale: 1 }}
         exit={{ opacity: 0, x: -60, scale: 0.9 }}
         transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-        className="bg-white rounded-3xl p-6 shadow-2xl border-[3px] border-orange-100 relative overflow-hidden"
+        className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-[3px] border-orange-100 relative overflow-hidden"
         style={{ boxShadow: '0 8px 0 rgba(249,115,22,0.10), 0 20px 40px rgba(0,0,0,0.08)' }}
       >
         {/* Decorative blobs */}
@@ -64,20 +65,20 @@ function FlashCard({
             <StarRow stars={prevStars} />
           </div>
 
-          {/* Emoji */}
+          {/* Emoji / Illustration */}
           <motion.div
-            key={word.emoji}
+            key={word.id || word.en}
             initial={{ scale: 0.5, rotate: -15 }}
             animate={{ scale: 1,   rotate: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            className="text-8xl leading-none drop-shadow-lg"
+            className="flex items-center justify-center min-h-[120px] md:min-h-[150px] py-1"
           >
-            {word.emoji}
+            <WordImage word={word} size="2xl" showSkeleton />
           </motion.div>
 
           {/* English word - font Andika chuẩn chữ a đơn tầng giống tập viết tiếng Việt */}
           <div
-            className="font-bold text-5xl text-gray-800 tracking-normal"
+            className="font-bold text-5xl md:text-6xl text-gray-800 tracking-normal"
             style={{ fontFamily: 'var(--font-andika), "Andika", sans-serif' }}
           >
             {word.en}
@@ -88,7 +89,7 @@ function FlashCard({
             <button
               type="button"
               onClick={() => setShowIpaDecoder(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50/90 hover:bg-orange-100 border border-orange-200 text-orange-950 font-bold text-sm shadow-2xs hover:shadow-xs transition-all cursor-pointer group active:scale-95"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50/90 hover:bg-orange-100 border border-orange-200 text-orange-950 font-bold text-sm shadow-2xs hover:shadow-xs transition-all cursor-pointer group active:scale-95"
               title="Bấm để xem hướng dẫn đọc từng ký hiệu IPA của từ này"
             >
               <span className="font-mono text-gray-800 font-black text-sm group-hover:text-orange-600 transition-colors tracking-wide">
@@ -113,7 +114,7 @@ function FlashCard({
           </div>
 
           {/* Vietnamese meaning */}
-          <div className="bg-gradient-to-r from-rose-500 to-orange-400 text-white font-black text-lg px-5 py-2 rounded-full shadow min-w-[130px]">
+          <div className="bg-gradient-to-r from-rose-500 to-orange-400 text-white font-black text-lg md:text-xl px-6 py-2.5 rounded-full shadow min-w-[140px]">
             {word.vi ? (
               word.vi
             ) : (
@@ -125,12 +126,12 @@ function FlashCard({
           </div>
 
           {/* Listen buttons: Normal & Slow */}
-          <div className="flex items-center gap-3 w-full pt-1">
+          <div className="flex items-center gap-3 w-full pt-2 max-w-lg">
             {/* Normal Listen */}
             <motion.button
               whileTap={{ scale: 0.93 }}
               onClick={onListenNormal}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-black text-sm shadow-md transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl font-black text-sm md:text-base shadow-md transition-all cursor-pointer min-h-[48px] ${
                 speakingMode === 'normal'
                   ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white ring-2 ring-violet-300 animate-pulse-ring'
                   : 'bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:shadow-violet-200 hover:shadow-lg'
@@ -144,7 +145,7 @@ function FlashCard({
             <motion.button
               whileTap={{ scale: 0.93 }}
               onClick={onListenSlow}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-black text-sm shadow-md transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl font-black text-sm md:text-base shadow-md transition-all cursor-pointer min-h-[48px] ${
                 speakingMode === 'slow' || speakingMode === 'superslow'
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white ring-2 ring-amber-300 animate-pulse-ring'
                   : 'bg-gradient-to-r from-amber-400 to-orange-400 text-white hover:shadow-amber-200 hover:shadow-lg'
@@ -342,6 +343,28 @@ export default function LearnPage() {
     }
   };
 
+  // Keyboard navigation for desktop users
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        go(-1);
+      } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        e.preventDefault();
+        go(1);
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        handleListenNormal();
+      } else if (e.key.toLowerCase() === 's' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        handleListenSlow();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [index, total, word, autoSpeed]);
+
   // Swipe detection
   const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; };
   const onTouchEnd   = (e: React.TouchEvent) => {
@@ -355,42 +378,44 @@ export default function LearnPage() {
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50">
 
       {/* Top bar */}
-      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3 flex items-center gap-2">
-        <button
-          onClick={() => router.back()}
-          className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors"
-          title="Quay lại"
-          aria-label="Quay lại"
-        >←</button>
+      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
+          <button
+            onClick={() => router.back()}
+            className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer"
+            title="Quay lại"
+            aria-label="Quay lại"
+          >←</button>
 
-        <Link
-          href="/"
-          className="w-9 h-9 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs"
-          title="Về trang chủ"
-          aria-label="Về trang chủ"
-        >🏠</Link>
+          <Link
+            href="/"
+            className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs"
+            title="Về trang chủ"
+            aria-label="Về trang chủ"
+          >🏠</Link>
 
-        <div className="flex-1 min-w-0">
-          <div className="h-2.5 bg-violet-100 rounded-full overflow-hidden">
-            <motion.div
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.4 }}
-              className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-400"
-            />
+          <div className="flex-1 min-w-0">
+            <div className="h-3 bg-violet-100 rounded-full overflow-hidden">
+              <motion.div
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.4 }}
+                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-400"
+              />
+            </div>
+            <p className="text-xs text-gray-400 font-bold mt-1 text-right">
+              {index + 1} / {total}
+            </p>
           </div>
-          <p className="text-xs text-gray-400 font-bold mt-1 text-right">
-            {index + 1} / {total}
-          </p>
-        </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          <ChildBadge variant="compact" />
-          <div className="text-2xl">{cat.emoji}</div>
+          <div className="flex items-center gap-2 shrink-0">
+            <ChildBadge variant="compact" />
+            <div className="text-2xl">{cat.emoji}</div>
+          </div>
         </div>
       </header>
 
       {/* Mode tabs */}
-      <div className="px-4 pt-4 flex gap-1.5 sm:gap-2 max-w-lg mx-auto">
+      <div className="px-4 pt-4 flex gap-1.5 sm:gap-2 max-w-xl md:max-w-2xl mx-auto">
         <Link
           href="/"
           className="px-2.5 sm:px-3 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-500 hover:text-orange-600 hover:bg-orange-50 border border-gray-100 transition-all flex items-center justify-center gap-1 shrink-0 shadow-xs"
@@ -407,7 +432,7 @@ export default function LearnPage() {
           <button
             key={tab.label}
             onClick={() => !tab.active && router.push(tab.href)}
-            className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               tab.active
                 ? 'bg-violet-600 text-white shadow-lg shadow-violet-200'
                 : 'bg-white text-gray-500 hover:bg-violet-50 border border-gray-100'
@@ -428,7 +453,7 @@ export default function LearnPage() {
 
       {/* Content */}
       <div
-        className="px-4 pt-4 pb-24 max-w-lg mx-auto"
+        className="px-4 pt-4 pb-24 max-w-xl md:max-w-2xl mx-auto"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
@@ -441,7 +466,7 @@ export default function LearnPage() {
           <div className="flex items-center bg-gray-100/90 p-0.5 rounded-xl text-xs font-bold gap-0.5">
             <button
               onClick={() => handleToggleAutoSpeed('normal')}
-              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
                 autoSpeed === 'normal'
                   ? 'bg-white text-violet-700 shadow-xs font-black'
                   : 'text-gray-400 hover:text-gray-600'
@@ -451,7 +476,7 @@ export default function LearnPage() {
             </button>
             <button
               onClick={() => handleToggleAutoSpeed('slow')}
-              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
                 autoSpeed === 'slow'
                   ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-xs font-black'
                   : 'text-gray-400 hover:text-gray-600'
@@ -461,7 +486,7 @@ export default function LearnPage() {
             </button>
             <button
               onClick={() => handleToggleAutoSpeed('superslow')}
-              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
                 autoSpeed === 'superslow'
                   ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-xs font-black'
                   : 'text-gray-400 hover:text-gray-600'
@@ -487,10 +512,16 @@ export default function LearnPage() {
           <ExampleBox word={word} />
         </div>
 
-        {/* Tip */}
-        <p className="text-center text-xs text-gray-400 mt-3 font-semibold">
+        {/* Tip & Keyboard helper */}
+        <p className="text-center text-xs text-gray-400 mt-3 font-semibold md:hidden">
           👆 Vuốt trái/phải để chuyển từ
         </p>
+        <div className="hidden md:flex items-center justify-center gap-3 text-xs font-semibold text-gray-400 mt-4 bg-white/70 backdrop-blur py-2 px-4 rounded-2xl border border-violet-100 shadow-2xs">
+          <span>⌨️ Phím tắt:</span>
+          <span><kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">←</kbd> / <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">→</kbd> chuyển từ</span>
+          <span><kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">Space</kbd> nghe chuẩn</span>
+          <span><kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">S</kbd> đọc chậm</span>
+        </div>
 
         {/* Navigation buttons */}
         <div className="flex gap-3 mt-5">
@@ -498,7 +529,7 @@ export default function LearnPage() {
             whileTap={{ scale: 0.9 }}
             onClick={() => go(-1)}
             disabled={index === 0}
-            className="flex-1 py-4 rounded-2xl font-black text-lg bg-white border-2 border-gray-200 text-gray-500 disabled:opacity-30 hover:border-violet-300 transition-colors"
+            className="flex-1 py-4 rounded-2xl font-black text-lg bg-white border-2 border-gray-200 text-gray-500 disabled:opacity-30 hover:border-violet-300 transition-colors cursor-pointer"
           >
             ◀ Trước
           </motion.button>
@@ -506,7 +537,7 @@ export default function LearnPage() {
             whileTap={{ scale: 0.9 }}
             onClick={() => go(1)}
             disabled={index === total - 1}
-            className="flex-1 py-4 rounded-2xl font-black text-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200 disabled:opacity-40"
+            className="flex-1 py-4 rounded-2xl font-black text-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200 disabled:opacity-40 cursor-pointer"
           >
             {index === total - 1 ? '🎉 Xong!' : 'Tiếp ▶'}
           </motion.button>
@@ -521,11 +552,11 @@ export default function LearnPage() {
           >
             <button
               onClick={() => router.push(`/test/${cat.id}`)}
-              className="py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md flex items-center justify-center gap-1.5"
+              className="py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
             >🎯 8 Dạng Bài Tập & Thi</button>
             <button
               onClick={() => router.push(`/speak/${cat.id}`)}
-              className="py-3 rounded-2xl font-bold text-sm bg-rose-400 text-white shadow"
+              className="py-3 rounded-2xl font-bold text-sm bg-rose-400 text-white shadow cursor-pointer"
             >🎤 Luyện nói</button>
           </motion.div>
         )}
@@ -533,3 +564,4 @@ export default function LearnPage() {
     </div>
   );
 }
+

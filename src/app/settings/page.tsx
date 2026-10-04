@@ -296,39 +296,43 @@ CREATE POLICY "Allow public custom_categories" ON public.custom_categories FOR A
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50 to-purple-50">
 
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3 flex items-center gap-2.5">
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => router.back()}
-            className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors"
-            title="Quay lại"
-          >←</button>
-          <Link
-            href="/"
-            className="w-9 h-9 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs"
-            title="Về trang chủ"
-          >🏠</Link>
+      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3 shadow-2xs">
+        <div className="max-w-5xl mx-auto flex items-center gap-3 w-full">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.back()}
+              className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer"
+              title="Quay lại"
+            >←</button>
+            <Link
+              href="/"
+              className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs cursor-pointer"
+              title="Về trang chủ"
+            >🏠</Link>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-black text-xl text-gray-800 flex items-center gap-2">
+              <span>⚙️ Cài Đặt</span>
+              <span className="text-[11px] font-black bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
+                👑 Admin
+              </span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={logoutAdmin}
+              className="text-xs font-bold text-gray-500 hover:text-rose-600 flex items-center gap-1 px-3 py-2 rounded-xl bg-gray-100 hover:bg-rose-50 transition-colors cursor-pointer"
+              title="Khóa quyền quản trị viên"
+            >
+              <span>🔒</span>
+              <span className="hidden sm:inline">Khóa</span>
+            </button>
+            {hydrated && <StatusBadge hasKey={hasKey} />}
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-black text-xl text-gray-800 flex items-center gap-2">
-            <span>⚙️ Cài Đặt</span>
-            <span className="text-[11px] font-black bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
-              👑 Admin
-            </span>
-          </h1>
-        </div>
-        <button
-          onClick={logoutAdmin}
-          className="text-xs font-bold text-gray-400 hover:text-rose-600 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-gray-100 hover:bg-rose-50 transition-colors cursor-pointer"
-          title="Khóa quyền quản trị viên"
-        >
-          <span>🔒</span>
-          <span>Khóa</span>
-        </button>
-        {hydrated && <StatusBadge hasKey={hasKey} />}
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6 pb-24 space-y-5">
+      <div className="max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
 
         {/* ── Quản Lý Mã PIN Admin ── */}
         <motion.div

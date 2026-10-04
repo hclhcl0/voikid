@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
 import confetti from 'canvas-confetti';
+import { WordImage } from '@/components/WordImage';
 
 interface Props {
   words: Word[]; // 3 words in sequence
@@ -191,7 +192,9 @@ export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
 
               {slotWord ? (
                 <>
-                  <span className="text-5xl select-none">{slotWord.emoji}</span>
+                  <div className="flex items-center justify-center min-h-[50px]">
+                    <WordImage word={slotWord} size="sm" />
+                  </div>
                   <span className="text-[11px] font-bold text-gray-700 mt-1 truncate max-w-full">
                     {slotWord.en}
                   </span>
@@ -226,7 +229,9 @@ export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
               onClick={() => handleSelectPicture(pic)}
               className="py-3 px-2 bg-white rounded-2xl border-2 border-gray-200 hover:border-blue-400 shadow-sm flex flex-col items-center justify-center transition-all"
             >
-              <span className="text-4xl select-none">{pic.emoji}</span>
+              <div className="flex items-center justify-center min-h-[44px]">
+                <WordImage word={pic} size="sm" />
+              </div>
               <span className="text-[11px] font-bold text-gray-700 mt-1">
                 {pic.en}
               </span>

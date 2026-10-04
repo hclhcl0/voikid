@@ -10,6 +10,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
+import { WordImage } from '@/components/WordImage';
 
 interface Props {
   targetWord: Word;
@@ -78,9 +79,9 @@ export function ExerciseLookPickWord({
         animate={{ scale: 1, opacity: 1 }}
         className="bg-white rounded-3xl p-6 shadow-md border-2 border-pink-100 text-center relative overflow-hidden"
       >
-        <span className="text-8xl select-none block transform hover:scale-105 transition-transform duration-300">
-          {targetWord.emoji}
-        </span>
+        <div className="flex items-center justify-center py-2 transform hover:scale-105 transition-transform duration-300">
+          <WordImage word={targetWord} size="xl" />
+        </div>
         <p className="text-xs font-bold text-gray-400 mt-2">
           🇻🇳 Nghĩa: <span className="text-pink-600 font-extrabold">{targetWord.vi}</span>
         </p>

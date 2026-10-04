@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
 import confetti from 'canvas-confetti';
+import { WordImage } from '@/components/WordImage';
 
 interface Props {
   words: Word[]; // exactly 3 words to match
@@ -172,7 +173,9 @@ export function ExerciseMatchWordPicture({ words, onAnswer }: Props) {
                 disabled={isMatched}
                 className={`w-full py-2.5 px-3 rounded-2xl flex items-center justify-center transition-all ${cardCls}`}
               >
-                <span className="text-4xl select-none">{p.emoji}</span>
+                <div className="flex items-center justify-center min-h-[44px]">
+                  <WordImage word={p} size="sm" />
+                </div>
                 {isMatched && (
                   <span className="ml-2 text-xs font-bold text-emerald-600">✓</span>
                 )}

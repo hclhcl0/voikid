@@ -1,16 +1,19 @@
 'use client';
 
 // =============================================
-// Dạng 7: Nghe, nói và nghe lại giọng mình
-// Nghe mẫu → ghi âm → nghe lại → luyện lần nữa.
-// Mục tiêu: Luyện nói, tạo sự tự tin
+// Dạng 7: Nghe, nói và nghe lại giọng mình (Kèm Tùy Chọn AI Chấm Điểm)
+// Nghe mẫu → ghi âm → nghe lại → nhờ AI nhận xét & chấm điểm.
+// Mục tiêu: Luyện nói, tạo sự tự tin & chuẩn hóa phát âm
 // =============================================
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Word } from '@/types';
+import { Word, PronunciationResult } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
+import { useSettings } from '@/hooks/useSettings';
+import { useProfileContext } from '@/context/ProfileContext';
 import confetti from 'canvas-confetti';
+import { WordImage } from '@/components/WordImage';
 
 interface Props {
   targetWord: Word;
@@ -19,12 +22,20 @@ interface Props {
 
 export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
   const { speak, isSpeaking } = useTTS();
+  const { apiKey } = useSettings();
+  const { recordAttempt } = useProfileContext();
 
   const [isRecording, setIsRecording] = useState(false);
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [isPlayingSelf, setIsPlayingSelf] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
+
+  // ── AI Evaluation States ──
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState<PronunciationResult | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -32,10 +43,13 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
 
   useEffect(() => {
     setRecordedAudioUrl(null);
+    setRecordedBlob(null);
     setIsRecording(false);
     setIsPlayingSelf(false);
     setHasCompleted(false);
     setMicError(null);
+    setAiResult(null);
+    setAiError(null);
 
     // Auto-play model pronunciation when component opens
     const t = setTimeout(() => {
@@ -50,6 +64,8 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
 
   const handleStartRecording = async () => {
     setMicError(null);
+    setAiResult(null);
+    setAiError(null);
     audioChunksRef.current = [];
 
     try {
@@ -71,6 +87,7 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const url = URL.createObjectURL(audioBlob);
+        setRecordedBlob(audioBlob);
         setRecordedAudioUrl(url);
         setIsRecording(false);
 
@@ -129,6 +146,71 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
     audio.play().catch(() => setIsPlayingSelf(false));
   };
 
+  // ── AI Evaluation Trigger ──
+  const handleEvaluateWithAI = async () => {
+    if (!recordedBlob) return;
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      // 1. Convert Blob to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const res = reader.result as string;
+          // Format: "data:audio/webm;base64,AAAA..." -> take content after comma
+          const base64 = res.split(',')[1] || '';
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(recordedBlob);
+      const audioBase64 = await base64Promise;
+
+      // 2. Call /api/pronunciation
+      const mimeType = recordedBlob.type || 'audio/webm';
+      const res = await fetch('/api/pronunciation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audioBase64,
+          mimeType,
+          targetWord: targetWord.en,
+          targetVi: targetWord.vi,
+          phonetic: targetWord.phonetic,
+          apiKey: apiKey || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (err.error === 'NO_API_KEY') {
+          setAiError('Chưa có Gemini API Key. Bạn vào mục Cài đặt (⚙️) nhập key miễn phí để kích hoạt AI nhé!');
+          setAiLoading(false);
+          return;
+        }
+        throw new Error(err.message || `Lỗi máy chủ (${res.status})`);
+      }
+
+      const data = (await res.json()) as PronunciationResult;
+      setAiResult(data);
+
+      if (data.score && data.score >= 70) {
+        confetti({
+          particleCount: 80,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#10b981', '#f59e0b', '#ec4899', '#6366f1'],
+        });
+      }
+    } catch (e: any) {
+      console.warn('AI evaluation error:', e);
+      setAiError('Không thể kết nối AI. Kiểm tra internet hoặc API Key.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const handleComplete = () => {
     setHasCompleted(true);
     onAnswer(true, true);
@@ -139,7 +221,7 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
       {/* Header prompt */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-black mb-2">
-          <span>🎙️</span> Dạng 7: Nghe, nói và nghe lại giọng mình
+          <span>🎙️</span> Dạng 7: Nghe, nói & nghe lại (Kèm AI)
         </span>
         <h3 className="text-base font-black text-gray-800">
           Nghe mẫu ➡️ Bé ghi âm ➡️ Nghe lại giọng mình!
@@ -147,8 +229,10 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
       </div>
 
       {/* Target Word Card */}
-      <div className="bg-white rounded-3xl p-5 shadow-md border-2 border-rose-100 text-center">
-        <span className="text-7xl block mb-2 select-none">{targetWord.emoji}</span>
+      <div className="bg-white rounded-3xl p-5 shadow-md border-2 border-rose-100 text-center flex flex-col items-center">
+        <div className="mb-2 flex items-center justify-center">
+          <WordImage word={targetWord} size="xl" />
+        </div>
         <h2 className="font-andika font-black text-3xl text-rose-600 mb-1">
           {targetWord.en}
         </h2>
@@ -160,9 +244,18 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
 
       {/* Mic error warning if any */}
       {micError && (
-        <div className="p-3 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-800 font-semibold flex items-start gap-2">
-          <span>⚠️</span>
-          <span>{micError}</span>
+        <div className="p-3 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-800 font-semibold flex flex-col gap-2">
+          <div className="flex items-start gap-2">
+            <span>⚠️</span>
+            <span>{micError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleComplete}
+            className="self-end px-3 py-1.5 bg-amber-600 text-white rounded-xl font-bold hover:bg-amber-700 transition-colors text-xs"
+          >
+            Bỏ qua câu nói & Tiếp tục →
+          </button>
         </div>
       )}
 
@@ -216,14 +309,28 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
           )}
         </div>
 
-        {/* Step 3: Listen back to child's voice */}
+        {/* Fallback skip / complete after listening */}
+        {!recordedAudioUrl && !isRecording && (
+          <div className="text-center pt-1">
+            <button
+              type="button"
+              onClick={handleComplete}
+              className="text-xs font-bold text-gray-400 hover:text-gray-600 underline py-1"
+            >
+              Bé đã luyện nói theo mẫu rồi? Bấm vào đây để tiếp tục →
+            </button>
+          </div>
+        )}
+
+        {/* Step 3: Listen back to child's voice & AI Scoring */}
         <AnimatePresence>
           {recordedAudioUrl && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="pt-1 space-y-2"
+              className="pt-1 space-y-2.5"
             >
+              {/* Playback self button */}
               <button
                 type="button"
                 onClick={handlePlaySelf}
@@ -237,7 +344,72 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
                 <span>3. Nghe lại giọng bé vừa nói {isPlayingSelf ? '(Đang phát...)' : ''}</span>
               </button>
 
-              <div className="flex gap-2">
+              {/* 🤖 Button: Ask AI to evaluate */}
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                type="button"
+                onClick={handleEvaluateWithAI}
+                disabled={aiLoading}
+                className="w-full py-3.5 px-4 rounded-2xl font-black text-sm bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-100 flex items-center justify-center gap-2 hover:opacity-95 disabled:opacity-50 transition-all"
+              >
+                {aiLoading ? (
+                  <>
+                    <span className="animate-spin text-lg">⏳</span>
+                    <span>Cô Giáo AI đang nghe và chấm điểm...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">🤖</span>
+                    <span>Nhờ Cô Giáo AI Chấm Điểm & Nhận Xét</span>
+                  </>
+                )}
+              </motion.button>
+
+              {/* AI Error Warning */}
+              {aiError && (
+                <div className="p-3 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-800 font-semibold flex items-start gap-2">
+                  <span>💡</span>
+                  <span>{aiError}</span>
+                </div>
+              )}
+
+              {/* 🌟 AI Result Card Display */}
+              {aiResult && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-white rounded-3xl p-4 border-2 border-violet-200 shadow-md space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-violet-700 flex items-center gap-1">
+                      <span>🤖</span> Nhận xét từ Cô Giáo AI:
+                    </span>
+                    <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                      <span className="text-amber-500 font-black text-sm">
+                        ⭐ {aiResult.score ?? 85} điểm
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Feedback text */}
+                  {aiResult.feedbackVi && (
+                    <div className="bg-violet-50/70 rounded-2xl p-3 text-xs text-violet-900 font-bold leading-relaxed border border-violet-100">
+                      💬 "{aiResult.feedbackVi}"
+                    </div>
+                  )}
+
+                  {/* AI reason / guidance */}
+                  {aiResult.reason && (
+                    <div className="text-[11px] font-bold text-gray-600 flex items-center gap-1.5">
+                      <span>🎯</span>
+                      <span>Đánh giá: <strong>{aiResult.reason}</strong></span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Action buttons: Retry or Finish */}
+              <div className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={handleStartRecording}

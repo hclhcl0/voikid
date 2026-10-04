@@ -3,11 +3,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSettings } from '@/hooks/useSettings';
 import { useCustomCategories, CustomCategory } from '@/hooks/useCustomCategories';
 import { useAdminContext } from '@/context/AdminContext';
 import { Word } from '@/types';
+import { WordImage } from '@/components/WordImage';
+import { checkWordInDatabase, WordMatchInfo } from '@/lib/vocabularyChecker';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type SourceType = 'txt' | 'pdf' | 'image' | 'url' | 'manual';
@@ -43,8 +45,14 @@ function blankWord(): Word {
 
 // ── Word Preview/Edit Card ────────────────────────────────────────────────────
 function WordPreviewCard({
-  word, index, onEdit, onRemove,
-}: { word: Word; index: number; onEdit: (w: Word) => void; onRemove: () => void }) {
+  word, index, matchInfo, onEdit, onRemove,
+}: {
+  word: Word;
+  index: number;
+  matchInfo?: WordMatchInfo;
+  onEdit: (w: Word) => void;
+  onRemove: () => void;
+}) {
   const [editing, setEditing] = useState(false);
   const [draft,   setDraft]   = useState(word);
   const commit = () => { onEdit(draft); setEditing(false); };
@@ -89,11 +97,24 @@ function WordPreviewCard({
       ) : (
         <button onClick={() => setEditing(true)} className="w-full text-left">
           <div className="flex items-center gap-3 pr-4">
-            <span className="text-3xl">{word.emoji}</span>
+            <div className="w-10 h-10 flex items-center justify-center shrink-0">
+              <WordImage word={word} size="sm" />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="font-black text-violet-700 text-sm">{word.en}</span>
                 {word.phonetic && <span className="text-gray-400 text-xs font-mono">{word.phonetic}</span>}
+                {matchInfo?.isDuplicate ? (
+                  <span className="text-[10px] bg-amber-50 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs" title={`Đã có trong ${matchInfo.gradeName}: ${matchInfo.categoryName}`}>
+                    <span>🟡</span>
+                    <span>Đã có ({matchInfo.gradeName || 'SGK'})</span>
+                  </span>
+                ) : (
+                  <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs">
+                    <span>🟢</span>
+                    <span>Từ mới tinh</span>
+                  </span>
+                )}
                 {word.topic_vi && (
                   <span className="text-[10px] bg-violet-50 text-violet-700 border border-violet-100 font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1">
                     <span>{word.topic_emoji || '🏷️'}</span>
@@ -352,6 +373,17 @@ export default function ImportPage() {
   const [targetCatId,  setTargetCatId]  = useState<string>('');
   const [savedCats,    setSavedCats]    = useState<CustomCategory[]>([]);
   const [selectedFilterTopic, setSelectedFilterTopic] = useState<string>('all');
+  const [extractMode, setExtractMode] = useState<'comprehensive' | 'selective'>('comprehensive');
+  const [duplicateFilter, setDuplicateFilter] = useState<'all' | 'new_only' | 'duplicate_only'>('all');
+  const [targetGrade, setTargetGrade] = useState<string>('lop1');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tg = params.get('targetGrade') || params.get('grade');
+      if (tg) setTargetGrade(tg);
+    }
+  }, []);
 
   // Compute dynamic topic clusters from current words list
   const groupedTopics: ExtractedTopic[] = useMemo(() => {
@@ -372,11 +404,27 @@ export default function ImportPage() {
     return Array.from(map.values());
   }, [words]);
 
+  // Compute cross-check matches against 1,210 SGK words & custom categories
+  const wordMatches = useMemo(() => {
+    const map = new Map<string, WordMatchInfo>();
+    words.forEach((w) => {
+      map.set(w.id, checkWordInDatabase(w.en, customCats));
+    });
+    return map;
+  }, [words, customCats]);
+
+  const duplicateWordsCount = useMemo(() => {
+    return words.filter((w) => wordMatches.get(w.id)?.isDuplicate).length;
+  }, [words, wordMatches]);
+
+  const newWordsCount = words.length - duplicateWordsCount;
+
   const extract = async (formData: FormData) => {
     setLoading(true); setError(null);
     setLoadingMsg('🤖 Gemini đang phân tích nội dung...');
     try {
       if (apiKey) formData.append('apiKey', apiKey);
+      formData.append('mode', extractMode);
       const res  = await fetch('/api/import/extract', { method: 'POST', body: formData });
       const data = await res.json() as { words?: Word[]; topics?: ExtractedTopic[]; error?: string; message?: string };
       if (!res.ok) {
@@ -435,6 +483,7 @@ export default function ImportPage() {
         words: t.words,
         sourceType: activeSource,
         sourceLabel,
+        gradeId: targetGrade,
       }));
       const created = addMultipleCategories(catsToCreate);
       setSavedCats(created);
@@ -447,7 +496,7 @@ export default function ImportPage() {
       setStep('done');
     } else {
       if (!catName.trim()) return;
-      const cat = addCategory(catName.trim(), catEmoji, words, activeSource, sourceLabel);
+      const cat = addCategory(catName.trim(), catEmoji, words, activeSource, sourceLabel, targetGrade);
       setSavedCats([cat]);
       setStep('done');
     }
@@ -463,9 +512,18 @@ export default function ImportPage() {
 
   const src = SOURCES.find((s) => s.id === activeSource)!;
 
-  const displayWords = selectedFilterTopic === 'all'
-    ? words
-    : words.filter((w) => (w.topic_vi?.trim() || 'Chủ đề chung') === selectedFilterTopic);
+  const displayWords = words.filter((w) => {
+    if (selectedFilterTopic !== 'all') {
+      if ((w.topic_vi?.trim() || 'Chủ đề chung') !== selectedFilterTopic) return false;
+    }
+    if (duplicateFilter === 'new_only') {
+      return !wordMatches.get(w.id)?.isDuplicate;
+    }
+    if (duplicateFilter === 'duplicate_only') {
+      return wordMatches.get(w.id)?.isDuplicate;
+    }
+    return true;
+  });
 
   if (!isAdmin) {
     return (
@@ -505,45 +563,47 @@ export default function ImportPage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-violet-50 to-fuchsia-50">
 
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3 flex items-center gap-2.5">
-        <div className="flex items-center gap-1.5">
-          <button onClick={() => router.back()}
-            className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors"
-            title="Quay lại"
-          >←</button>
-          <Link href="/"
-            className="w-9 h-9 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs"
-            title="Về trang chủ"
-          >🏠</Link>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-black text-lg text-gray-800 leading-tight">📥 Thêm từ vựng</h1>
-          <p className="text-xs text-gray-400 font-semibold truncate">Tự động phân loại theo chủ đề bằng AI</p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <button
-            onClick={logoutAdmin}
-            title="Khóa quyền Admin"
-            className="px-2 py-1 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
-          >
-            <span>🔒</span>
-            <span className="hidden sm:inline">Khóa</span>
-          </button>
-          <div className="flex gap-1.5 items-center">
-            {(['input', 'preview', 'save', 'done'] as Step[]).map((s, i) => {
-              const order: Step[] = ['input', 'preview', 'save', 'done'];
-              const cur = order.indexOf(step);
-              return (
-                <div key={s} className={`rounded-full transition-all duration-300 ${
-                  step === s ? 'w-5 h-2 bg-violet-500' : i < cur ? 'w-2 h-2 bg-violet-300' : 'w-2 h-2 bg-gray-200'
-                }`} />
-              );
-            })}
+      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3">
+        <div className="max-w-5xl mx-auto flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <button onClick={() => router.back()}
+              className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer"
+              title="Quay lại"
+            >←</button>
+            <Link href="/"
+              className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs cursor-pointer"
+              title="Về trang chủ"
+            >🏠</Link>
+          </div>
+          <div className="flex-1 min-w-0 px-2">
+            <h1 className="font-black text-lg md:text-xl text-gray-800 leading-tight">📥 Thêm từ vựng</h1>
+            <p className="text-xs text-gray-400 font-semibold truncate">Tự động phân loại theo chủ đề bằng AI</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <button
+              onClick={logoutAdmin}
+              title="Khóa quyền Admin"
+              className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+            >
+              <span>🔒</span>
+              <span className="hidden sm:inline">Khóa</span>
+            </button>
+            <div className="flex gap-1.5 items-center">
+              {(['input', 'preview', 'save', 'done'] as Step[]).map((s, i) => {
+                const order: Step[] = ['input', 'preview', 'save', 'done'];
+                const cur = order.indexOf(step);
+                return (
+                  <div key={s} className={`rounded-full transition-all duration-300 ${
+                    step === s ? 'w-5 h-2 bg-violet-500' : i < cur ? 'w-2 h-2 bg-violet-300' : 'w-2 h-2 bg-gray-200'
+                  }`} />
+                );
+              })}
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-5 pb-24 space-y-4">
+      <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
         <AnimatePresence mode="wait">
 
           {/* ── STEP: Input ── */}
@@ -576,8 +636,47 @@ export default function ImportPage() {
                   <div className="space-y-3">
                     <input type="url" value={urlInput} onChange={(e) => setUrlInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleUrl()}
-                      placeholder="https://example.com/vocabulary-list"
+                      placeholder="https://yourhomework.net/story/..."
                       className="w-full border-2 border-gray-200 focus:border-violet-400 rounded-2xl px-4 py-3 text-sm font-semibold focus:outline-none" />
+                    
+                    {/* Extraction Mode selector */}
+                    <div className="p-3 bg-violet-50/70 rounded-2xl border border-violet-100 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-black text-violet-900 flex items-center gap-1">
+                          <span>🎯</span> Chế độ trích xuất:
+                        </span>
+                        <span className="text-[10px] font-bold text-violet-700 bg-white px-2 py-0.5 rounded-full border border-violet-200">
+                          {extractMode === 'comprehensive' ? 'Bóc tách triệt để' : 'Cốt lõi'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setExtractMode('comprehensive')}
+                          className={`p-2 rounded-xl text-left transition-all border-2 ${
+                            extractMode === 'comprehensive'
+                              ? 'border-violet-500 bg-white text-violet-900 shadow-2xs ring-1 ring-violet-300'
+                              : 'border-transparent bg-white/60 text-gray-500 hover:bg-white'
+                          }`}
+                        >
+                          <p className="font-black text-xs">✨ Tối đa từ (Nhiều từ)</p>
+                          <p className="text-[10px] text-gray-500">Lấy cả danh từ, động từ, tính từ...</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setExtractMode('selective')}
+                          className={`p-2 rounded-xl text-left transition-all border-2 ${
+                            extractMode === 'selective'
+                              ? 'border-violet-500 bg-white text-violet-900 shadow-2xs ring-1 ring-violet-300'
+                              : 'border-transparent bg-white/60 text-gray-500 hover:bg-white'
+                          }`}
+                        >
+                          <p className="font-black text-xs">🎯 Tiêu chuẩn (5–15 từ)</p>
+                          <p className="text-[10px] text-gray-500">Chỉ lọc từ danh từ cơ bản nhất</p>
+                        </button>
+                      </div>
+                    </div>
+
                     <motion.button whileTap={{ scale: 0.97 }} onClick={handleUrl}
                       disabled={!urlInput.trim() || loading}
                       className="w-full py-3.5 rounded-2xl font-black text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg disabled:opacity-40">
@@ -590,6 +689,44 @@ export default function ImportPage() {
 
                 {(activeSource === 'txt' || activeSource === 'pdf' || activeSource === 'image') && (
                   <div className="space-y-3">
+                    {/* Extraction Mode selector */}
+                    <div className="p-3 bg-violet-50/70 rounded-2xl border border-violet-100 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-black text-violet-900 flex items-center gap-1">
+                          <span>🎯</span> Chế độ trích xuất:
+                        </span>
+                        <span className="text-[10px] font-bold text-violet-700 bg-white px-2 py-0.5 rounded-full border border-violet-200">
+                          {extractMode === 'comprehensive' ? 'Bóc tách triệt để' : 'Cốt lõi'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setExtractMode('comprehensive')}
+                          className={`p-2 rounded-xl text-left transition-all border-2 ${
+                            extractMode === 'comprehensive'
+                              ? 'border-violet-500 bg-white text-violet-900 shadow-2xs ring-1 ring-violet-300'
+                              : 'border-transparent bg-white/60 text-gray-500 hover:bg-white'
+                          }`}
+                        >
+                          <p className="font-black text-xs">✨ Tối đa từ (Nhiều từ)</p>
+                          <p className="text-[10px] text-gray-500">Lấy cả danh từ, động từ, tính từ...</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setExtractMode('selective')}
+                          className={`p-2 rounded-xl text-left transition-all border-2 ${
+                            extractMode === 'selective'
+                              ? 'border-violet-500 bg-white text-violet-900 shadow-2xs ring-1 ring-violet-300'
+                              : 'border-transparent bg-white/60 text-gray-500 hover:bg-white'
+                          }`}
+                        >
+                          <p className="font-black text-xs">🎯 Tiêu chuẩn (5–15 từ)</p>
+                          <p className="text-[10px] text-gray-500">Chỉ lọc từ danh từ cơ bản nhất</p>
+                        </button>
+                      </div>
+                    </div>
+
                     <DropZone accept={src.accept!} label={`Chọn ${src.label}`}
                       onFile={(f) => handleFile(f, activeSource)} />
                     {loading && (
@@ -647,6 +784,75 @@ export default function ImportPage() {
                 </div>
               </div>
 
+              {/* Comparison & Duplicate Stats Banner */}
+              <div className="bg-white rounded-3xl p-4 shadow border border-violet-100 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <p className="text-xs font-black text-gray-800">
+                      🔍 Đối chiếu với kho 1.210 từ SGK & Bộ từ của bé:
+                    </p>
+                    <p className="text-[11px] font-semibold text-gray-500 mt-0.5">
+                      Có <strong className="text-emerald-600 font-black">{newWordsCount} từ mới</strong> và <strong className="text-amber-600 font-black">{duplicateWordsCount} từ đã có trong SGK</strong>
+                    </p>
+                  </div>
+                  {duplicateWordsCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm(`Bạn có chắc muốn bỏ ${duplicateWordsCount} từ đã có trong kho và chỉ giữ lại ${newWordsCount} từ mới?`)) {
+                          setWords((prev) => prev.filter((w) => !wordMatches.get(w.id)?.isDuplicate));
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-black text-xs transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
+                    >
+                      <span>🧹</span>
+                      <span>Chỉ giữ {newWordsCount} từ mới</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter pills */}
+                <div className="flex gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setDuplicateFilter('all')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                      duplicateFilter === 'all'
+                        ? 'bg-violet-600 text-white shadow-xs'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Tất cả ({words.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDuplicateFilter('new_only')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                      duplicateFilter === 'new_only'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                    }`}
+                  >
+                    <span>🟢</span>
+                    <span>Từ mới ({newWordsCount})</span>
+                  </button>
+                  {duplicateWordsCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setDuplicateFilter('duplicate_only')}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                        duplicateFilter === 'duplicate_only'
+                          ? 'bg-amber-600 text-white shadow-xs'
+                          : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
+                      }`}
+                    >
+                      <span>🟡</span>
+                      <span>Đã có ({duplicateWordsCount})</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Topic Filter Pills (if multiple topics detected) */}
               {groupedTopics.length > 1 && (
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
@@ -685,10 +891,10 @@ export default function ImportPage() {
                   </h3>
                   <span className="text-xs text-gray-400 font-semibold">Nhấn để sửa • ✕ xóa</span>
                 </div>
-                <motion.div layout className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[55vh] overflow-y-auto pr-1">
                   <AnimatePresence>
                     {displayWords.map((w, i) => (
-                      <WordPreviewCard key={w.id} word={w} index={i}
+                      <WordPreviewCard key={w.id} word={w} index={i} matchInfo={wordMatches.get(w.id)}
                         onEdit={(updated) => setWords((p) => p.map((x) => x.id === w.id ? updated : x))}
                         onRemove={() => setWords((p) => p.filter((x) => x.id !== w.id))} />
                     ))}
@@ -913,17 +1119,53 @@ export default function ImportPage() {
                 <h2 className="font-black text-2xl text-violet-700 mb-1">
                   {saveMode === 'auto' ? 'Đã tự động phân loại thành công!' : 'Đã lưu thành công!'}
                 </h2>
-                <p className="text-gray-500 text-xs mb-4">
+                <p className="text-gray-500 text-xs mb-3">
                   {saveMode === 'auto' ? (
-                    <>Đã lưu <strong>{words.length} từ</strong> vào <strong>{savedCats.length} chủ đề</strong>:</>
+                    <>Đã lưu <strong>{words.length} từ</strong> vào <strong>{savedCats.length} chủ đề</strong> riêng biệt.</>
                   ) : saveMode === 'existing' && savedCats[0] ? (
-                    <>Đã thêm <strong>{words.length} từ</strong> vào <strong>{savedCats[0].emoji} {savedCats[0].name_vi}</strong></>
+                    <>Đã thêm <strong>{words.length} từ</strong> vào <strong>{savedCats[0].emoji} {savedCats[0].name_vi}</strong>.</>
                   ) : (
-                    <>Đã lưu <strong>{words.length} từ</strong> vào chủ đề <strong>{savedCats[0]?.emoji || catEmoji} {savedCats[0]?.name_vi || catName}</strong></>
+                    <>Đã lưu <strong>{words.length} từ</strong> vào chủ đề <strong>{savedCats[0]?.emoji || catEmoji} {savedCats[0]?.name_vi || catName}</strong>.</>
                   )}
                 </p>
 
+                {/* Banner thông báo đồng thời lưu vào mục Từ mới của bé */}
+                <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 text-left shadow-xs">
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-2xl shrink-0">🌟</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-black text-amber-900 text-xs sm:text-sm">
+                        Đã tự động đồng bộ vào mục &ldquo;🌟 Từ mới của bé&rdquo;
+                      </p>
+                      <p className="text-[11px] text-amber-700 font-medium mt-0.5">
+                        Bé có thể học theo từng chủ đề riêng bên dưới, HOẶC học toàn bộ {words.length} từ mới tại mục Từ mới tập trung!
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-2.5 border-t border-amber-200 flex gap-2">
+                    <button
+                      onClick={() => router.push('/learn/custom_new_words')}
+                      className="flex-1 py-2 px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>▶</span>
+                      <span>Học toàn bộ từ mới</span>
+                    </button>
+                    <button
+                      onClick={() => router.push('/test/custom_new_words')}
+                      className="flex-1 py-2 px-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-95 text-white font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>🎯</span>
+                      <span>8 Dạng bài tập</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Categories summary list */}
+                <div className="text-left mb-2 px-1">
+                  <span className="text-xs font-bold text-gray-500">
+                    Danh sách các chủ đề đã phân loại:
+                  </span>
+                </div>
                 <div className="space-y-2 mb-6 max-h-56 overflow-y-auto text-left">
                   {savedCats.map((cat) => (
                     <div key={cat.id} className="flex items-center justify-between p-3 rounded-2xl bg-violet-50 border border-violet-100">
@@ -936,9 +1178,9 @@ export default function ImportPage() {
                       </div>
                       <button
                         onClick={() => router.push(`/learn/${cat.id}`)}
-                        className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-black transition-all shadow-xs"
+                        className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer"
                       >
-                        Học →
+                        Học chủ đề →
                       </button>
                     </div>
                   ))}
@@ -948,16 +1190,16 @@ export default function ImportPage() {
                   {savedCats.length > 0 && (
                     <motion.button whileTap={{ scale: 0.97 }}
                       onClick={() => router.push(`/learn/${savedCats[0].id}`)}
-                      className="py-3 rounded-2xl font-black text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg">
+                      className="py-3 rounded-2xl font-black text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg cursor-pointer">
                       📖 Học ngay: {savedCats[0].emoji} {savedCats[0].name_vi}
                     </motion.button>
                   )}
                   <button onClick={handleReset}
-                    className="py-3 rounded-2xl font-bold text-violet-600 border-2 border-violet-200 hover:bg-violet-50 transition-colors">
+                    className="py-3 rounded-2xl font-bold text-violet-600 border-2 border-violet-200 hover:bg-violet-50 transition-colors cursor-pointer">
                     📥 Thêm từ vựng nữa
                   </button>
                   <button onClick={() => router.push('/')}
-                    className="py-2 font-bold text-gray-400 text-sm hover:text-gray-600 transition-colors">
+                    className="py-2 font-bold text-gray-400 text-sm hover:text-gray-600 transition-colors cursor-pointer">
                     🏠 Về trang chủ
                   </button>
                 </div>

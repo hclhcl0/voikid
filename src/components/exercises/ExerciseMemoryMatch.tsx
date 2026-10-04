@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
 import confetti from 'canvas-confetti';
+import { WordImage } from '@/components/WordImage';
 
 type MatchLevel = 'pic_pic' | 'pic_word';
 
@@ -190,7 +191,9 @@ export function ExerciseMemoryMatch({
             >
               {isFlipped ? (
                 card.type === 'pic' ? (
-                  <span className="text-5xl select-none">{card.label}</span>
+                  <div className="flex items-center justify-center">
+                    <WordImage word={card.word} size="sm" />
+                  </div>
                 ) : (
                   <div className="text-center">
                     <span className="font-andika font-black text-sm text-purple-800 block">

@@ -74,7 +74,12 @@ export interface WordProgress {
   stars: number;           // 0–3
   attempts: number;
   bestScore: number;
-  lastPracticed: string;   // ISO date string
+  lastPracticed: string;   // ISO date string (YYYY-MM-DD)
+  consecutivePasses?: number; // Số lần đọc đúng liên tiếp (cần >= 2 để tốt nghiệp)
+  mastered?: boolean;         // Đã tốt nghiệp thành thạo chưa
+  masteredAt?: string;        // Ngày tốt nghiệp (YYYY-MM-DD)
+  reviewDueDate?: string;     // Ngày đến hạn ôn tập tiếp theo (Spaced Repetition)
+  intervalDays?: number;      // Khoảng cách chu kỳ ôn tập (1, 3, 7, 14, 30 ngày)
 }
 
 export interface DailyStats {
