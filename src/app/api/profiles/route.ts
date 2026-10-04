@@ -3,6 +3,18 @@ import fs from 'fs';
 import path from 'path';
 import { UserProfile, AppProgress } from '@/types';
 import { getSupabase, testSupabaseConnection } from '@/lib/supabase';
+import {
+  isPostgresConfigured,
+  testPostgresConnection,
+  pgGetProfiles,
+  pgLoginProfile,
+  pgCreateProfile,
+  pgSyncProgress,
+  pgUpdateProfile,
+  pgDeleteProfile,
+} from '@/lib/postgres';
+
+export const runtime = 'nodejs';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const STORE_FILE = path.join(DATA_DIR, 'profiles_store.json');
@@ -86,7 +98,7 @@ function generateCode(name: string, existingCodes: Set<string>): string {
     .toUpperCase();
 
   const prefix = clean.replace(/^BE/, '').slice(0, 5) || 'KID';
-  
+
   for (let i = 0; i < 50; i++) {
     const num = Math.floor(10 + Math.random() * 90);
     const candidate = `${prefix}${num}`;
@@ -103,7 +115,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('q')?.trim().toLowerCase() || '';
 
-  // 1. Thử truy vấn từ Supabase Cloud trước nếu đã cấu hình
+  // 1. Thử truy vấn từ PostgreSQL trước nếu đã cấu hình (DATABASE_URL / POSTGRES_URL)
+  if (isPostgresConfigured()) {
+    try {
+      const pgProfiles = await pgGetProfiles(query || undefined);
+      if (Array.isArray(pgProfiles) && pgProfiles.length > 0) {
+        return NextResponse.json({
+          success: true,
+          profiles: pgProfiles,
+          totalCount: pgProfiles.length,
+          source: 'postgresql',
+        });
+      }
+    } catch (pgErr) {
+      console.warn('[PostgreSQL GET failed, falling back to Supabase/local]:', pgErr);
+    }
+  }
+
+  // 2. Thử truy vấn từ Supabase Cloud nếu đã cấu hình
   const supabase = getSupabase();
   if (supabase) {
     try {
@@ -162,7 +191,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 2. Fallback sang local store (JSON file)
+  // 3. Fallback sang local store (JSON file)
   const store = ensureStore();
   let list = store.profiles;
   if (query) {
@@ -200,13 +229,19 @@ export async function POST(req: NextRequest) {
     const existingCodes = new Set(store.profiles.map((p) => (p.code || '').toUpperCase()));
     const supabase = getSupabase();
 
+    // ── Action: TEST_POSTGRES ──
+    if (action === 'test_postgres') {
+      const result = await testPostgresConnection();
+      return NextResponse.json(result);
+    }
+
     // ── Action: TEST_SUPABASE ──
     if (action === 'test_supabase') {
       const result = await testSupabaseConnection(body.url, body.anonKey);
       return NextResponse.json(result);
     }
 
-    // ── Action: LOGIN (by name or account code) ──
+    // ── Action: LOGIN (by name, account code or id) ──
     if (action === 'login') {
       const query = (body.query || '').trim();
       if (!query) {
@@ -216,10 +251,28 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // 1. Thử đăng nhập từ PostgreSQL trước
+      if (isPostgresConfigured()) {
+        try {
+          const pgLogin = await pgLoginProfile(query);
+          if (pgLogin) {
+            return NextResponse.json({
+              success: true,
+              profile: pgLogin.profile,
+              progress: pgLogin.progress,
+              source: 'postgresql',
+              message: `Chào mừng ${pgLogin.profile.name} đã đăng nhập từ PostgreSQL! 🎉`,
+            });
+          }
+        } catch (pgErr) {
+          console.warn('[PostgreSQL login failed, trying fallback]:', pgErr);
+        }
+      }
+
       const qNorm = query.toLowerCase();
       const qCode = query.toUpperCase();
 
-      // Kiểm tra Supabase Cloud trước nếu có
+      // 2. Kiểm tra Supabase Cloud nếu có
       if (supabase) {
         try {
           const { data: cloudMatches } = await supabase
@@ -295,7 +348,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Local fallback
+      // 3. Local fallback
       let matched = store.profiles.find((p) => (p.code || '').toUpperCase() === qCode);
       if (!matched) {
         matched = store.profiles.find((p) => p.name.toLowerCase() === qNorm);
@@ -317,6 +370,11 @@ export async function POST(req: NextRequest) {
         lastActiveDate: '',
         wordProgress: {},
         dailyStats: [],
+        stickers: [],
+        badges: [],
+        unitTestResults: {},
+        unlockedUnits: [],
+        totalPoints: 0,
       };
 
       return NextResponse.json({
@@ -351,19 +409,34 @@ export async function POST(req: NextRequest) {
         code,
       };
 
-      store.profiles.push(newProfile);
-
       const initialProg: AppProgress = body.progress || {
         totalStars: 0,
         streak: 0,
         lastActiveDate: '',
         wordProgress: {},
         dailyStats: [],
+        stickers: [],
+        badges: [],
+        unitTestResults: {},
+        unlockedUnits: [],
+        totalPoints: 0,
       };
+
+      // 1. Lưu vào PostgreSQL nếu cấu hình
+      if (isPostgresConfigured()) {
+        try {
+          await pgCreateProfile(newProfile, initialProg);
+        } catch (pgErr) {
+          console.warn('[PostgreSQL Create Profile failed]:', pgErr);
+        }
+      }
+
+      // 2. Lưu vào local JSON store
+      store.profiles.push(newProfile);
       store.progresses[id] = initialProg;
       saveStore(store);
 
-      // Đồng bộ ngay lên Supabase nếu có
+      // 3. Đồng bộ lên Supabase nếu có
       if (supabase) {
         try {
           await supabase.from('user_profiles').upsert({
@@ -421,6 +494,11 @@ export async function POST(req: NextRequest) {
         lastActiveDate: '',
         wordProgress: {},
         dailyStats: [],
+        stickers: [],
+        badges: [],
+        unitTestResults: {},
+        unlockedUnits: [],
+        totalPoints: 0,
       };
 
       const mergedWordProgress = { ...current.wordProgress };
@@ -443,13 +521,22 @@ export async function POST(req: NextRequest) {
         totalPoints: Math.max(current.totalPoints ?? 0, incomingProg.totalPoints ?? 0),
       };
 
+      // 1. Lưu vào PostgreSQL
+      if (isPostgresConfigured()) {
+        try {
+          await pgSyncProgress(profileId, mergedProgress, body.profile);
+        } catch (pgErr) {
+          console.warn('[PostgreSQL Sync Progress failed]:', pgErr);
+        }
+      }
+
+      // 2. Lưu vào local JSON store
       store.progresses[profileId] = mergedProgress;
       saveStore(store);
 
-      // Đẩy lên Supabase Cloud
+      // 3. Đẩy lên Supabase Cloud
       if (supabase) {
         try {
-          // 1. Cập nhật profile
           if (body.profile) {
             await supabase.from('user_profiles').upsert({
               id: profileId,
@@ -462,7 +549,6 @@ export async function POST(req: NextRequest) {
             });
           }
 
-          // 2. Cập nhật các từ vựng có sao
           const progressRows = Object.values(mergedWordProgress).map((wp) => ({
             id: `${profileId}:${wp.wordId}`,
             profile_id: profileId,
@@ -479,12 +565,11 @@ export async function POST(req: NextRequest) {
             await supabase.from('user_progress').upsert(progressRows, { onConflict: 'id' });
           }
 
-          // 3. Cập nhật sticker
           if (mergedProgress.stickers && mergedProgress.stickers.length > 0) {
-            const stickerRows = mergedProgress.stickers.map((sid) => ({
-              id: `${profileId}:${sid}`,
+            const stickerRows = mergedProgress.stickers.map((sid: any) => ({
+              id: `${profileId}:${typeof sid === 'string' ? sid : sid.id}`,
               profile_id: profileId,
-              sticker_id: sid,
+              sticker_id: typeof sid === 'string' ? sid : sid.id,
               unlocked_at: new Date().toISOString(),
             }));
             await supabase.from('user_stickers').upsert(stickerRows, { onConflict: 'id' });
@@ -504,27 +589,41 @@ export async function POST(req: NextRequest) {
     if (action === 'update') {
       const profileId = body.profileId;
       const idx = store.profiles.findIndex((p) => p.id === profileId);
-      if (idx === -1) {
+      if (idx === -1 && !isPostgresConfigured()) {
         return NextResponse.json({ success: false, message: 'Không tìm thấy bé' }, { status: 404 });
       }
 
       const updateData = body.data || {};
-      store.profiles[idx] = {
-        ...store.profiles[idx],
-        ...updateData,
-        code: updateData.code ? updateData.code.toUpperCase() : store.profiles[idx].code,
-      };
 
-      saveStore(store);
+      // 1. Update PostgreSQL
+      if (isPostgresConfigured()) {
+        try {
+          await pgUpdateProfile(profileId, updateData);
+        } catch (pgErr) {
+          console.warn('[PostgreSQL Update Profile failed]:', pgErr);
+        }
+      }
 
+      // 2. Update local JSON store
+      if (idx !== -1) {
+        store.profiles[idx] = {
+          ...store.profiles[idx],
+          ...updateData,
+          code: updateData.code ? updateData.code.toUpperCase() : store.profiles[idx].code,
+        };
+        saveStore(store);
+      }
+
+      // 3. Update Supabase
       if (supabase) {
         try {
+          const profileToUpdate = idx !== -1 ? store.profiles[idx] : updateData;
           await supabase.from('user_profiles').update({
-            name: store.profiles[idx].name,
-            avatar: store.profiles[idx].avatar,
-            grade_id: store.profiles[idx].gradeId,
-            color: store.profiles[idx].color,
-            code: store.profiles[idx].code,
+            name: profileToUpdate.name,
+            avatar: profileToUpdate.avatar,
+            grade_id: profileToUpdate.gradeId,
+            color: profileToUpdate.color,
+            code: profileToUpdate.code,
             updated_at: new Date().toISOString(),
           }).eq('id', profileId);
         } catch (e) {
@@ -532,16 +631,31 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      return NextResponse.json({ success: true, profile: store.profiles[idx] });
+      return NextResponse.json({
+        success: true,
+        profile: idx !== -1 ? store.profiles[idx] : { id: profileId, ...updateData },
+      });
     }
 
     // ── Action: DELETE ──
     if (action === 'delete') {
       const profileId = body.profileId;
+
+      // 1. Delete from PostgreSQL
+      if (isPostgresConfigured()) {
+        try {
+          await pgDeleteProfile(profileId);
+        } catch (pgErr) {
+          console.warn('[PostgreSQL Delete Profile failed]:', pgErr);
+        }
+      }
+
+      // 2. Delete from local JSON store
       store.profiles = store.profiles.filter((p) => p.id !== profileId);
       delete store.progresses[profileId];
       saveStore(store);
 
+      // 3. Delete from Supabase
       if (supabase) {
         try {
           await supabase.from('user_profiles').delete().eq('id', profileId);

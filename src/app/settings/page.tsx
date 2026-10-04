@@ -49,6 +49,42 @@ export default function SettingsPage() {
   const [testError,  setTestError]  = useState<string>('');
   const [deleted,   setDeleted]   = useState(false);
 
+  // ── PostgreSQL Database States ──
+  const [pgTesting, setPgTesting] = useState(false);
+  const [pgStatus, setPgStatus] = useState<{ type: 'ok' | 'err'; text: string; version?: string } | null>(null);
+
+  const handleTestPostgres = async () => {
+    setPgTesting(true);
+    setPgStatus(null);
+    try {
+      const res = await fetch('/api/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'test_postgres' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPgStatus({
+          type: 'ok',
+          text: data.message || 'Kết nối PostgreSQL thành công!',
+          version: data.version,
+        });
+      } else {
+        setPgStatus({
+          type: 'err',
+          text: data.message || 'Không thể kết nối đến PostgreSQL.',
+        });
+      }
+    } catch (err: any) {
+      setPgStatus({
+        type: 'err',
+        text: String(err?.message || err),
+      });
+    } finally {
+      setPgTesting(false);
+    }
+  };
+
   // ── Supabase Cloud Database States ──
   const [sbUrl, setSbUrl] = useState('');
   const [sbKey, setSbKey] = useState('');
@@ -813,6 +849,85 @@ CREATE POLICY "Allow public custom_categories" ON public.custom_categories FOR A
               >
                 <span className="text-base">{sbStatus.type === 'ok' ? '🎉' : '⚠️'}</span>
                 <p className="mt-0.5">{sbStatus.text}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* ── PostgreSQL Server Database ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28 }}
+          className="bg-white rounded-3xl p-5 shadow border border-sky-100 relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🐘</span>
+              <div>
+                <h3 className="font-black text-gray-800 text-base flex items-center gap-2">
+                  Cơ sở dữ liệu PostgreSQL
+                </h3>
+                <p className="text-xs text-gray-500 font-medium">Hỗ trợ Coolify, Docker Compose & VPS (Tự động tạo bảng)</p>
+              </div>
+            </div>
+            <span className={`px-2.5 py-1 rounded-full text-xs font-black ${
+              pgStatus?.type === 'ok'
+                ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                : 'bg-sky-50 text-sky-700 border border-sky-200'
+            }`}>
+              {pgStatus?.type === 'ok' ? '🟢 Sẵn sàng' : '🐘 Docker / Coolify'}
+            </span>
+          </div>
+
+          <div className="bg-sky-50/80 border border-sky-200/80 rounded-2xl p-3 mb-4 text-xs text-sky-900 space-y-1.5">
+            <p className="font-bold flex items-center gap-1.5">
+              <span>🚀</span> Triển khai chuẩn Production trên Coolify:
+            </p>
+            <p className="text-sky-800 leading-relaxed">
+              Hệ thống tự động nhận diện biến môi trường <strong>DATABASE_URL</strong> được cấp bởi Coolify hoặc Docker Compose. Khi kết nối, toàn bộ bảng dữ liệu (hồ sơ, từ vựng, sao, sticker) sẽ tự động khởi tạo không cần thao tác thủ công.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-2">
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              type="button"
+              onClick={handleTestPostgres}
+              disabled={pgTesting}
+              className="w-full py-3 px-4 rounded-2xl font-black text-sm bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md shadow-sky-200 hover:opacity-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {pgTesting ? (
+                <>
+                  <span className="animate-spin inline-block">⏳</span> Đang kiểm tra PostgreSQL...
+                </>
+              ) : (
+                <>
+                  <span>🧪</span> Kiểm tra kết nối PostgreSQL Server
+                </>
+              )}
+            </motion.button>
+          </div>
+
+          <AnimatePresence>
+            {pgStatus && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className={`mt-3 p-3.5 rounded-2xl border flex items-start gap-2.5 text-xs font-semibold ${
+                  pgStatus.type === 'ok'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                    : 'bg-amber-50 border-amber-300 text-amber-800'
+                }`}
+              >
+                <span className="text-base">{pgStatus.type === 'ok' ? '🎉' : 'ℹ️'}</span>
+                <div>
+                  <p className="font-bold">{pgStatus.text}</p>
+                  {pgStatus.version && (
+                    <p className="text-[11px] opacity-80 mt-0.5 font-mono">{pgStatus.version}</p>
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

@@ -9,9 +9,36 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
+      # Kết nối nội bộ tới container PostgreSQL
+      - DATABASE_URL=postgresql://vocakids:vocakids_secret_password@postgres:5432/vocakids_db
       # Điền GEMINI_API_KEY nếu muốn hệ thống dùng key chung cho toàn server:
       # - GEMINI_API_KEY=your_gemini_api_key_here
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: vocakids_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=vocakids
+      - POSTGRES_PASSWORD=vocakids_secret_password
+      - POSTGRES_DB=vocakids_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vocakids -d vocakids_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+    driver: local
