@@ -500,26 +500,20 @@ export default function SpeakPage() {
     }
   }, [recorder.audioBase64]);
 
-  if (!mounted || !cat || !word) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50">
-        <div className="text-4xl animate-bounce-slow">🦉</div>
-      </div>
-    );
-  }
-
-  const handleMicClick = () => {
+  const handleMicClick = useCallback(() => {
     if (recorder.status === 'recording') {
       recorder.stopRecording();
     } else {
       recorder.resetRecorder();
       setResult(null);
       setRecordedBlob(null);
+      setGraduated(false);
       recorder.startRecording();
     }
-  };
+  }, [recorder]);
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
+    if (!cat) return;
     if (index < total - 1) {
       setIndex((i) => i + 1);
       setResult(null);
@@ -528,14 +522,14 @@ export default function SpeakPage() {
       recorder.resetRecorder();
       setTimeout(() => speak(cat.words[index + 1].en), 200);
     }
-  };
+  }, [cat, index, total, recorder, speak]);
 
-  const goRetry = () => {
+  const goRetry = useCallback(() => {
     setResult(null);
     setRecordedBlob(null);
     setGraduated(false);
     recorder.resetRecorder();
-  };
+  }, [recorder]);
 
   // Keyboard navigation and spacebar mic control for PC users
   useEffect(() => {
@@ -562,7 +556,15 @@ export default function SpeakPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [recorder.status, index, total, result]);
+  }, [recorder.status, index, total, result, handleMicClick, goNext]);
+
+  if (!mounted || !cat || !word) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50">
+        <div className="text-4xl animate-bounce-slow">🦉</div>
+      </div>
+    );
+  }
 
   const pct = ((index + 1) / total) * 100;
   const micStatus = loading ? 'processing' : recorder.status;

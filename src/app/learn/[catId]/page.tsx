@@ -290,35 +290,20 @@ export default function LearnPage() {
     if (!isSpeaking) setSpeakingMode(null);
   }, [isSpeaking]);
 
-  useEffect(() => {
-    if (mounted && !cat) {
-      router.replace('/');
-    }
-  }, [mounted, cat, router]);
+  const total = cat?.words?.length || 0;
 
-  if (!mounted || !cat || !word) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50">
-        <div className="text-4xl animate-bounce-slow">🦉</div>
-      </div>
-    );
-  }
-
-  const total   = cat.words.length;
-  const pct     = ((index + 1) / total) * 100;
-  const prevProg = getWordProgress(cat.id, word.id);
-
-  const handleListenNormal = () => {
+  const handleListenNormal = useCallback(() => {
+    if (!word) return;
     setSpeakingMode('normal');
     speak(word.en, 'en-US', 0.85);
-  };
+  }, [word, speak]);
 
-  const handleListenSlow = () => {
-    // 0.30 for superslow, 0.35 for standard slow (deliberate, elongated phonemes for kids)
+  const handleListenSlow = useCallback(() => {
+    if (!word) return;
     const rate = autoSpeed === 'superslow' ? 0.30 : 0.35;
     setSpeakingMode(autoSpeed === 'superslow' ? 'superslow' : 'slow');
     speak(word.en, 'en-US', rate);
-  };
+  }, [word, autoSpeed, speak]);
 
   const handleToggleAutoSpeed = (speed: 'normal' | 'slow' | 'superslow') => {
     setAutoSpeed(speed);
@@ -327,12 +312,12 @@ export default function LearnPage() {
     } catch { /* ignore */ }
   };
 
-  const go = (delta: number) => {
+  const go = useCallback((delta: number) => {
+    if (!cat) return;
     const next = index + delta;
-    if (next < 0 || next >= total) return;
+    if (next < 0 || next >= cat.words.length) return;
     setDir(delta);
     setIndex(next);
-    // Auto-speak on advance with preferred speed
     const nextWord = cat.words[next];
     if (nextWord?.en) {
       setTimeout(() => {
@@ -341,11 +326,12 @@ export default function LearnPage() {
         speak(nextWord.en, 'en-US', rate);
       }, 150);
     }
-  };
+  }, [cat, index, autoSpeed, speak]);
 
   // Keyboard navigation for desktop users
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!cat || !word) return;
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -363,7 +349,7 @@ export default function LearnPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [index, total, word, autoSpeed]);
+  }, [cat, word, go, handleListenNormal, handleListenSlow]);
 
   // Swipe detection
   const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; };
@@ -373,6 +359,23 @@ export default function LearnPage() {
     if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
     touchX.current = null;
   };
+
+  useEffect(() => {
+    if (mounted && !cat) {
+      router.replace('/');
+    }
+  }, [mounted, cat, router]);
+
+  if (!mounted || !cat || !word) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50">
+        <div className="text-4xl animate-bounce-slow">🦉</div>
+      </div>
+    );
+  }
+
+  const pct = ((index + 1) / total) * 100;
+  const prevProg = getWordProgress(cat.id, word.id);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50">
