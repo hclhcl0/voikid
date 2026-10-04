@@ -13,12 +13,13 @@ const nextConfig: NextConfig = {
     'exempt-prostores-door-prior.trycloudflare.com',
   ],
 
+  // Standalone output for Docker & Coolify container deployment
+  output: 'standalone',
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
   },
-
-  // Experimental: server actions already enabled by default in Next.js 15
 };
 
 export default nextConfig;
