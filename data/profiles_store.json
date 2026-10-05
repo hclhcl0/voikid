@@ -17,6 +17,15 @@
       "color": "pink",
       "createdAt": "2026-10-03",
       "code": "BONG88"
+    },
+    {
+      "id": "profile_1790951322628",
+      "name": "Bé Bông",
+      "avatar": "🐰",
+      "gradeId": "maugiao",
+      "color": "pink",
+      "createdAt": "2026-10-02T14:28:42.628Z",
+      "code": "BONG35"
     }
   ],
   "progresses": {
@@ -529,6 +538,39 @@
       "lastActiveDate": "2026-10-02",
       "wordProgress": {},
       "dailyStats": []
+    },
+    "profile_1790951322628": {
+      "totalStars": 0,
+      "streak": 0,
+      "lastActiveDate": "",
+      "wordProgress": {},
+      "dailyStats": [],
+      "stickers": [
+        {
+          "id": "custom_new_words_test_excellent",
+          "name": "Ngôi Sao Xuất Sắc",
+          "emoji": "🌟",
+          "tier": "rare",
+          "setId": "unit_test",
+          "unitId": "custom_new_words",
+          "condition": "Đạt bài kiểm tra 🌟 Từ mới của bé hạng excellent",
+          "earnedAt": "2026-10-05T01:42:45.520Z"
+        }
+      ],
+      "badges": [],
+      "unitTestResults": {
+        "custom_new_words": {
+          "unitId": "custom_new_words",
+          "score": 161,
+          "grade": "excellent",
+          "attempts": 1,
+          "fastAnswers": 2,
+          "streak": 11,
+          "completedAt": "2026-10-05T01:42:45.519Z"
+        }
+      },
+      "unlockedUnits": [],
+      "totalPoints": 50
     }
   }
 }

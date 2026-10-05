@@ -10,7 +10,7 @@ import { useAdminContext } from '@/context/AdminContext';
 import { ChildBadge } from '@/components/ChildBadge';
 import { Category } from '@/types';
 
-// ── Unit Category Card ────────────────────────────────────────────────────────
+// ── Unit Category Card (Claymorphic, tactile, kid-friendly) ───────────────────
 function UnitCard({
   cat,
   stars,
@@ -25,27 +25,35 @@ function UnitCard({
   const isNewWords = cat.id === NEW_WORDS_CAT_ID;
   const maxStars = cat.words.length * 3;
   const pct = maxStars > 0 ? Math.round((stars / maxStars) * 100) : 0;
-  const canTest = pct >= 50;
+  const isCompleted = pct === 100;
 
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className={`rounded-3xl p-4 transition-all relative overflow-hidden flex flex-col justify-between ${
+      whileHover={{ y: -4, scale: 1.015 }}
+      whileTap={{ scale: 0.985 }}
+      className={`rounded-3xl p-4.5 transition-all relative overflow-hidden flex flex-col justify-between ${
         isNewWords
-          ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 border-2 border-amber-300 ring-2 ring-amber-200/70 shadow-lg hover:shadow-2xl'
-          : 'bg-white border-2 border-orange-100 shadow-md hover:shadow-xl'
+          ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 border-2 border-amber-300 ring-2 ring-amber-200/70 shadow-md hover:shadow-xl'
+          : isCompleted
+          ? 'bg-white border-2 border-emerald-200 shadow-sm hover:shadow-md'
+          : 'bg-white border-2 border-orange-100 shadow-sm hover:shadow-lg'
       }`}
       style={{
         boxShadow: isNewWords
-          ? '0 8px 24px rgba(245,158,11,0.18)'
-          : '0 6px 0 rgba(249,115,22,0.06), 0 12px 24px rgba(0,0,0,0.04)',
+          ? '0 6px 0 rgba(245,158,11,0.18), 0 12px 24px rgba(0,0,0,0.04)'
+          : isCompleted
+          ? '0 6px 0 rgba(16,185,129,0.1), 0 10px 20px rgba(0,0,0,0.03)'
+          : '0 6px 0 rgba(249,115,22,0.06), 0 10px 20px rgba(0,0,0,0.03)',
       }}
     >
       {/* Background soft bubble */}
       <div
         className={`absolute -top-6 -right-6 w-20 h-20 rounded-full ${
-          isNewWords ? 'bg-amber-400 opacity-20' : `bg-gradient-to-br ${gradeMeta.gradient} opacity-15`
+          isNewWords
+            ? 'bg-amber-400 opacity-20'
+            : isCompleted
+            ? 'bg-emerald-400 opacity-15'
+            : `bg-gradient-to-br ${gradeMeta.gradient} opacity-15`
         } pointer-events-none`}
       />
 
@@ -55,12 +63,16 @@ function UnitCard({
           <span className="text-4xl drop-shadow select-none">{cat.emoji}</span>
           <div className="flex items-center gap-1">
             {isNewWords ? (
-              <span className="text-[10px] bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full px-2 py-0.5 font-black shadow-xs">
+              <span className="text-[10px] bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full px-2.5 py-0.5 font-black shadow-xs">
                 🌟 TỪ MỚI
+              </span>
+            ) : isCompleted ? (
+              <span className="text-[10px] bg-emerald-100 text-emerald-700 rounded-full px-2.5 py-0.5 font-black flex items-center gap-0.5">
+                ✓ Hoàn thành
               </span>
             ) : isCustom ? (
               <span className="text-[10px] bg-violet-100 text-violet-700 rounded-full px-2 py-0.5 font-black">
-                ✨ Mới
+                ✨ Tự thêm
               </span>
             ) : null}
             <span className="text-[11px] font-bold text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
@@ -78,30 +90,36 @@ function UnitCard({
         </p>
 
         {/* Star progress bar */}
-        <div className="mt-3 mb-4">
+        <div className="mt-3 mb-3.5">
           <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 mb-1">
-            <span>Tiến độ</span>
-            <span className={pct > 0 ? 'text-amber-500 font-black' : 'text-gray-400'}>
-              ⭐ {stars}/{maxStars}
+            <span>Tiến độ bài</span>
+            <span className={pct > 0 ? (isCompleted ? 'text-emerald-600 font-black' : 'text-amber-500 font-black') : 'text-gray-400'}>
+              ⭐ {stars}/{maxStars} ({pct}%)
             </span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
+              transition={{ duration: 0.8, delay: 0.05 }}
+              className={`h-full rounded-full ${
+                isCompleted
+                  ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                  : 'bg-gradient-to-r from-amber-400 to-orange-500'
+              }`}
             />
           </div>
         </div>
       </div>
 
-      {/* Action buttons */}
+      {/* Action buttons (min touch target >= 44px) */}
       <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-gray-100">
         <Link
           href={`/learn/${cat.id}`}
-          className={`min-h-[42px] py-2 px-2.5 rounded-2xl font-black text-xs text-center text-white shadow-xs hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-            isNewWords ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-md' : `bg-gradient-to-r ${gradeMeta.gradient}`
+          className={`min-h-[44px] py-2 px-2.5 rounded-2xl font-black text-xs text-center text-white shadow-xs hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            isNewWords
+              ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-md'
+              : `bg-gradient-to-r ${gradeMeta.gradient}`
           }`}
         >
           <span>▶</span>
@@ -109,91 +127,14 @@ function UnitCard({
         </Link>
         <Link
           href={`/test/${cat.id}`}
-          className="min-h-[42px] py-2 px-2 rounded-2xl font-black text-xs text-center transition-all flex items-center justify-center gap-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xs hover:opacity-95 active:scale-95 cursor-pointer"
+          className="min-h-[44px] py-2 px-2 rounded-2xl font-black text-xs text-center transition-all flex items-center justify-center gap-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xs hover:opacity-95 active:scale-95 cursor-pointer"
           title="Luyện tập 8 dạng bài & làm bài thi nhận Sticker"
         >
           <span>🎯</span>
-          <span>8 Dạng Bài</span>
+          <span>Luyện tập</span>
         </Link>
       </div>
     </motion.div>
-  );
-}
-
-// ── Grade Card in Hub ────────────────────────────────────────────────────────
-function GradeCard({
-  grade,
-  meta,
-  unitCount,
-  wordCount,
-  starsEarned,
-  isChildGrade,
-  onClick,
-}: {
-  grade: GradeLevel;
-  meta: GradeMeta;
-  unitCount: number;
-  wordCount: number;
-  starsEarned: number;
-  isChildGrade: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <motion.button
-      whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className={`relative overflow-hidden rounded-3xl p-5 text-left transition-all cursor-pointer bg-white border-2 shadow-sm hover:shadow-xl ${
-        isChildGrade ? 'border-orange-300 ring-2 ring-orange-200' : 'border-orange-100 hover:border-orange-200'
-      }`}
-      style={{ boxShadow: '0 6px 0 rgba(249,115,22,0.06), 0 12px 20px rgba(0,0,0,0.04)' }}
-    >
-      {/* Top tag: "Lớp của bé" */}
-      {isChildGrade && (
-        <span className="absolute top-3 right-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-xs">
-          ⭐ LỚP CỦA BÉ
-        </span>
-      )}
-
-      {/* Big mascot & badge */}
-      <div className="flex items-center gap-3 mb-3">
-        <div
-          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center text-3xl shadow-sm text-white shrink-0`}
-        >
-          {meta.icon}
-        </div>
-        <div>
-          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${meta.accent}`}>
-            {meta.badge}
-          </span>
-          <h3 className="font-black text-gray-800 text-xl leading-tight mt-0.5">
-            {meta.name}
-          </h3>
-          <p className="text-gray-400 text-xs font-semibold">{meta.age}</p>
-        </div>
-      </div>
-
-      {/* Description / Summary */}
-      <p className="text-gray-600 text-xs font-medium line-clamp-1 mb-3">
-        {meta.sub}
-      </p>
-
-      {/* Footer Info */}
-      <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-        <span className="font-bold text-gray-500">
-          {unitCount} chủ đề • {wordCount} từ
-        </span>
-        {starsEarned > 0 ? (
-          <span className="font-black text-amber-500 flex items-center gap-0.5">
-            ⭐ {starsEarned} sao
-          </span>
-        ) : (
-          <span className="font-black text-orange-500 flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
-            Vào học →
-          </span>
-        )}
-      </div>
-    </motion.button>
   );
 }
 
@@ -201,15 +142,14 @@ function GradeCard({
 export default function HomePage() {
   const { progress, hydrated, activeProfile, getDueReviewWords } = useProgress();
   const { categories: customCats, hydrated: customHydrated } = useCustomCategories();
-  const { isAdmin, openAdminModal, logoutAdmin } = useAdminContext();
+  const { isAdmin, logoutAdmin } = useAdminContext();
 
-  // View state: 'grades' (Choose grade screen) or 'units' (List of lessons in selected grade)
-  const [viewMode, setViewMode] = useState<'grades' | 'units'>('grades');
+  // Active selected grade in the selector bar (defaults to child's grade or Grade 1)
   const [selectedGrade, setSelectedGrade] = useState<string>(GRADE_LEVELS[0].id);
 
   // Sync active grade from child's profile on initial mount
   useEffect(() => {
-    if (activeProfile?.gradeId) {
+    if (activeProfile?.gradeId && GRADE_METAS[activeProfile.gradeId]) {
       setSelectedGrade(activeProfile.gradeId);
     }
   }, [activeProfile?.gradeId]);
@@ -221,7 +161,6 @@ export default function HomePage() {
       const g = params.get('grade');
       if (g && GRADE_METAS[g]) {
         setSelectedGrade(g);
-        setViewMode('units');
       }
     }
   }, []);
@@ -240,7 +179,7 @@ export default function HomePage() {
       .reduce((sum, [, v]) => sum + v.stars, 0);
   };
 
-  // Grade categories
+  // Grade categories helper
   const gradeCats = (gradeId: string) =>
     CATEGORIES.filter((c) => (c as any).gradeId === gradeId);
 
@@ -284,8 +223,8 @@ export default function HomePage() {
 
     const result: (Category & { isCustom?: boolean })[] = [];
 
-    // Pin "🌟 Từ mới của bé" at the top if words exist!
-    if (newWordsCategory) {
+    // Pin "🌟 Từ mới của bé" at the top of the child's own grade or when viewing custom words!
+    if (newWordsCategory && (selectedGrade === activeProfile?.gradeId || selectedGrade === 'mamnon')) {
       result.push({
         ...newWordsCategory,
         isCustom: true,
@@ -299,7 +238,7 @@ export default function HomePage() {
     builtin.forEach((c) => result.push(c));
 
     return result;
-  }, [selectedGrade, customHydrated, customCats, newWordsCategory]);
+  }, [selectedGrade, customHydrated, customCats, newWordsCategory, activeProfile?.gradeId]);
 
   const currentGradeWordCount = currentGradeUnits.reduce((sum, c) => sum + c.words.length, 0);
   const currentGradeStarsEarned = currentGradeUnits.reduce((sum, c) => sum + getCategoryStars(c.id), 0);
@@ -307,10 +246,37 @@ export default function HomePage() {
   const currentGradePct =
     currentGradeMaxStars > 0 ? Math.round((currentGradeStarsEarned / currentGradeMaxStars) * 100) : 0;
 
+  // Intelligent "Continue Learning / Next Lesson" Recommendation
+  const recommendedUnit = useMemo(() => {
+    if (!currentGradeUnits || currentGradeUnits.length === 0) return null;
+
+    // 1. Check if there's a unit in progress (started, but not full stars)
+    const inProgress = currentGradeUnits.find((cat) => {
+      const stars = getCategoryStars(cat.id);
+      const max = cat.words.length * 3;
+      return stars > 0 && stars < max;
+    });
+    if (inProgress) return inProgress;
+
+    // 2. Check for the first unstarted unit
+    const unstarted = currentGradeUnits.find((cat) => {
+      const stars = getCategoryStars(cat.id);
+      return stars === 0;
+    });
+    if (unstarted) return unstarted;
+
+    // 3. Fallback to first unit
+    return currentGradeUnits[0];
+  }, [currentGradeUnits, hydrated, progress.wordProgress]);
+
+  const recommendedStars = recommendedUnit ? getCategoryStars(recommendedUnit.id) : 0;
+  const recommendedMaxStars = recommendedUnit ? recommendedUnit.words.length * 3 : 0;
+  const recommendedPct = recommendedMaxStars > 0 ? Math.round((recommendedStars / recommendedMaxStars) * 100) : 0;
+
   const bubbles = ['🍎', '🐱', '🌈', '🐶', '🌟', '🦋'];
 
   return (
-    <div className="relative min-h-screen bg-[#FFF7ED] overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#FFF7ED] overflow-x-hidden text-gray-800">
       {/* Floating background bubbles */}
       {bubbles.map((b, i) => (
         <div
@@ -326,15 +292,15 @@ export default function HomePage() {
         </div>
       ))}
 
-      {/* ── TOP HERO HEADER ── */}
+      {/* ── TOP CLAYMORPHIC HEADER ── */}
       <header
-        className="relative bg-gradient-to-b from-orange-400 via-amber-400 to-[#FFF7ED] pb-6 pt-7 px-4 z-10"
+        className="relative bg-gradient-to-b from-orange-400 via-amber-400 to-[#FFF7ED] pb-6 pt-5 px-4 z-10"
         style={{ borderRadius: '0 0 36px 36px' }}
       >
-        <div className="max-w-6xl mx-auto">
-          {/* Top Row: App title, Child badge, Admin/Settings buttons */}
+        <div className="max-w-5xl mx-auto">
+          {/* Top Bar: Logo, Child Profile, Admin / Settings */}
           <div className="flex items-center justify-between mb-4">
-            <Link href="/" onClick={() => setViewMode('grades')} className="flex items-center gap-2 group">
+            <Link href="/" className="flex items-center gap-2 group">
               <span className="text-3xl drop-shadow select-none group-hover:scale-110 transition-transform">🦉</span>
               <div>
                 <h1
@@ -343,13 +309,13 @@ export default function HomePage() {
                 >
                   VocaKids
                 </h1>
-                <p className="text-[10px] sm:text-xs text-white/90 font-bold hidden sm:block">
+                <p className="text-[10px] sm:text-xs text-white/95 font-bold hidden sm:block">
                   Tiếng Anh Tiểu Học Cho Bé
                 </p>
               </div>
             </Link>
 
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-2.5">
               {/* Desktop quick links */}
               <div className="hidden md:flex items-center gap-2 mr-1">
                 <Link
@@ -395,26 +361,26 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Quick Stats Banner */}
+          {/* Daily Motivation Stats Bar */}
           {hydrated && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="flex gap-2.5 max-w-md md:max-w-xl mx-auto"
+              transition={{ delay: 0.05 }}
+              className="grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto"
             >
               {[
-                { icon: '⭐', val: progress.totalStars, label: 'Ngôi sao' },
-                { icon: '🔥', val: progress.streak, label: 'Ngày học' },
-                { icon: '🎨', val: (progress.stickers ?? []).length, label: 'Sticker' },
-              ].map(({ icon, val, label }) => (
+                { icon: '⭐', val: progress.totalStars, label: 'Ngôi sao', color: 'text-amber-500' },
+                { icon: '🔥', val: progress.streak, label: 'Ngày học', color: 'text-orange-500' },
+                { icon: '🎨', val: (progress.stickers ?? []).length, label: 'Sticker', color: 'text-violet-600' },
+              ].map(({ icon, val, label, color }) => (
                 <div
                   key={label}
-                  className="flex-1 bg-white/85 backdrop-blur rounded-2xl py-2 px-2 text-center shadow-xs border border-white/60 hover:scale-[1.02] transition-transform"
+                  className="bg-white/90 backdrop-blur rounded-2xl py-2 px-2 text-center shadow-xs border border-white/80 hover:scale-[1.02] transition-transform"
                 >
-                  <div className="text-base sm:text-lg leading-none mb-1">{icon}</div>
-                  <p className="font-black text-gray-800 text-base sm:text-lg leading-none">{val}</p>
-                  <p className="text-gray-500 text-[10px] sm:text-xs font-bold mt-0.5">{label}</p>
+                  <div className="text-base sm:text-lg leading-none mb-0.5">{icon}</div>
+                  <p className={`font-black text-base sm:text-lg leading-tight ${color}`}>{val}</p>
+                  <p className="text-gray-500 text-[10px] sm:text-xs font-bold">{label}</p>
                 </div>
               ))}
             </motion.div>
@@ -423,420 +389,329 @@ export default function HomePage() {
       </header>
 
       {/* ── MAIN CONTENT CONTAINER ── */}
-      <main className="max-w-6xl mx-auto px-4 pt-6 pb-28 relative z-10">
-        <AnimatePresence mode="wait">
-          {/* ========================================================================= */}
-          {/* VIEW 1: GRADES HUB (Màn hình chọn lớp khi vừa vào ứng dụng)                */}
-          {/* ========================================================================= */}
-          {viewMode === 'grades' ? (
-            <motion.div
-              key="grades-hub"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
-            >
-              {/* ── BENTO HERO BANNERS: 2 Columns on Desktop, 1 Column on Mobile ── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Featured banner for child's registered class */}
-                {activeProfile?.gradeId && GRADE_METAS[activeProfile.gradeId] && (
-                  <motion.div
-                    whileHover={{ scale: 1.01 }}
-                    className={`rounded-3xl p-5 text-white shadow-lg relative overflow-hidden flex flex-col justify-between ${
-                      GRADE_METAS[activeProfile.gradeId].heroBg
-                    }`}
-                  >
-                    <div className="flex items-center justify-between relative z-10">
-                      <div className="flex-1 pr-2">
-                        <span className="inline-block bg-white/20 backdrop-blur text-white text-[10px] font-black px-2.5 py-0.5 rounded-full mb-1.5">
-                          ✨ Lớp học của {activeProfile.name.toLowerCase().startsWith('bé') ? activeProfile.name : `Bé ${activeProfile.name}`}
-                        </span>
-                        <h2 className="text-xl font-black leading-tight drop-shadow-sm">
-                          {GRADE_METAS[activeProfile.gradeId].name}
-                        </h2>
-                        <p className="text-white/85 text-xs mt-1 font-medium line-clamp-2">
-                          {GRADE_METAS[activeProfile.gradeId].summary}
-                        </p>
-                      </div>
+      <main className="max-w-5xl mx-auto px-4 pt-5 pb-28 relative z-10 space-y-5">
+        {/* ── 1. PRIMARY HERO CARD: TIẾP TỤC BÀI HỌC CỦA BÉ ── */}
+        {recommendedUnit && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl p-5 sm:p-6 bg-gradient-to-br from-white via-orange-50/40 to-amber-50/60 border-2 border-orange-200/90 shadow-md relative overflow-hidden"
+            style={{
+              boxShadow: '0 8px 0 rgba(249,115,22,0.08), 0 16px 28px rgba(0,0,0,0.04)',
+            }}
+          >
+            {/* Background decorative bubble */}
+            <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-orange-400/10 pointer-events-none" />
 
-                      <div className="text-5xl sm:text-6xl drop-shadow select-none shrink-0">
-                        {GRADE_METAS[activeProfile.gradeId].icon}
-                      </div>
-                    </div>
-
-                    <div className="pt-3 relative z-10">
-                      <button
-                        onClick={() => {
-                          setSelectedGrade(activeProfile.gradeId);
-                          setViewMode('units');
-                        }}
-                        className="bg-white text-gray-900 font-black text-xs px-4 py-2.5 rounded-2xl shadow-md hover:bg-amber-300 hover:text-amber-950 transition-all flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <span>▶</span>
-                        <span>Vào học lớp của bé</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Featured Banner: 🌟 Từ mới của bé (Tổng hợp từ vựng mới thêm) */}
-                {newWordsCategory && newWordsCategory.words.length > 0 && (
-                  <motion.div
-                    whileHover={{ scale: 1.01 }}
-                    className="rounded-3xl p-5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-white shadow-lg relative overflow-hidden flex flex-col justify-between"
-                    style={{ boxShadow: '0 8px 24px rgba(245,158,11,0.25)' }}
-                  >
-                    <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/20 pointer-events-none" />
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl drop-shadow select-none">🌟</span>
-                          <span className="bg-white/25 backdrop-blur text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                            Mục Từ Mới Của Bé
-                          </span>
-                        </div>
-                        <span className="bg-white text-orange-600 text-xs font-black px-2.5 py-0.5 rounded-full shadow-xs">
-                          {newWordsCategory.words.length} từ vựng
-                        </span>
-                      </div>
-
-                      <h3 className="text-xl font-black mt-2 leading-tight drop-shadow-sm">
-                        Bộ Sưu Tập Từ Mới Vừa Thêm
-                      </h3>
-                      <p className="text-white/90 text-xs font-medium mt-1 line-clamp-2">
-                        Tổng hợp toàn bộ từ mới vừa thêm vào các chủ đề. Bé có thể ôn tập trung và luyện ngay tại đây!
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 mt-4 relative z-10">
-                      <Link
-                        href={`/learn/${newWordsCategory.id}`}
-                        className="py-2.5 px-2 bg-white text-orange-600 rounded-2xl font-black text-xs text-center shadow-md hover:bg-orange-50 active:scale-95 transition-all flex items-center justify-center gap-1"
-                      >
-                        <span>▶</span>
-                        <span>Học từ</span>
-                      </Link>
-                      <Link
-                        href={`/test/${newWordsCategory.id}`}
-                        className="py-2.5 px-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-black text-xs text-center shadow-md hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-1"
-                      >
-                        <span>🎯</span>
-                        <span>8 Dạng bài</span>
-                      </Link>
-                      <Link
-                        href={`/speak/${newWordsCategory.id}`}
-                        className="py-2.5 px-2 bg-white/25 hover:bg-white/35 backdrop-blur text-white rounded-2xl font-black text-xs text-center shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 border border-white/30"
-                      >
-                        <span>🗣️</span>
-                        <span>Luyện nói</span>
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Featured Banner: 🔔 Ôn tập hôm nay (Spaced Repetition Review) */}
-                {dueReviewWords.length > 0 && (
-                  <motion.div
-                    whileHover={{ scale: 1.01 }}
-                    className="rounded-3xl p-5 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-600 text-white shadow-lg relative overflow-hidden flex flex-col justify-between"
-                    style={{ boxShadow: '0 8px 24px rgba(79,70,229,0.25)' }}
-                  >
-                    <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/20 pointer-events-none" />
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl drop-shadow select-none">🔔</span>
-                          <span className="bg-white/25 backdrop-blur text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                            Ôn Tập Định Kỳ (Spaced Repetition)
-                          </span>
-                        </div>
-                        <span className="bg-white text-indigo-700 text-xs font-black px-2.5 py-0.5 rounded-full shadow-xs">
-                          {dueReviewWords.length} từ đến hạn
-                        </span>
-                      </div>
-
-                      <h3 className="text-xl font-black mt-2 leading-tight drop-shadow-sm">
-                        Đến Hạn Ôn Tập Hôm Nay!
-                      </h3>
-                      <p className="text-white/90 text-xs font-medium mt-1 line-clamp-2">
-                        Các từ đã học đến lịch nhắc lại (1 - 3 - 7 ngày) theo đường cong trí nhớ. Bé ôn ngay để nhớ lâu nhé!
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2 mt-4 relative z-10">
-                      {dueReviewWords[0]?.catId && (
-                        <>
-                          <Link
-                            href={`/speak/${dueReviewWords[0].catId}`}
-                            className="flex-1 py-2.5 px-3 bg-white text-indigo-700 rounded-2xl font-black text-xs text-center shadow-md hover:bg-indigo-50 active:scale-95 transition-all flex items-center justify-center gap-1.5"
-                          >
-                            <span>🗣️</span>
-                            <span>Luyện nói ôn tập</span>
-                          </Link>
-                          <Link
-                            href={`/test/${dueReviewWords[0].catId}`}
-                            className="flex-1 py-2.5 px-3 bg-white/25 hover:bg-white/35 backdrop-blur text-white rounded-2xl font-black text-xs text-center shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-white/30"
-                          >
-                            <span>🎯</span>
-                            <span>8 Dạng bài tập</span>
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-
-              {/* ── SECOND ROW BANNERS: IPA & 8 STATIONS (2 columns on PC) ── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* IPA Feature Card Banner */}
-                <Link
-                  href="/ipa"
-                  className="block bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 rounded-3xl p-4 text-white shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all relative overflow-hidden"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl shadow-inner shrink-0">
-                        🔤
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-black uppercase tracking-wider bg-white/25 px-2 py-0.5 rounded-full">
-                            Mới • Chuẩn Quốc Tế
-                          </span>
-                        </div>
-                        <h3 className="text-base font-black leading-tight mt-0.5">
-                          Bảng 44 Âm IPA & Hướng Dẫn Phát Âm
-                        </h3>
-                        <p className="text-xs text-white/90 font-medium line-clamp-1">
-                          Khẩu hình răng - môi - lưỡi, mẹo nhớ tiếng Việt
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-black bg-white text-orange-600 px-3 py-1.5 rounded-xl shadow-xs shrink-0 ml-2">
-                      Xem →
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+              <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-400 text-white flex items-center justify-center text-4xl shadow-md shrink-0">
+                  {recommendedUnit.emoji}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[10px] sm:text-xs font-black bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      ✨ Bài học tiếp theo
+                    </span>
+                    <span className="text-[11px] font-bold text-gray-500">
+                      {recommendedUnit.words.length} từ
                     </span>
                   </div>
-                </Link>
-
-                {/* 8 Exercise Stations Banner */}
-                <Link
-                  href="/test"
-                  className="block bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 rounded-3xl p-4 text-white shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all relative overflow-hidden"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl shadow-inner shrink-0">
-                        🎯
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-black uppercase tracking-wider bg-white/25 px-2 py-0.5 rounded-full">
-                            Mới • 8 Dạng Bài Tập Chuẩn Sư Phạm
-                          </span>
-                        </div>
-                        <h3 className="text-base font-black leading-tight mt-0.5">
-                          Phòng Luyện 8 Dạng Bài & Thi
-                        </h3>
-                        <p className="text-xs text-white/90 font-medium line-clamp-1">
-                          Nghe chọn hình, ghép cặp, điền chữ, lật thẻ, luyện nói...
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-black bg-white text-violet-700 px-3 py-1.5 rounded-xl shadow-xs shrink-0 ml-2">
-                      Luyện ngay →
-                    </span>
-                  </div>
-                </Link>
-              </div>
-
-              {/* Section Header */}
-              <div className="flex items-baseline justify-between pt-2">
-                <div>
-                  <h2 className="text-lg sm:text-xl font-black text-gray-800 tracking-tight">
-                    🎒 Các Lớp Học
+                  <h2 className="text-lg sm:text-2xl font-black text-gray-800 leading-tight truncate">
+                    {recommendedUnit.name_vi}
                   </h2>
-                  <p className="text-xs text-gray-500 font-semibold mt-0.5">
-                    Chọn một lớp để bắt đầu khám phá bài học nhé!
+                  <p className="text-xs sm:text-sm text-gray-500 font-semibold truncate mt-0.5">
+                    {recommendedUnit.name_en}
                   </p>
+
+                  {/* Progress indicator */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="w-28 sm:w-36 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all"
+                        style={{ width: `${recommendedPct}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-black text-amber-600">
+                      ⭐ {recommendedStars}/{recommendedMaxStars} ({recommendedPct}%)
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Grid of 6 Grade Cards: 2 on Mobile, 3 on Tablet, 6 on PC */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-4.5">
-                {GRADE_LEVELS.map((g) => {
-                  const meta = GRADE_METAS[g.id] || GRADE_METAS.lop1;
-                  const stats = gradeStats[g.id] || { unitCount: 0, wordCount: 0, starsEarned: 0 };
-                  const isChildGrade = activeProfile?.gradeId === g.id;
-
-                  return (
-                    <GradeCard
-                      key={g.id}
-                      grade={g}
-                      meta={meta}
-                      unitCount={stats.unitCount}
-                      wordCount={stats.wordCount}
-                      starsEarned={stats.starsEarned}
-                      isChildGrade={isChildGrade}
-                      onClick={() => {
-                        setSelectedGrade(g.id);
-                        setViewMode('units');
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            </motion.div>
-          ) : (
-            /* ========================================================================= */
-            /* VIEW 2: GRADE UNITS (Danh sách các chủ đề bài học của lớp đã chọn)         */
-            /* ========================================================================= */
-            <motion.div
-              key="units-view"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-4"
-            >
-              {/* Back to Grade Hub Navigation */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => setViewMode('grades')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white shadow-xs border border-orange-200 text-orange-600 font-black text-xs hover:bg-orange-50 active:scale-95 transition-all cursor-pointer"
+              {/* Big tactile CTA buttons */}
+              <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
+                <Link
+                  href={`/learn/${recommendedUnit.id}`}
+                  className="flex-1 sm:flex-initial min-h-[48px] px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-sm text-center shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  style={{ boxShadow: '0 4px 0 #c2410c, 0 8px 16px rgba(249,115,22,0.25)' }}
                 >
-                  <span className="text-sm leading-none">←</span>
-                  <span>Chọn lớp khác</span>
-                </button>
-
-                <span className="text-xs font-bold text-gray-500">
-                  {currentGradeUnits.length} bài học • {currentGradeWordCount} từ
-                </span>
+                  <span className="text-base leading-none">▶</span>
+                  <span>Vào học ngay</span>
+                </Link>
+                <Link
+                  href={`/test/${recommendedUnit.id}`}
+                  className="flex-1 sm:flex-initial min-h-[48px] px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-sm text-center shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  style={{ boxShadow: '0 4px 0 #4c1d95, 0 8px 16px rgba(109,40,217,0.25)' }}
+                  title="Luyện tập 8 dạng bài"
+                >
+                  <span className="text-base leading-none">🎯</span>
+                  <span>Luyện tập</span>
+                </Link>
               </div>
+            </div>
+          </motion.div>
+        )}
 
-              {/* Grade Header Banner */}
-              <div
-                className={`rounded-3xl p-4 text-white shadow-md bg-gradient-to-r ${currentGradeMeta.gradient}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="text-4xl select-none">{currentGradeMeta.icon}</div>
-                  <div className="flex-1 min-w-0">
+        {/* ── 2. SPACED REPETITION REVIEW STRIP (If words are due) ── */}
+        {dueReviewWords.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-600 text-white rounded-2xl p-3 sm:p-3.5 shadow-md flex items-center justify-between gap-3 border border-indigo-300/40"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-2xl drop-shadow select-none animate-pulse">🔔</span>
+              <div className="min-w-0">
+                <p className="font-black text-xs sm:text-sm leading-tight truncate">
+                  Bé có <span className="text-yellow-300 font-extrabold">{dueReviewWords.length} từ</span> đến lịch ôn tập hôm nay!
+                </p>
+                <p className="text-[10px] sm:text-xs text-white/85 font-medium truncate">
+                  Ôn lại định kỳ để khắc sâu vào trí nhớ dài hạn
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {dueReviewWords[0]?.catId && (
+                <Link
+                  href={`/speak/${dueReviewWords[0].catId}`}
+                  className="bg-white text-indigo-700 text-xs font-black px-3.5 py-1.5 rounded-xl shadow-xs hover:bg-yellow-300 hover:text-indigo-950 transition-colors cursor-pointer"
+                >
+                  Ôn ngay →
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── 3. FEATURE SHORTCUTS: 2 COMPACT CARDS SIDE-BY-SIDE ── */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          {/* IPA Card */}
+          <Link
+            href="/ipa"
+            className="group bg-gradient-to-br from-amber-400 via-orange-400 to-rose-400 rounded-3xl p-3.5 sm:p-4.5 text-white shadow-md hover:shadow-lg hover:scale-[1.015] active:scale-[0.985] transition-all relative overflow-hidden flex flex-col justify-between"
+            style={{ boxShadow: '0 6px 0 rgba(249,115,22,0.14), 0 10px 20px rgba(0,0,0,0.04)' }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-2xl sm:text-3xl drop-shadow">🔤</span>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-white/25 px-2 py-0.5 rounded-full">
+                Chuẩn IPA
+              </span>
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-black leading-tight drop-shadow-xs">
+                Bảng 44 Âm IPA
+              </h3>
+              <p className="text-[11px] sm:text-xs text-white/90 font-medium mt-0.5 line-clamp-1">
+                Khẩu hình & mẹo phát âm
+              </p>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-white/20 flex items-center justify-between text-[11px] font-bold">
+              <span>Luyện âm chuẩn</span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+          </Link>
+
+          {/* 8 Dạng Bài Tập Card */}
+          <Link
+            href="/test"
+            className="group bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 rounded-3xl p-3.5 sm:p-4.5 text-white shadow-md hover:shadow-lg hover:scale-[1.015] active:scale-[0.985] transition-all relative overflow-hidden flex flex-col justify-between"
+            style={{ boxShadow: '0 6px 0 rgba(109,40,217,0.14), 0 10px 20px rgba(0,0,0,0.04)' }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-2xl sm:text-3xl drop-shadow">🎯</span>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-white/25 px-2 py-0.5 rounded-full">
+                8 Dạng Bài
+              </span>
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-black leading-tight drop-shadow-xs">
+                Phòng Luyện Bài & Thi
+              </h3>
+              <p className="text-[11px] sm:text-xs text-white/90 font-medium mt-0.5 line-clamp-1">
+                Nghe, ghép, viết & Sticker
+              </p>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-white/20 flex items-center justify-between text-[11px] font-bold">
+              <span>Vào luyện ngay</span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* ── 4. GRADE SELECTOR PILL TABS ── */}
+        <section className="space-y-3 pt-1">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🎒</span>
+              <h2 className="text-base sm:text-lg font-black text-gray-800 tracking-tight">
+                Chủ Đề Theo Lớp
+              </h2>
+            </div>
+            <span className="text-xs font-bold text-gray-500">
+              {currentGradeUnits.length} bài • {currentGradeWordCount} từ
+            </span>
+          </div>
+
+          {/* Smooth horizontal scrollable pill bar */}
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar py-1 px-0.5">
+            {GRADE_LEVELS.map((g) => {
+              const isSel = selectedGrade === g.id;
+              const gMeta = GRADE_METAS[g.id] || GRADE_METAS.lop1;
+              const isChildGrade = activeProfile?.gradeId === g.id;
+
+              return (
+                <motion.button
+                  key={g.id}
+                  whileHover={{ y: -2, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedGrade(g.id)}
+                  className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs font-black shrink-0 transition-all cursor-pointer relative ${
+                    isSel
+                      ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md ring-2 ring-orange-300'
+                      : 'bg-white text-gray-700 border-2 border-orange-100 hover:border-orange-200 shadow-xs'
+                  }`}
+                  style={{
+                    boxShadow: isSel
+                      ? '0 4px 12px rgba(249,115,22,0.25)'
+                      : '0 2px 4px rgba(0,0,0,0.03)',
+                  }}
+                >
+                  <span className="text-base">{gMeta.icon}</span>
+                  <span className="text-xs sm:text-sm font-black whitespace-nowrap">{g.label}</span>
+                  {isChildGrade && (
+                    <span
+                      className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                        isSel ? 'bg-white text-orange-600' : 'bg-orange-100 text-orange-600'
+                      }`}
+                    >
+                      Lớp của bé ⭐
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {/* Active Grade Compact Summary Card */}
+          <div
+            className={`rounded-3xl p-4 sm:p-5 text-white shadow-md bg-gradient-to-r ${currentGradeMeta.gradient} relative overflow-hidden`}
+            style={{ boxShadow: '0 6px 0 rgba(0,0,0,0.04), 0 10px 20px rgba(0,0,0,0.04)' }}
+          >
+            <div className="flex items-center justify-between gap-3 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-3xl shadow-inner shrink-0">
+                  {currentGradeMeta.icon}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
                     <span className="text-[10px] bg-white/25 px-2 py-0.5 rounded-full font-black text-white uppercase tracking-wider">
                       {currentGradeMeta.badge} • {currentGradeMeta.age}
                     </span>
-                    <h2 className="text-xl font-black leading-tight mt-0.5 drop-shadow-sm">
-                      Tiếng Anh {currentGradeMeta.name}
-                    </h2>
-                    <p className="text-white/90 text-xs font-medium truncate mt-0.5">
-                      {currentGradeMeta.summary}
-                    </p>
+                    {selectedGrade === activeProfile?.gradeId && (
+                      <span className="text-[10px] bg-amber-400 text-gray-900 px-2 py-0.5 rounded-full font-black shadow-xs">
+                        Lớp của bé ⭐
+                      </span>
+                    )}
                   </div>
-                </div>
-
-                {/* Progress bar inside banner */}
-                <div className="mt-3 pt-2.5 border-t border-white/20">
-                  <div className="flex justify-between text-[11px] font-black text-white/90 mb-1">
-                    <span>Tiến độ cả lớp</span>
-                    <span>
-                      ⭐ {currentGradeStarsEarned} sao ({currentGradePct}%)
-                    </span>
-                  </div>
-                  <div className="h-2 bg-white/30 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${currentGradePct}%` }}
-                      transition={{ duration: 0.8 }}
-                      className="h-full bg-white rounded-full"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Grade Switcher Pills (Horizontal scroll) */}
-              <div className="flex gap-1.5 overflow-x-auto hide-scrollbar py-1">
-                {GRADE_LEVELS.map((g) => {
-                  const isSel = selectedGrade === g.id;
-                  const gMeta = GRADE_METAS[g.id] || GRADE_METAS.lop1;
-                  return (
-                    <button
-                      key={g.id}
-                      onClick={() => setSelectedGrade(g.id)}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition-all cursor-pointer ${
-                        isSel
-                          ? 'bg-orange-500 text-white shadow-xs scale-105'
-                          : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'
-                      }`}
-                    >
-                      <span>{gMeta.icon}</span>
-                      <span>{g.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Grid of Unit Cards: 1 Col on Mobile for spacious buttons, 2 on Tablet, 3-4 on PC */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-1">
-                {currentGradeUnits.map((cat, i) => (
-                  <motion.div
-                    key={cat.id}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                  >
-                    <UnitCard
-                      cat={cat}
-                      stars={getCategoryStars(cat.id)}
-                      isCustom={(cat as any).isCustom}
-                      gradeMeta={currentGradeMeta}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Empty state for grade with 0 units */}
-              {currentGradeUnits.length === 0 && (
-                <div className="text-center py-12 bg-white rounded-3xl border-2 border-dashed border-gray-200 p-6">
-                  <div className="text-5xl mb-3">📭</div>
-                  <p className="font-black text-gray-700 text-base">Chưa có bài học nào</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Các bài học cho lớp này đang được cập nhật.
+                  <h3 className="text-lg sm:text-xl font-black leading-tight mt-1 drop-shadow-sm">
+                    Tiếng Anh {currentGradeMeta.name}
+                  </h3>
+                  <p className="text-white/90 text-xs font-medium line-clamp-1 mt-0.5">
+                    {currentGradeMeta.summary}
                   </p>
-                  <button
-                    onClick={() => setViewMode('grades')}
-                    className="mt-4 px-4 py-2 rounded-2xl bg-orange-500 text-white text-xs font-black"
-                  >
-                    ← Khám phá lớp khác
-                  </button>
                 </div>
-              )}
+              </div>
 
-              {/* Admin CTA only if logged in */}
-              {isAdmin && (
-                <div className="pt-2">
-                  <Link
-                    href={`/import?targetGrade=${selectedGrade}`}
-                    className="flex items-center gap-3 p-4 rounded-3xl border-2 border-dashed border-orange-300 bg-orange-50/70 hover:bg-orange-100/70 transition-colors group cursor-pointer"
-                  >
-                    <div className="w-10 h-10 rounded-2xl bg-orange-500 text-white flex items-center justify-center text-lg shadow-sm">
-                      ✏️
-                    </div>
-                    <div>
-                      <p className="font-black text-gray-800 text-sm">Thêm bài học mới (Admin)</p>
-                      <p className="text-gray-500 text-xs font-medium">
-                        Nhập từ vựng bằng PDF, TXT hoặc ảnh vào {currentGradeMeta.name}
-                      </p>
-                    </div>
-                    <span className="ml-auto text-orange-500 font-black text-lg">→</span>
-                  </Link>
-                </div>
-              )}
-            </motion.div>
+              <div className="text-right shrink-0 hidden sm:block">
+                <p className="text-2xl font-black leading-none">⭐ {currentGradeStarsEarned}</p>
+                <p className="text-[10px] text-white/80 font-bold mt-1">sao đã đạt ({currentGradePct}%)</p>
+              </div>
+            </div>
+
+            {/* Progress bar inside banner */}
+            <div className="mt-3 pt-2.5 border-t border-white/20">
+              <div className="flex justify-between text-[11px] font-black text-white/90 mb-1">
+                <span>Tiến độ chương trình ({currentGradeUnits.length} bài • {currentGradeWordCount} từ)</span>
+                <span className="sm:hidden font-black">⭐ {currentGradeStarsEarned} sao ({currentGradePct}%)</span>
+              </div>
+              <div className="h-2.5 bg-black/15 rounded-full overflow-hidden p-0.5">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${currentGradePct}%` }}
+                  transition={{ duration: 0.8 }}
+                  className="h-full bg-white rounded-full shadow-xs"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. UNITS GRID: TACTILE, CLEAN, DIRECT ACCESS ── */}
+        <section className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
+            {currentGradeUnits.map((cat, i) => (
+              <motion.div
+                key={cat.id}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.03, 0.3) }}
+              >
+                <UnitCard
+                  cat={cat}
+                  stars={getCategoryStars(cat.id)}
+                  isCustom={(cat as any).isCustom}
+                  gradeMeta={currentGradeMeta}
+                />
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Empty state for grade with 0 units */}
+          {currentGradeUnits.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-3xl border-2 border-dashed border-gray-200 p-6">
+              <div className="text-5xl mb-3">📭</div>
+              <p className="font-black text-gray-700 text-base">Chưa có bài học nào</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Các bài học cho lớp này đang được cập nhật.
+              </p>
+            </div>
           )}
-        </AnimatePresence>
+
+          {/* Admin CTA only if logged in */}
+          {isAdmin && (
+            <div className="pt-2">
+              <Link
+                href={`/import?targetGrade=${selectedGrade}`}
+                className="flex items-center gap-3 p-4 rounded-3xl border-2 border-dashed border-orange-300 bg-orange-50/70 hover:bg-orange-100/70 transition-colors group cursor-pointer"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-orange-500 text-white flex items-center justify-center text-lg shadow-sm">
+                  ✏️
+                </div>
+                <div>
+                  <p className="font-black text-gray-800 text-sm">Thêm bài học mới (Admin)</p>
+                  <p className="text-gray-500 text-xs font-medium">
+                    Nhập từ vựng bằng PDF, TXT hoặc ảnh vào {currentGradeMeta.name}
+                  </p>
+                </div>
+                <span className="ml-auto text-orange-500 font-black text-lg">→</span>
+              </Link>
+            </div>
+          )}
+        </section>
       </main>
 
-      {/* ── FIXED BOTTOM NAVIGATION: Sticky on Mobile, Floating Modern Dock on Desktop ── */}
+      {/* ── FIXED BOTTOM NAVIGATION DOCK ── */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom pointer-events-none">
         <div className="bg-white/95 backdrop-blur border-t-2 md:border-2 border-orange-200/80 max-w-lg md:max-w-xl mx-auto shadow-2xl md:rounded-3xl md:mb-4 pointer-events-auto">
           <div className="flex items-center justify-around px-2 py-2">
@@ -845,8 +720,10 @@ export default function HomePage() {
                 id: 'home',
                 icon: '🎒',
                 label: 'Lớp học',
-                active: viewMode === 'grades',
-                action: () => setViewMode('grades'),
+                active: true,
+                action: () => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
               },
               {
                 id: 'ipa',
