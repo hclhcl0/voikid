@@ -50,3 +50,14 @@ File trong volume chứa tài khoản và API key: bảo vệ bản sao lưu, ch
 - Lựa chọn bé được lưu riêng theo tài khoản trong trình duyệt. Mã nguồn trên VPS không tự có hồ sơ/tài khoản từ máy dev; cần chuyển dữ liệu đã sao lưu nếu muốn dùng dữ liệu cũ.
 
 Tài liệu Coolify: [Environment Variables](https://coolify.io/docs/applications/configuration/environment-variables), [Persistent Storage](https://coolify.io/docs/applications/configuration/persistent-storage), [Docker Compose](https://coolify.io/docs/applications/builds/docker-compose).
+
+## Cấu hình ElevenLabs trên Coolify
+
+Trong **Configuration → Environment Variables**, thêm các biến sau và bật **Runtime Variable**:
+
+- `ELEVENLABS_API_KEY`: API key của tài khoản ElevenLabs.
+- `ELEVENLABS_VOICE_ID`: Voice ID được tài khoản cho phép dùng qua API.
+- `ELEVENLABS_MODEL`: `eleven_flash_v2_5` (khuyến nghị) hoặc `eleven_multilingual_v2`.
+- `ELEVENLABS_ENABLED`: `true`.
+
+Sau khi lưu, chọn **Redeploy** để container nhận biến mới. Các biến môi trường dùng làm cấu hình khởi tạo; sau khi Admin → Media lưu, `settings.json` trong volume được ưu tiên. Nếu Voice Library trả `paid_plan_required`, hãy chọn giọng mặc định được tài khoản cấp API.

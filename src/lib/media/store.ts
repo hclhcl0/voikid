@@ -8,7 +8,24 @@ export interface AudioSettings {enabled:boolean;voiceId:string;model:string;apiK
 export interface MediaAudio {id:string;text:string;voiceId:string;model:string;speed?:number;createdAt:string;bytes:number;url:string}
 const defaults:AudioSettings={enabled:false,voiceId:'',model:'eleven_flash_v2_5',apiKey:'',speed:0.85};
 function write(file:string,value:string|Buffer) {fs.mkdirSync(mediaDirectory,{recursive:true});const temporary=`${file}.${randomUUID()}.tmp`;fs.writeFileSync(temporary,value,{mode:0o600});fs.renameSync(temporary,file);}
-export function audioSettings():AudioSettings {return {...defaults,...(fs.existsSync(configFile)?JSON.parse(fs.readFileSync(configFile,'utf8')):{}),...(process.env.ELEVENLABS_API_KEY?{apiKey:process.env.ELEVENLABS_API_KEY}:{})};}
+function envAudioSettings():Partial<AudioSettings> {
+  const enabled = process.env.ELEVENLABS_ENABLED;
+  const model = process.env.ELEVENLABS_MODEL;
+  const speed = Number(process.env.ELEVENLABS_SPEED);
+  return {
+    ...(process.env.ELEVENLABS_API_KEY ? {apiKey:process.env.ELEVENLABS_API_KEY.trim()} : {}),
+    ...(process.env.ELEVENLABS_VOICE_ID ? {voiceId:process.env.ELEVENLABS_VOICE_ID.trim()} : {}),
+    ...(model ? {model} : {}),
+    ...(enabled !== undefined ? {enabled:enabled === 'true' || enabled === '1'} : {}),
+    ...(Number.isFinite(speed) && speed > 0 ? {speed} : {}),
+  };
+}
+// Coolify env vars provide a safe first-run default. Once Admin > Media saves
+// settings into the persistent volume, the UI values take precedence.
+export function audioSettings():AudioSettings {
+  const saved = fs.existsSync(configFile) ? JSON.parse(fs.readFileSync(configFile,'utf8')) : {};
+  return {...defaults,...envAudioSettings(),...saved};
+}
 export function publicAudioSettings(){const s=audioSettings();return {enabled:s.enabled,voiceId:s.voiceId,model:s.model,speed:s.speed,configured:!!s.apiKey};}
 export function saveAudioSettings(value:unknown) {
   const v=value as Partial<AudioSettings>;
