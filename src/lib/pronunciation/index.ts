@@ -1,9 +1,9 @@
 import { runPerceptionBranch, runAssessmentBranch } from './geminiAdapter';
 import { compareContent } from './comparator';
 import { decideAttemptResult } from './decisionEngine';
-import { LessonPolicy, AttemptResult } from './types';
+import { LessonPolicy, AttemptResult, AssessmentResult, PerceptionResult } from './types';
 
-export const ENGINE_VERSION = '2.0.0-dual-branch';
+export const ENGINE_VERSION = '3.0.0-validated-dual-branch';
 
 export async function evaluatePronunciationDual(
   attemptId: string,
@@ -11,37 +11,26 @@ export async function evaluatePronunciationDual(
   mimeType: string,
   policy: LessonPolicy,
   apiKey: string,
-  scoreMode: 'off' | 'estimated' | 'calibrated' = 'off'
+  scoreMode: 'off' | 'estimated' | 'calibrated' = 'off',
+  modelName = 'gemini-3.5-flash-lite',
+  timeoutMs = 20000,
+  onProviderErrors?: (errors: unknown[]) => void
 ): Promise<AttemptResult> {
   const resolvedMime = mimeType || 'audio/webm';
-  const modelName = 'gemini-3.5-flash-lite'; // You can fall back if needed
 
   // A/B chạy song song có giới hạn concurrency; xử lý cả hai kết quả bằng allSettled
   const [perceptionOutcome, assessmentOutcome] = await Promise.allSettled([
-    runPerceptionBranch(audioBase64, resolvedMime, apiKey, modelName),
-    runAssessmentBranch(audioBase64, resolvedMime, policy, apiKey, scoreMode !== 'off', modelName)
+    runPerceptionBranch(audioBase64, resolvedMime, apiKey, modelName, timeoutMs),
+    runAssessmentBranch(audioBase64, resolvedMime, policy, apiKey, scoreMode !== 'off', modelName, timeoutMs)
   ]);
+  onProviderErrors?.([perceptionOutcome, assessmentOutcome].flatMap(outcome => outcome.status === 'rejected' ? [outcome.reason] : []));
 
   const perception = perceptionOutcome.status === 'fulfilled' ? perceptionOutcome.value : null;
-  if (perceptionOutcome.status === 'rejected') {
-    console.error('[Perception Error]', perceptionOutcome.reason);
-  }
 
   const assessment = assessmentOutcome.status === 'fulfilled' ? assessmentOutcome.value : null;
-  if (assessmentOutcome.status === 'rejected') {
-    console.error('[Assessment Error]', assessmentOutcome.reason);
-  }
 
   const comparison = perception ? compareContent(perception.transcript, policy) : null;
 
-  console.log('[DUAL-BRANCH DEBUG]', JSON.stringify({
-    attemptId,
-    perception,
-    assessment,
-    comparison,
-    targetText: policy.targetText,
-    acceptedResponses: policy.acceptedResponses,
-  }, null, 2));
 
   const result = decideAttemptResult(
     attemptId,
@@ -52,6 +41,9 @@ export async function evaluatePronunciationDual(
     ENGINE_VERSION,
     scoreMode
   );
+  if ([perceptionOutcome, assessmentOutcome].some(outcome => outcome.status === 'rejected' && outcome.reason instanceof Error && outcome.reason.message === 'invalid_model_output')) {
+    result.reason = 'invalid_model_output';
+  }
 
   // Gắn phản hồi mẫu dựa theo status, reason và transcript
   result.feedbackVi = generateFeedback(result, policy, assessment, perception);
@@ -62,8 +54,8 @@ export async function evaluatePronunciationDual(
 function generateFeedback(
   result: AttemptResult,
   policy: LessonPolicy,
-  assessment: any,
-  perception: any
+  assessment: AssessmentResult | null,
+  perception: PerceptionResult | null
 ): string {
   if (result.status === 'pass') {
     return 'Con đọc rõ rồi! Mình sang từ tiếp theo nhé. 👏';

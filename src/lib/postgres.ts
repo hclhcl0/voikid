@@ -6,6 +6,7 @@
 
 import { Pool, PoolConfig } from 'pg';
 import { UserProfile, AppProgress, WordProgress, DailyStats } from '@/types';
+import { AuthAccount } from '@/lib/auth';
 
 let pool: Pool | null = null;
 let schemaInitialized = false;
@@ -146,6 +147,47 @@ export async function initPostgresSchema(): Promise<{ success: boolean; message:
       CREATE INDEX IF NOT EXISTS idx_pg_progress_profile ON user_progress(profile_id);
       CREATE INDEX IF NOT EXISTS idx_pg_stickers_profile ON user_stickers(profile_id);
       CREATE INDEX IF NOT EXISTS idx_pg_daily_profile ON user_daily_stats(profile_id);
+
+      CREATE TABLE IF NOT EXISTS learning_sessions (
+        id TEXT PRIMARY KEY,
+        profile_id TEXT NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+        payload JSONB NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_learning_profile ON learning_sessions(profile_id);
+      ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS learning_reward_keys JSONB NOT NULL DEFAULT '[]';
+    `);
+
+    // ── Auth tables (parent accounts + sessions) ──────────────────────────────
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS parent_accounts (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        display_name TEXT DEFAULT '',
+        admin_pin TEXT DEFAULT '1234',
+        account_type TEXT DEFAULT 'registered',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS auth_sessions (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL REFERENCES parent_accounts(id) ON DELETE CASCADE,
+        device_info TEXT DEFAULT '',
+        expires_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_sessions_account ON auth_sessions(account_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_expires ON auth_sessions(expires_at);
+    `);
+
+    // Add owner_id column to user_profiles if not exists (for linking to parent_accounts)
+    await client.query(`
+      ALTER TABLE user_profiles
+        ADD COLUMN IF NOT EXISTS owner_id TEXT REFERENCES parent_accounts(id) ON DELETE CASCADE;
+      CREATE INDEX IF NOT EXISTS idx_profiles_owner ON user_profiles(owner_id);
     `);
 
     // Tạo hồ sơ mặc định nếu chưa có hồ sơ nào
@@ -310,7 +352,9 @@ export async function pgLoginProfile(query: string): Promise<{ profile: UserProf
   }));
 
   const progress: AppProgress = {
-    totalStars,
+    learningSessions: Object.fromEntries((await p.query('SELECT id, payload FROM learning_sessions WHERE profile_id = $1', [profile.id])).rows.map(r => [r.id, r.payload])),
+    learningRewardKeys: row.learning_reward_keys || [],
+    totalStars: totalStars + (Array.isArray(row.learning_reward_keys) ? row.learning_reward_keys.length : 0),
     streak: dailyStats.length > 0 ? dailyStats[0].streak : 1,
     lastActiveDate: new Date().toISOString().split('T')[0],
     wordProgress,
@@ -325,22 +369,23 @@ export async function pgLoginProfile(query: string): Promise<{ profile: UserProf
   return { profile, progress };
 }
 
-export async function pgCreateProfile(profile: UserProfile, initialProg?: AppProgress): Promise<void> {
+export async function pgCreateProfile(profile: UserProfile & { ownerId?: string }, initialProg?: AppProgress): Promise<void> {
   const p = getPostgresPool();
   if (!p) throw new Error('PostgreSQL chưa được cấu hình');
   await initPostgresSchema();
 
   await p.query(
-    `INSERT INTO user_profiles (id, name, avatar, grade_id, color, code, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+    `INSERT INTO user_profiles (id, name, avatar, grade_id, color, code, owner_id, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
      ON CONFLICT (id) DO UPDATE SET
        name = EXCLUDED.name,
        avatar = EXCLUDED.avatar,
        grade_id = EXCLUDED.grade_id,
        color = EXCLUDED.color,
        code = EXCLUDED.code,
+       owner_id = COALESCE(EXCLUDED.owner_id, user_profiles.owner_id),
        updated_at = NOW()`,
-    [profile.id, profile.name, profile.avatar, profile.gradeId, profile.color, profile.code]
+    [profile.id, profile.name, profile.avatar, profile.gradeId, profile.color, profile.code, profile.ownerId || null]
   );
 
   if (initialProg?.wordProgress) {
@@ -405,7 +450,7 @@ export async function pgSyncProgress(
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
          ON CONFLICT (profile_id, cat_id, word_id) DO UPDATE SET
            stars = GREATEST(user_progress.stars, EXCLUDED.stars),
-           attempts = user_progress.attempts + EXCLUDED.attempts,
+           attempts = GREATEST(user_progress.attempts, EXCLUDED.attempts),
            best_score = GREATEST(user_progress.best_score, EXCLUDED.best_score),
            consecutive_passes = EXCLUDED.consecutive_passes,
            mastered = EXCLUDED.mastered OR user_progress.mastered,
@@ -433,6 +478,21 @@ export async function pgSyncProgress(
   }
 
   // 3. Upsert stickers
+  for (const session of Object.values(incomingProg.learningSessions ?? {})) {
+    if (session.profileId !== profileId) continue;
+    await p.query(
+      `INSERT INTO learning_sessions (id, profile_id, payload, updated_at) VALUES ($1, $2, $3::jsonb, $4)
+       ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = EXCLUDED.updated_at
+       WHERE learning_sessions.profile_id = EXCLUDED.profile_id AND learning_sessions.updated_at < EXCLUDED.updated_at`,
+      [session.id, profileId, JSON.stringify(session), session.updatedAt]
+    );
+  }
+  if (incomingProg.learningRewardKeys) {
+    await p.query(`UPDATE user_profiles SET learning_reward_keys =
+      (SELECT COALESCE(jsonb_agg(DISTINCT value), '[]'::jsonb) FROM jsonb_array_elements(learning_reward_keys || $2::jsonb)) WHERE id = $1`,
+      [profileId, JSON.stringify(incomingProg.learningRewardKeys)]);
+  }
+
   if (incomingProg.stickers && Array.isArray(incomingProg.stickers)) {
     for (const stick of incomingProg.stickers) {
       const stickerId = typeof stick === 'string' ? stick : (stick as any).id;
@@ -512,4 +572,186 @@ export async function pgDeleteProfile(profileId: string): Promise<void> {
   await initPostgresSchema();
 
   await p.query('DELETE FROM user_profiles WHERE id = $1', [profileId]);
+}
+
+// ── Auth / Parent Account CRUD ────────────────────────────────────────────────
+
+/** Tạo tài khoản phụ huynh mới */
+export async function pgCreateParentAccount(data: {
+  id: string;
+  email: string;
+  passwordHash: string;
+  displayName: string;
+}): Promise<AuthAccount> {
+  const p = getPostgresPool();
+  if (!p) throw new Error('PostgreSQL chưa được cấu hình');
+  await initPostgresSchema();
+
+  const res = await p.query(
+    `INSERT INTO parent_accounts (id, email, password_hash, display_name)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [data.id, data.email.toLowerCase().trim(), data.passwordHash, data.displayName.trim()]
+  );
+  return rowToAccount(res.rows[0]);
+}
+
+/** Lấy tài khoản theo email (để đăng nhập) */
+export async function pgGetParentAccountByEmail(email: string): Promise<{
+  account: AuthAccount;
+  passwordHash: string;
+} | null> {
+  const p = getPostgresPool();
+  if (!p) throw new Error('PostgreSQL chưa được cấu hình');
+  await initPostgresSchema();
+
+  const res = await p.query(
+    'SELECT * FROM parent_accounts WHERE email = $1 LIMIT 1',
+    [email.toLowerCase().trim()]
+  );
+  if (!res.rows[0]) return null;
+  return {
+    account: rowToAccount(res.rows[0]),
+    passwordHash: res.rows[0].password_hash,
+  };
+}
+
+/** Lấy tài khoản theo ID */
+export async function pgGetParentAccountById(id: string): Promise<AuthAccount | null> {
+  const p = getPostgresPool();
+  if (!p) throw new Error('PostgreSQL chưa được cấu hình');
+  await initPostgresSchema();
+
+  const res = await p.query(
+    'SELECT * FROM parent_accounts WHERE id = $1 LIMIT 1',
+    [id]
+  );
+  if (!res.rows[0]) return null;
+  return rowToAccount(res.rows[0]);
+}
+
+/** Lấy tất cả hồ sơ bé thuộc một tài khoản phụ huynh */
+export async function pgGetProfilesByOwner(ownerId: string): Promise<UserProfile[]> {
+  const p = getPostgresPool();
+  if (!p) throw new Error('PostgreSQL chưa được cấu hình');
+  await initPostgresSchema();
+
+  const res = await p.query(
+    'SELECT * FROM user_profiles WHERE owner_id = $1 ORDER BY created_at ASC',
+    [ownerId]
+  );
+
+  // Get star totals
+  const starRes = await p.query(
+    `SELECT profile_id, COALESCE(SUM(stars), 0) as total_stars
+     FROM user_progress
+     WHERE profile_id = ANY($1::text[])
+     GROUP BY profile_id`,
+    [res.rows.map((r: any) => r.id)]
+  );
+  const starsMap: Record<string, number> = {};
+  for (const row of starRes.rows) {
+    starsMap[row.profile_id] = parseInt(row.total_stars, 10);
+  }
+
+  return res.rows.map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    avatar: row.avatar || '🐰',
+    gradeId: row.grade_id || 'lop1',
+    color: row.color || 'orange',
+    code: row.code,
+    createdAt: row.created_at ? new Date(row.created_at).toISOString().split('T')[0] : '',
+  }));
+}
+
+/** Tạo hồ sơ bé mới gắn với tài khoản phụ huynh */
+export async function pgCreateProfileForOwner(data: {
+  id: string;
+  name: string;
+  avatar: string;
+  gradeId: string;
+  color: string;
+  code: string;
+  ownerId: string;
+}): Promise<UserProfile> {
+  const p = getPostgresPool();
+  if (!p) throw new Error('PostgreSQL chưa được cấu hình');
+  await initPostgresSchema();
+
+  const res = await p.query(
+    `INSERT INTO user_profiles (id, name, avatar, grade_id, color, code, owner_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING *`,
+    [data.id, data.name, data.avatar, data.gradeId, data.color, data.code, data.ownerId]
+  );
+  const row = res.rows[0];
+  return {
+    id: row.id,
+    name: row.name,
+    avatar: row.avatar,
+    gradeId: row.grade_id,
+    color: row.color,
+    code: row.code,
+    createdAt: row.created_at ? new Date(row.created_at).toISOString().split('T')[0] : '',
+  };
+}
+
+/** Kiểm tra email đã tồn tại chưa */
+export async function pgCheckEmailExists(email: string): Promise<boolean> {
+  const p = getPostgresPool();
+  if (!p) return false;
+  await initPostgresSchema();
+
+  const res = await p.query(
+    'SELECT 1 FROM parent_accounts WHERE email = $1 LIMIT 1',
+    [email.toLowerCase().trim()]
+  );
+  return res.rows.length > 0;
+}
+
+/** Cập nhật admin PIN của tài khoản */
+export async function pgUpdateAdminPin(accountId: string, newPin: string): Promise<void> {
+  const p = getPostgresPool();
+  if (!p) throw new Error('PostgreSQL chưa được cấu hình');
+
+  await p.query(
+    'UPDATE parent_accounts SET admin_pin = $1, updated_at = NOW() WHERE id = $2',
+    [newPin, accountId]
+  );
+}
+
+/** Cập nhật mật khẩu tài khoản */
+export async function pgUpdatePassword(accountId: string, newHash: string): Promise<void> {
+  const p = getPostgresPool();
+  if (!p) throw new Error('PostgreSQL chưa được cấu hình');
+
+  await p.query(
+    'UPDATE parent_accounts SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+    [newHash, accountId]
+  );
+}
+
+/** Gán hồ sơ bé vào tài khoản phụ huynh (dùng khi chuyển từ Guest sang Cá nhân) */
+export async function pgLinkProfileToOwner(profileId: string, ownerId: string): Promise<void> {
+  const p = getPostgresPool();
+  if (!p) throw new Error('PostgreSQL chưa được cấu hình');
+  await initPostgresSchema();
+
+  await p.query(
+    'UPDATE user_profiles SET owner_id = $1, updated_at = NOW() WHERE id = $2',
+    [ownerId, profileId]
+  );
+}
+
+/** Helper: Chuyển DB row thành AuthAccount object */
+function rowToAccount(row: any): AuthAccount {
+  return {
+    id: row.id,
+    email: row.email,
+    displayName: row.display_name || '',
+    adminPin: row.admin_pin || '1234',
+    accountType: 'registered',
+    createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+  };
 }

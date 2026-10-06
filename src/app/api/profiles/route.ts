@@ -3,10 +3,17 @@ import fs from 'fs';
 import path from 'path';
 import { UserProfile, AppProgress } from '@/types';
 import { getSupabase, testSupabaseConnection } from '@/lib/supabase';
+import { getAccountFromRequest } from '@/lib/auth';
+import { familyProfileRequest } from '@/lib/backend/family-profiles';
+import { mergeSessions } from '@/lib/learning/progress';
+import {mergeStoryLibrary} from '@/lib/stories/library';
+import {mergeStickers,mergeStickerStudyDays,progressResetTime} from '@/lib/stickers';
+import {mergeIpaPractice} from '@/lib/ipa/practice';
 import {
   isPostgresConfigured,
   testPostgresConnection,
   pgGetProfiles,
+  pgGetProfilesByOwner,
   pgLoginProfile,
   pgCreateProfile,
   pgSyncProgress,
@@ -16,7 +23,7 @@ import {
 
 export const runtime = 'nodejs';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+const DATA_DIR = process.env.VOCAKIDS_DATA_DIR || path.join(process.cwd(), 'data');
 const STORE_FILE = path.join(DATA_DIR, 'profiles_store.json');
 
 interface StoreData {
@@ -54,7 +61,8 @@ const DEFAULT_STORE: StoreData = {
 
 function ensureStore(): StoreData {
   try {
-    if (!fs.existsSync(DATA_DIR)) {
+    // Runtime store is provisioned by Docker/volume, not a bundled build asset.
+    if (!fs.existsSync(/* turbopackIgnore: true */ DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     if (!fs.existsSync(STORE_FILE)) {
@@ -77,14 +85,10 @@ function ensureStore(): StoreData {
 }
 
 function saveStore(data: StoreData) {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    console.error('Error saving profiles_store.json:', e);
-  }
+  if (!fs.existsSync(/* turbopackIgnore: true */ DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  const temporary = `${STORE_FILE}.${process.pid}.tmp`;
+  fs.writeFileSync(temporary, JSON.stringify(data, null, 2), 'utf-8');
+  fs.renameSync(temporary, STORE_FILE);
 }
 
 /** Generate a friendly, memorable code for a child like BONG88, AN26, KID12 */
@@ -112,8 +116,31 @@ function generateCode(name: string, existingCodes: Set<string>): string {
 
 // ── GET /api/profiles ────────────────────────
 export async function GET(req: NextRequest) {
+  const familyResponse = familyProfileRequest(req);
+  if (familyResponse) return familyResponse;
   const { searchParams } = new URL(req.url);
   const query = searchParams.get('q')?.trim().toLowerCase() || '';
+
+  // 0. Nếu người dùng đã đăng nhập tài khoản cá nhân, ưu tiên trả về hồ sơ của tài khoản đó
+  const authAccount = getAccountFromRequest(req);
+  if (authAccount && isPostgresConfigured() && !query) {
+    try {
+      const ownerProfiles = await pgGetProfilesByOwner(authAccount.accountId);
+      return NextResponse.json({
+        success: true,
+        profiles: ownerProfiles,
+        totalCount: ownerProfiles.length,
+        source: 'postgresql_personal_account',
+        account: {
+          id: authAccount.accountId,
+          email: authAccount.email,
+          displayName: authAccount.displayName,
+        },
+      });
+    } catch (ownerErr) {
+      console.warn('[PostgreSQL owner profiles fetch error]:', ownerErr);
+    }
+  }
 
   // 1. Thử truy vấn từ PostgreSQL trước nếu đã cấu hình (DATABASE_URL / POSTGRES_URL)
   if (isPostgresConfigured()) {
@@ -224,6 +251,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const familyResponse = familyProfileRequest(req, body);
+    if (familyResponse) return familyResponse;
     const { action } = body;
     const store = ensureStore();
     const existingCodes = new Set(store.profiles.map((p) => (p.code || '').toUpperCase()));
@@ -399,7 +428,8 @@ export async function POST(req: NextRequest) {
       const id = pData.id || `child_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const code = (pData.code?.trim().toUpperCase()) || generateCode(pData.name, existingCodes);
 
-      const newProfile: UserProfile = {
+      const authAccount = getAccountFromRequest(req);
+      const newProfile: UserProfile & { ownerId?: string } = {
         id,
         name: pData.name.trim(),
         avatar: pData.avatar || '🐰',
@@ -407,6 +437,7 @@ export async function POST(req: NextRequest) {
         color: pData.color || 'from-orange-400 to-amber-500',
         createdAt: pData.createdAt || new Date().toISOString().split('T')[0],
         code,
+        ownerId: authAccount ? authAccount.accountId : undefined,
       };
 
       const initialProg: AppProgress = body.progress || {
@@ -488,7 +519,9 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      const current = store.progresses[profileId] || {
+      const saved = store.progresses[profileId];
+      if (saved && progressResetTime(incomingProg) < progressResetTime(saved)) return NextResponse.json({success:true,message:'Tiến độ đã được đặt lại trên thiết bị khác. Tải lại hồ sơ.'});
+      const current = (saved && progressResetTime(incomingProg) <= progressResetTime(saved) ? saved : null) || {
         totalStars: 0,
         streak: 0,
         lastActiveDate: '',
@@ -503,18 +536,25 @@ export async function POST(req: NextRequest) {
 
       const mergedWordProgress = { ...current.wordProgress };
       for (const [key, wp] of Object.entries(incomingProg.wordProgress || {})) {
-        if (!mergedWordProgress[key] || wp.stars > mergedWordProgress[key].stars) {
-          mergedWordProgress[key] = wp;
+        const previous = mergedWordProgress[key];
+        if (!previous || wp.attempts >= previous.attempts) {
+          mergedWordProgress[key] = { ...wp, stars: Math.max(previous?.stars ?? 0, wp.stars), bestScore: Math.max(previous?.bestScore ?? 0, wp.bestScore) };
         }
       }
 
       const mergedProgress: AppProgress = {
+        progressResetAt: incomingProg.progressResetAt ?? current.progressResetAt,
+        ...mergeStoryLibrary(current,incomingProg,profileId),
+        ipaPractice: mergeIpaPractice(current.ipaPractice,incomingProg.ipaPractice,profileId),
+        learningSessions: mergeSessions(current.learningSessions, incomingProg.learningSessions),
+        learningRewardKeys: [...new Set([...(current.learningRewardKeys ?? []), ...(incomingProg.learningRewardKeys ?? [])])],
         totalStars: Math.max(current.totalStars, incomingProg.totalStars || 0),
         streak: Math.max(current.streak, incomingProg.streak || 0),
         lastActiveDate: incomingProg.lastActiveDate || current.lastActiveDate,
         wordProgress: mergedWordProgress,
         dailyStats: incomingProg.dailyStats?.length ? incomingProg.dailyStats : current.dailyStats,
-        stickers: incomingProg.stickers ?? current.stickers ?? [],
+        stickers: mergeStickers(current.stickers,incomingProg.stickers),
+        stickerStudyDays: mergeStickerStudyDays(current.stickerStudyDays,incomingProg.stickerStudyDays),
         badges: incomingProg.badges ?? current.badges ?? [],
         unitTestResults: { ...(current.unitTestResults ?? {}), ...(incomingProg.unitTestResults ?? {}) },
         unlockedUnits: [...new Set([...(current.unlockedUnits ?? []), ...(incomingProg.unlockedUnits ?? [])])],

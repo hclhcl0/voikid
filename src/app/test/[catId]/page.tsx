@@ -17,7 +17,8 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { getCategoryById, CATEGORIES } from '@/lib/vocabulary';
+import { CATEGORIES } from '@/lib/vocabulary';
+import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useTTS } from '@/hooks/useTTS';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
@@ -230,6 +231,7 @@ function ResultScreen({
 
 // ─── Main UnitTest & Exercises Page ───────────────────────────────────────────
 export default function UnitTestPage() {
+  const { categories: serverCategories } = useVocabularyCatalog();
   const params = useParams<{ catId: string }>();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -241,8 +243,8 @@ export default function UnitTestPage() {
   const cat = useMemo(() => {
     if (!mounted) return null;
     if (params.catId?.startsWith('custom_')) return customCats.find((c) => c.id === params.catId) || null;
-    return getCategoryById(params.catId) || null;
-  }, [params.catId, customCats, mounted]);
+    return serverCategories.find(c => c.id === params.catId) || null;
+  }, [params.catId, customCats, mounted, serverCategories]);
 
   // View Mode: 'stations' (practice 8 types by default) vs 'test' (10-question challenge)
   const [mode, setMode] = useState<'stations' | 'test'>('stations');
@@ -312,7 +314,7 @@ export default function UnitTestPage() {
       setFinalVals({ score: fs, correct: fc, fast: ff, streak: fsm });
 
       if (!cat) return;
-      recordUnitTest({ unitId: cat.id, score: fs, grade: g, attempts: 1, fastAnswers: ff, streak: fsm });
+      recordUnitTest({ unitId: cat.id, score: fs, grade: g, attempts: 1, fastAnswers: ff, streak: fsm, correctAnswers: fc, questionCount: questions.length });
 
       if (g !== 'fail') {
         const s = STICKER_MAP[g];
@@ -327,7 +329,7 @@ export default function UnitTestPage() {
         });
       }
     },
-    [cat, recordUnitTest, awardSticker]
+    [cat, recordUnitTest, awardSticker, questions.length]
   );
 
   const handleTestAnswer = useCallback(

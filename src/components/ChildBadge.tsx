@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useProfileContext, COLOR_THEMES } from '@/context/ProfileContext';
+import { useAuth } from '@/context/AuthContext';
 import { GRADE_LEVELS } from '@/lib/vocabulary';
 
 interface ChildBadgeProps {
@@ -12,6 +13,7 @@ interface ChildBadgeProps {
 
 export function ChildBadge({ variant = 'pill', showSwitchHint = true }: ChildBadgeProps) {
   const { activeProfile, openProfileModal, progress, hydrated } = useProfileContext();
+  const { isAuthenticated, account } = useAuth();
 
   if (!hydrated) {
     return (
@@ -28,11 +30,16 @@ export function ChildBadge({ variant = 'pill', showSwitchHint = true }: ChildBad
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={openProfileModal}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur shadow-xs border border-orange-200 text-gray-800 cursor-pointer hover:bg-orange-50 transition-colors"
-        title="Đổi tài khoản bé học"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur shadow-xs border border-slate-200 text-gray-800 cursor-pointer hover:bg-orange-50 transition-colors"
+        title={isAuthenticated ? `Tài khoản: ${account?.displayName || account?.email} (Đã kết nối đám mây)` : 'Chế độ Khách (Lưu trên máy). Nhấn để đổi bé hoặc đăng nhập'}
       >
         <span className="text-base leading-none">{activeProfile.avatar}</span>
-        <span className="text-xs font-black truncate max-w-[80px]">{activeProfile.name}</span>
+        <span className="text-xs font-bold truncate max-w-[80px]">{activeProfile.name}</span>
+        {isAuthenticated ? (
+          <span className="text-[10px] text-blue-500 font-bold" title="Đã lưu Đám Mây">☁️</span>
+        ) : (
+          <span className="text-[10px] text-slate-500 font-bold" title="Chế độ Khách">👤</span>
+        )}
         {showSwitchHint && <span className="text-[10px] text-orange-500 font-bold">⇄</span>}
       </motion.button>
     );
@@ -44,7 +51,7 @@ export function ChildBadge({ variant = 'pill', showSwitchHint = true }: ChildBad
         whileHover={{ scale: 1.03, y: -2 }}
         whileTap={{ scale: 0.97 }}
         onClick={openProfileModal}
-        className="flex items-center gap-3 p-2 pr-4 rounded-3xl bg-white/90 backdrop-blur shadow-md border-2 border-white/80 cursor-pointer hover:bg-white transition-all text-left group"
+        className="flex items-center gap-3 p-2 pr-4 rounded-2xl bg-white/90 backdrop-blur shadow-sm border-2 border-white/80 cursor-pointer hover:bg-white transition-all text-left group"
         title="Nhấn để đổi bé hoặc quản lý tài khoản"
       >
         <div
@@ -54,10 +61,19 @@ export function ChildBadge({ variant = 'pill', showSwitchHint = true }: ChildBad
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-black text-gray-800 truncate">{activeProfile.name}</span>
-            <span className="text-[10px] bg-orange-100 text-orange-700 font-black px-1.5 py-0.5 rounded-md">
+            <span className="text-sm font-bold text-gray-800 truncate">{activeProfile.name}</span>
+            <span className="text-[10px] bg-orange-100 text-orange-700 font-bold px-1.5 py-0.5 rounded-md">
               {grade.label}
             </span>
+            {isAuthenticated ? (
+              <span className="text-[10px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded-md">
+                ☁️ Cloud
+              </span>
+            ) : (
+              <span className="text-[10px] bg-gray-100 text-gray-600 font-bold px-1.5 py-0.5 rounded-md">
+                👤 Khách
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-[11px] font-bold text-amber-600">⭐ {progress.totalStars} sao</span>
@@ -74,11 +90,11 @@ export function ChildBadge({ variant = 'pill', showSwitchHint = true }: ChildBad
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.96 }}
       onClick={openProfileModal}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur shadow-xs border border-orange-200 text-gray-800 cursor-pointer hover:bg-white transition-all"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur shadow-xs border border-slate-200 text-gray-800 cursor-pointer hover:bg-white transition-all"
       title="Nhấn để đổi tài khoản bé"
     >
       <span className="text-lg leading-none">{activeProfile.avatar}</span>
-      <span className="text-xs font-black text-gray-800">{activeProfile.name}</span>
+      <span className="text-xs font-bold text-gray-800">{activeProfile.name}</span>
       <span className="text-[10px] bg-orange-100 text-orange-700 font-bold px-1.5 py-0.5 rounded-md">
         {grade.label}
       </span>

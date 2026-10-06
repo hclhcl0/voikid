@@ -14,10 +14,11 @@ import { useTTS } from '@/hooks/useTTS';
 interface Props {
   sound: IpaSound | null;
   onClose: () => void;
+  onPractice?: () => void;
 }
 
-export function IpaSoundDetailModal({ sound, onClose }: Props) {
-  const { speak } = useTTS();
+export function IpaSoundDetailModal({ sound, onClose, onPractice }: Props) {
+  const { speak, cancel } = useTTS();
 
   if (!sound) return null;
 
@@ -30,7 +31,7 @@ export function IpaSoundDetailModal({ sound, onClose }: Props) {
 
   // Phát âm thử cụm âm vị
   const handlePlaySound = () => {
-    speak(sound.speech_cue, 'en-US', 0.45);
+    speak(sound.sample_word, 'en-US', 0.7);
   };
 
   return (
@@ -80,7 +81,7 @@ export function IpaSoundDetailModal({ sound, onClose }: Props) {
                 onClick={handlePlaySound}
                 className="px-4 py-2 rounded-2xl bg-white text-gray-800 font-black text-sm shadow hover:bg-orange-50 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
               >
-                <span>🔊</span> Nghe âm vị
+                <span>🔊</span> Nghe âm trong từ
               </button>
               <button
                 type="button"
@@ -148,6 +149,7 @@ export function IpaSoundDetailModal({ sound, onClose }: Props) {
               <p className="text-xs text-amber-950 font-medium leading-relaxed">
                 {sound.vietnamese_tip}
               </p>
+              <p className="mt-2 text-xs text-slate-600">Gợi ý gần đúng để làm quen; không thay thế audio mẫu.</p>
             </div>
 
             {/* Từ mẫu thực hành */}
@@ -185,12 +187,13 @@ export function IpaSoundDetailModal({ sound, onClose }: Props) {
 
           {/* Footer Close */}
           <div className="p-4 bg-gray-50 border-t border-gray-100">
+            {onPractice&&<button type="button" onClick={()=>{cancel();onPractice();}} className="mb-3 w-full rounded-2xl bg-orange-600 py-3 text-sm font-bold text-white hover:bg-orange-700">Luyện âm này từng bước →</button>}
             <button
               type="button"
               onClick={onClose}
               className="w-full py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-sm shadow-md hover:brightness-105 active:scale-98 transition-all cursor-pointer"
             >
-              Bé đã hiểu rồi! 👍
+              Đóng hướng dẫn
             </button>
           </div>
         </motion.div>

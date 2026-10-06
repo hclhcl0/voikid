@@ -1,5 +1,7 @@
 'use client';
 
+import { useBackendSession } from '@/hooks/useBackendSession';
+import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -73,7 +75,7 @@ function WordPreviewCard({
             <input value={draft.emoji} onChange={(e) => setDraft({ ...draft, emoji: e.target.value })}
               className="w-14 border rounded-lg px-2 py-1 text-center text-xl" placeholder="😀" />
             <input value={draft.en} onChange={(e) => setDraft({ ...draft, en: e.target.value })}
-              className="flex-1 border rounded-lg px-2 py-1 font-bold text-violet-700 text-sm" placeholder="English" />
+              className="flex-1 border rounded-lg px-2 py-1 font-bold text-orange-700 text-sm" placeholder="English" />
           </div>
           <input value={draft.vi} onChange={(e) => setDraft({ ...draft, vi: e.target.value })}
             className="w-full border rounded-lg px-2 py-1 text-sm text-rose-600 font-bold" placeholder="Tiếng Việt" />
@@ -81,10 +83,10 @@ function WordPreviewCard({
             <input value={draft.topic_emoji || '🏷️'} onChange={(e) => setDraft({ ...draft, topic_emoji: e.target.value })}
               className="w-12 border rounded-lg px-2 py-1 text-center text-sm" placeholder="🏷️" title="Icon chủ đề" />
             <input value={draft.topic_vi || ''} onChange={(e) => setDraft({ ...draft, topic_vi: e.target.value })}
-              className="flex-1 border rounded-lg px-2 py-1 text-xs text-violet-700 font-bold" placeholder="Chủ đề (VD: Động vật, Trái cây...)" />
+              className="flex-1 border rounded-lg px-2 py-1 text-xs text-orange-700 font-bold" placeholder="Chủ đề (VD: Động vật, Trái cây...)" />
           </div>
           <input value={draft.phonetic} onChange={(e) => setDraft({ ...draft, phonetic: e.target.value })}
-            className="w-full border rounded-lg px-2 py-1 text-xs text-gray-400 font-mono" placeholder="/phiên âm/" />
+            className="w-full border rounded-lg px-2 py-1 text-xs text-slate-500 font-mono" placeholder="/phiên âm/" />
           <input value={draft.example_en} onChange={(e) => setDraft({ ...draft, example_en: e.target.value })}
             className="w-full border rounded-lg px-2 py-1 text-xs" placeholder="Example sentence..." />
           <input value={draft.example_vi} onChange={(e) => setDraft({ ...draft, example_vi: e.target.value })}
@@ -102,8 +104,8 @@ function WordPreviewCard({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="font-black text-violet-700 text-sm">{word.en}</span>
-                {word.phonetic && <span className="text-gray-400 text-xs font-mono">{word.phonetic}</span>}
+                <span className="font-bold text-orange-700 text-sm">{word.en}</span>
+                {word.phonetic && <span className="text-slate-500 text-xs font-mono">{word.phonetic}</span>}
                 {matchInfo?.isDuplicate ? (
                   <span className="text-[10px] bg-amber-50 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs" title={`Đã có trong ${matchInfo.gradeName}: ${matchInfo.categoryName}`}>
                     <span>🟡</span>
@@ -116,14 +118,14 @@ function WordPreviewCard({
                   </span>
                 )}
                 {word.topic_vi && (
-                  <span className="text-[10px] bg-violet-50 text-violet-700 border border-violet-100 font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                  <span className="text-[10px] bg-slate-50 text-orange-700 border border-slate-200 font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1">
                     <span>{word.topic_emoji || '🏷️'}</span>
                     <span>{word.topic_vi}</span>
                   </span>
                 )}
               </div>
               <p className="font-bold text-rose-500 text-xs">{word.vi}</p>
-              {word.example_en && <p className="text-gray-400 text-xs mt-0.5 truncate">{word.example_en}</p>}
+              {word.example_en && <p className="text-slate-500 text-xs mt-0.5 truncate">{word.example_en}</p>}
             </div>
             <span className="text-gray-300 text-xs shrink-0">✏️</span>
           </div>
@@ -148,15 +150,15 @@ function DropZone({ onFile, accept, label }: { onFile: (f: File) => void; accept
       onDragLeave={() => setDrag(false)}
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
-      className={`cursor-pointer border-2 border-dashed rounded-3xl p-10 text-center transition-all ${
-        drag ? 'border-violet-500 bg-violet-50 scale-[1.01]' : 'border-gray-300 bg-gray-50 hover:border-violet-300 hover:bg-violet-50/50'
+      className={`cursor-pointer border-2 border-dashed rounded-2xl p-10 text-center transition-all ${
+        drag ? 'border-violet-500 bg-slate-50 scale-[1.01]' : 'border-gray-300 bg-gray-50 hover:border-violet-300 hover:bg-slate-50/50'
       }`}
     >
       <input ref={inputRef} type="file" accept={accept} className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
       <div className="text-5xl mb-3">{drag ? '✨' : '📂'}</div>
       <p className="font-bold text-gray-600 text-sm">{label}</p>
-      <p className="text-gray-400 text-xs mt-1">Kéo thả vào đây hoặc nhấn để chọn</p>
+      <p className="text-slate-500 text-xs mt-1">Kéo thả vào đây hoặc nhấn để chọn</p>
     </div>
   );
 }
@@ -247,11 +249,11 @@ function ManualEntryPanel({ onDone }: { onDone: (words: Word[]) => void }) {
     <div className="space-y-4">
       <div className="flex gap-2">
         <button onClick={() => setBulkMode(false)}
-          className={`flex-1 py-2.5 rounded-2xl text-sm font-bold transition-all ${!bulkMode ? 'bg-violet-500 text-white shadow-lg' : 'bg-gray-100 text-gray-500'}`}>
+          className={`flex-1 py-2.5 rounded-2xl text-sm font-bold transition-all ${!bulkMode ? 'bg-violet-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500'}`}>
           📝 Nhập từng từ
         </button>
         <button onClick={() => setBulkMode(true)}
-          className={`flex-1 py-2.5 rounded-2xl text-sm font-bold transition-all ${bulkMode ? 'bg-violet-500 text-white shadow-lg' : 'bg-gray-100 text-gray-500'}`}>
+          className={`flex-1 py-2.5 rounded-2xl text-sm font-bold transition-all ${bulkMode ? 'bg-violet-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500'}`}>
           📋 Dán danh sách
         </button>
       </div>
@@ -273,7 +275,7 @@ function ManualEntryPanel({ onDone }: { onDone: (words: Word[]) => void }) {
               ✓ Nhập nguyên gốc
             </motion.button>
             <motion.button whileTap={{ scale: 0.97 }} onClick={() => parseBulk(true)} disabled={!bulkText.trim()}
-              className="py-3 rounded-2xl font-black text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg disabled:opacity-40 flex items-center justify-center gap-1.5">
+              className="py-3 rounded-2xl font-bold text-white bg-orange-600 shadow-sm disabled:opacity-40 flex items-center justify-center gap-1.5">
               <span>✨ AI điền nghĩa & ví dụ</span>
             </motion.button>
           </div>
@@ -310,7 +312,7 @@ function ManualEntryPanel({ onDone }: { onDone: (words: Word[]) => void }) {
                     <input value={w.emoji} onChange={(e) => updateWord(w.id, 'emoji', e.target.value)}
                       className="w-10 border border-gray-200 rounded-lg px-1.5 py-1 text-center text-lg shrink-0" />
                     <input value={w.en} onChange={(e) => updateWord(w.id, 'en', e.target.value)}
-                      className="flex-1 border-2 border-gray-200 focus:border-violet-400 rounded-xl px-2.5 py-1.5 text-sm font-bold text-violet-700 focus:outline-none"
+                      className="flex-1 border-2 border-gray-200 focus:border-violet-400 rounded-xl px-2.5 py-1.5 text-sm font-bold text-orange-700 focus:outline-none"
                       placeholder="Từ tiếng Anh *" />
                     <button
                       type="button"
@@ -329,10 +331,10 @@ function ManualEntryPanel({ onDone }: { onDone: (words: Word[]) => void }) {
                       className="border border-gray-200 focus:border-violet-300 rounded-lg px-2 py-1 text-xs text-rose-600 font-bold focus:outline-none"
                       placeholder="Nghĩa tiếng Việt" />
                     <input value={w.phonetic} onChange={(e) => updateWord(w.id, 'phonetic', e.target.value)}
-                      className="border border-gray-200 focus:border-violet-300 rounded-lg px-2 py-1 text-xs font-mono text-gray-400 focus:outline-none"
+                      className="border border-gray-200 focus:border-violet-300 rounded-lg px-2 py-1 text-xs font-mono text-slate-500 focus:outline-none"
                       placeholder="/phiên âm/" />
                     <input value={w.topic_vi || ''} onChange={(e) => updateWord(w.id, 'topic_vi', e.target.value)}
-                      className="col-span-2 border border-gray-200 focus:border-violet-300 rounded-lg px-2 py-1 text-xs text-violet-700 font-semibold focus:outline-none"
+                      className="col-span-2 border border-gray-200 focus:border-violet-300 rounded-lg px-2 py-1 text-xs text-orange-700 font-semibold focus:outline-none"
                       placeholder="Chủ đề (VD: Động vật, Trái cây...)" />
                   </div>
                 </motion.div>
@@ -340,11 +342,11 @@ function ManualEntryPanel({ onDone }: { onDone: (words: Word[]) => void }) {
             </AnimatePresence>
           </div>
           <button onClick={addRow}
-            className="w-full py-2.5 rounded-2xl border-2 border-dashed border-violet-300 text-violet-500 font-bold text-sm hover:bg-violet-50 transition-colors">
+            className="w-full py-2.5 rounded-2xl border-2 border-dashed border-violet-300 text-violet-500 font-bold text-sm hover:bg-slate-50 transition-colors">
             + Thêm từ mới
           </button>
           <motion.button whileTap={{ scale: 0.97 }} onClick={() => onDone(rows)} disabled={validCount === 0}
-            className="w-full py-3.5 rounded-2xl font-black text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg disabled:opacity-40">
+            className="w-full py-3.5 rounded-2xl font-bold text-white bg-orange-600 shadow-sm disabled:opacity-40">
             ✓ Xem trước {validCount > 0 ? `(${validCount} từ)` : ''}
           </motion.button>
         </div>
@@ -355,6 +357,8 @@ function ManualEntryPanel({ onDone }: { onDone: (words: Word[]) => void }) {
 
 // ── Main Import Page ──────────────────────────────────────────────────────────
 export default function ImportPage() {
+  const { account } = useAuth();
+  const adminSession = useBackendSession();
   const router = useRouter();
   const { apiKey } = useSettings();
   const { categories: customCats, addCategory, addMultipleCategories, appendWords } = useCustomCategories();
@@ -525,26 +529,27 @@ export default function ImportPage() {
     return true;
   });
 
-  if (!isAdmin) {
+  if (account?.role === 'student') return <main className="p-8">Phần này dành cho phụ huynh. <Link href="/">Về học bài</Link></main>;
+  if (!isAdmin && account?.role !== 'parent' && !adminSession.authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-xl border-2 border-violet-100 space-y-5"
+          className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-sm border-2 border-slate-200 space-y-5"
         >
-          <div className="w-16 h-16 rounded-3xl bg-violet-100 flex items-center justify-center text-3xl mx-auto shadow-inner">
+          <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center text-3xl mx-auto shadow-inner">
             ✏️🔒
           </div>
           <div>
-            <h2 className="font-black text-xl text-gray-800">Thêm Từ Vựng Mới</h2>
+            <h2 className="font-bold text-xl text-gray-800">Thêm Từ Vựng Mới</h2>
             <p className="text-xs text-gray-500 font-semibold mt-1">
               Chức năng nhập từ vựng từ PDF, hình ảnh hoặc AI chỉ dành cho Phụ huynh & Quản trị viên.
             </p>
           </div>
           <button
             onClick={() => openAdminModal()}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black text-sm shadow-md transition-all cursor-pointer"
+            className="w-full py-3.5 rounded-2xl bg-orange-600 hover:bg-orange-700 hover:bg-orange-700 text-white font-bold text-sm shadow-sm transition-all cursor-pointer"
           >
             🔑 Mở Khóa Quyền Admin
           </button>
@@ -560,14 +565,14 @@ export default function ImportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-violet-50 to-fuchsia-50">
+    <div className="min-h-screen bg-slate-50">
 
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3">
+      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-slate-200 px-4 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             <button onClick={() => router.back()}
-              className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer"
+              className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-orange-700 hover:bg-violet-100 transition-colors cursor-pointer"
               title="Quay lại"
             >←</button>
             <Link href="/"
@@ -576,8 +581,8 @@ export default function ImportPage() {
             >🏠</Link>
           </div>
           <div className="flex-1 min-w-0 px-2">
-            <h1 className="font-black text-lg md:text-xl text-gray-800 leading-tight">📥 Thêm từ vựng</h1>
-            <p className="text-xs text-gray-400 font-semibold truncate">Tự động phân loại theo chủ đề bằng AI</p>
+            <h1 className="font-bold text-lg md:text-xl text-gray-800 leading-tight">📥 Thêm từ vựng</h1>
+            <p className="text-xs text-slate-500 font-semibold truncate">Tự động phân loại theo chủ đề bằng AI</p>
           </div>
           <div className="flex gap-2 items-center">
             <button
@@ -609,13 +614,13 @@ export default function ImportPage() {
           {/* ── STEP: Input ── */}
           {step === 'input' && (
             <motion.div key="input" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4">
-              <div className="bg-white rounded-3xl p-4 shadow border border-violet-100">
-                <h2 className="font-black text-gray-800 mb-3">Chọn nguồn</h2>
+              <div className="bg-white rounded-2xl p-4 shadow border border-slate-200">
+                <h2 className="font-bold text-gray-800 mb-3">Chọn nguồn</h2>
                 <div className="grid grid-cols-5 gap-1.5">
                   {SOURCES.map((s) => (
                     <button key={s.id} onClick={() => { setActiveSource(s.id); setError(null); }}
                       className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-center transition-all border-2 ${
-                        activeSource === s.id ? 'border-violet-400 bg-violet-50 text-violet-700' : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-violet-200'
+                        activeSource === s.id ? 'border-violet-400 bg-slate-50 text-orange-700' : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-slate-200'
                       }`}>
                       <span className="text-xl">{s.icon}</span>
                       <p className="font-bold text-[10px] leading-tight">{s.label}</p>
@@ -624,11 +629,11 @@ export default function ImportPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-3xl p-5 shadow border border-violet-100">
-                <h3 className="font-black text-gray-800 mb-1 flex items-center gap-2">
+              <div className="bg-white rounded-2xl p-5 shadow border border-slate-200">
+                <h3 className="font-bold text-gray-800 mb-1 flex items-center gap-2">
                   <span>{src.icon}</span> {src.label}
                 </h3>
-                <p className="text-xs text-gray-400 font-semibold mb-4">{src.desc}</p>
+                <p className="text-xs text-slate-500 font-semibold mb-4">{src.desc}</p>
 
                 {activeSource === 'manual' && <ManualEntryPanel onDone={handleManualDone} />}
 
@@ -640,12 +645,12 @@ export default function ImportPage() {
                       className="w-full border-2 border-gray-200 focus:border-violet-400 rounded-2xl px-4 py-3 text-sm font-semibold focus:outline-none" />
                     
                     {/* Extraction Mode selector */}
-                    <div className="p-3 bg-violet-50/70 rounded-2xl border border-violet-100 space-y-2">
+                    <div className="p-3 bg-slate-50/70 rounded-2xl border border-slate-200 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-black text-violet-900 flex items-center gap-1">
+                        <span className="text-[11px] font-bold text-violet-900 flex items-center gap-1">
                           <span>🎯</span> Chế độ trích xuất:
                         </span>
-                        <span className="text-[10px] font-bold text-violet-700 bg-white px-2 py-0.5 rounded-full border border-violet-200">
+                        <span className="text-[10px] font-bold text-orange-700 bg-white px-2 py-0.5 rounded-full border border-slate-200">
                           {extractMode === 'comprehensive' ? 'Bóc tách triệt để' : 'Cốt lõi'}
                         </span>
                       </div>
@@ -659,7 +664,7 @@ export default function ImportPage() {
                               : 'border-transparent bg-white/60 text-gray-500 hover:bg-white'
                           }`}
                         >
-                          <p className="font-black text-xs">✨ Tối đa từ (Nhiều từ)</p>
+                          <p className="font-bold text-xs">✨ Tối đa từ (Nhiều từ)</p>
                           <p className="text-[10px] text-gray-500">Lấy cả danh từ, động từ, tính từ...</p>
                         </button>
                         <button
@@ -671,7 +676,7 @@ export default function ImportPage() {
                               : 'border-transparent bg-white/60 text-gray-500 hover:bg-white'
                           }`}
                         >
-                          <p className="font-black text-xs">🎯 Tiêu chuẩn (5–15 từ)</p>
+                          <p className="font-bold text-xs">🎯 Tiêu chuẩn (5–15 từ)</p>
                           <p className="text-[10px] text-gray-500">Chỉ lọc từ danh từ cơ bản nhất</p>
                         </button>
                       </div>
@@ -679,7 +684,7 @@ export default function ImportPage() {
 
                     <motion.button whileTap={{ scale: 0.97 }} onClick={handleUrl}
                       disabled={!urlInput.trim() || loading}
-                      className="w-full py-3.5 rounded-2xl font-black text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg disabled:opacity-40">
+                      className="w-full py-3.5 rounded-2xl font-bold text-white bg-orange-600 shadow-sm disabled:opacity-40">
                       {loading
                         ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{loadingMsg}</span>
                         : '🤖 Trích xuất từ vựng'}
@@ -690,12 +695,12 @@ export default function ImportPage() {
                 {(activeSource === 'txt' || activeSource === 'pdf' || activeSource === 'image') && (
                   <div className="space-y-3">
                     {/* Extraction Mode selector */}
-                    <div className="p-3 bg-violet-50/70 rounded-2xl border border-violet-100 space-y-2">
+                    <div className="p-3 bg-slate-50/70 rounded-2xl border border-slate-200 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-black text-violet-900 flex items-center gap-1">
+                        <span className="text-[11px] font-bold text-violet-900 flex items-center gap-1">
                           <span>🎯</span> Chế độ trích xuất:
                         </span>
-                        <span className="text-[10px] font-bold text-violet-700 bg-white px-2 py-0.5 rounded-full border border-violet-200">
+                        <span className="text-[10px] font-bold text-orange-700 bg-white px-2 py-0.5 rounded-full border border-slate-200">
                           {extractMode === 'comprehensive' ? 'Bóc tách triệt để' : 'Cốt lõi'}
                         </span>
                       </div>
@@ -709,7 +714,7 @@ export default function ImportPage() {
                               : 'border-transparent bg-white/60 text-gray-500 hover:bg-white'
                           }`}
                         >
-                          <p className="font-black text-xs">✨ Tối đa từ (Nhiều từ)</p>
+                          <p className="font-bold text-xs">✨ Tối đa từ (Nhiều từ)</p>
                           <p className="text-[10px] text-gray-500">Lấy cả danh từ, động từ, tính từ...</p>
                         </button>
                         <button
@@ -721,7 +726,7 @@ export default function ImportPage() {
                               : 'border-transparent bg-white/60 text-gray-500 hover:bg-white'
                           }`}
                         >
-                          <p className="font-black text-xs">🎯 Tiêu chuẩn (5–15 từ)</p>
+                          <p className="font-bold text-xs">🎯 Tiêu chuẩn (5–15 từ)</p>
                           <p className="text-[10px] text-gray-500">Chỉ lọc từ danh từ cơ bản nhất</p>
                         </button>
                       </div>
@@ -731,9 +736,9 @@ export default function ImportPage() {
                       onFile={(f) => handleFile(f, activeSource)} />
                     {loading && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="flex items-center gap-3 bg-violet-50 rounded-2xl p-3">
+                        className="flex items-center gap-3 bg-slate-50 rounded-2xl p-3">
                         <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin shrink-0" />
-                        <p className="text-sm font-bold text-violet-600">{loadingMsg}</p>
+                        <p className="text-sm font-bold text-orange-700">{loadingMsg}</p>
                       </motion.div>
                     )}
                   </div>
@@ -745,15 +750,15 @@ export default function ImportPage() {
                     <p className="text-sm font-bold text-rose-600">{error}</p>
                     {error.includes('API Key') && (
                       <button onClick={() => router.push('/settings')}
-                        className="mt-2 text-xs font-bold text-violet-600 underline">→ Vào Cài đặt</button>
+                        className="mt-2 text-xs font-bold text-orange-700 underline">→ Vào Cài đặt</button>
                     )}
                   </motion.div>
                 )}
               </div>
 
               {activeSource !== 'manual' && (
-                <div className="bg-blue-50 border border-blue-100 rounded-3xl p-4">
-                  <p className="font-black text-blue-800 text-sm mb-2">💡 Mẹo tự động phân loại</p>
+                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
+                  <p className="font-bold text-blue-800 text-sm mb-2">💡 Mẹo tự động phân loại</p>
                   <ul className="space-y-1 text-xs text-blue-700 font-semibold">
                     <li>• Gemini sẽ <strong>tự động nhận diện chủ đề</strong> (Động vật, Trái cây, Trường học...) cho từng từ.</li>
                     <li>• Khi lưu, bạn có thể tạo thành <strong>nhiều chủ đề tương ứng</strong> chỉ với 1 cú chạm!</li>
@@ -766,13 +771,13 @@ export default function ImportPage() {
           {/* ── STEP: Preview ── */}
           {step === 'preview' && (
             <motion.div key="preview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4">
-              <div className="bg-gradient-to-r from-violet-600 to-purple-700 rounded-3xl p-5 text-white shadow-xl">
+              <div className="bg-orange-600 rounded-2xl p-5 text-white shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/70 text-xs font-bold mb-1">
                       {activeSource === 'manual' ? '✏️ Đã nhập' : '🤖 Gemini phân tích thành công'}
                     </p>
-                    <p className="font-black text-4xl">{words.length} <span className="text-2xl font-bold">từ</span></p>
+                    <p className="font-bold text-4xl">{words.length} <span className="text-2xl font-bold">từ</span></p>
                     {groupedTopics.length > 1 && (
                       <p className="text-violet-200 text-xs mt-1 font-semibold">
                         ✨ Phân loại thành <strong className="text-white">{groupedTopics.length} chủ đề</strong>
@@ -785,14 +790,14 @@ export default function ImportPage() {
               </div>
 
               {/* Comparison & Duplicate Stats Banner */}
-              <div className="bg-white rounded-3xl p-4 shadow border border-violet-100 space-y-3">
+              <div className="bg-white rounded-2xl p-4 shadow border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <p className="text-xs font-black text-gray-800">
+                    <p className="text-xs font-bold text-gray-800">
                       🔍 Đối chiếu với kho 1.210 từ SGK & Bộ từ của bé:
                     </p>
                     <p className="text-[11px] font-semibold text-gray-500 mt-0.5">
-                      Có <strong className="text-emerald-600 font-black">{newWordsCount} từ mới</strong> và <strong className="text-amber-600 font-black">{duplicateWordsCount} từ đã có trong SGK</strong>
+                      Có <strong className="text-emerald-600 font-bold">{newWordsCount} từ mới</strong> và <strong className="text-amber-600 font-bold">{duplicateWordsCount} từ đã có trong SGK</strong>
                     </p>
                   </div>
                   {duplicateWordsCount > 0 && (
@@ -803,7 +808,7 @@ export default function ImportPage() {
                           setWords((prev) => prev.filter((w) => !wordMatches.get(w.id)?.isDuplicate));
                         }
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-black text-xs transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
+                      className="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
                     >
                       <span>🧹</span>
                       <span>Chỉ giữ {newWordsCount} từ mới</span>
@@ -818,7 +823,7 @@ export default function ImportPage() {
                     onClick={() => setDuplicateFilter('all')}
                     className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
                       duplicateFilter === 'all'
-                        ? 'bg-violet-600 text-white shadow-xs'
+                        ? 'bg-orange-600 text-white shadow-xs'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
@@ -858,10 +863,10 @@ export default function ImportPage() {
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                   <button
                     onClick={() => setSelectedFilterTopic('all')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-black transition-all shrink-0 ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 ${
                       selectedFilterTopic === 'all'
-                        ? 'bg-violet-600 text-white shadow-sm'
-                        : 'bg-white text-gray-600 border border-violet-100 hover:bg-violet-50'
+                        ? 'bg-orange-600 text-white shadow-sm'
+                        : 'bg-white text-gray-600 border border-slate-200 hover:bg-slate-50'
                     }`}
                   >
                     Tất cả ({words.length})
@@ -872,8 +877,8 @@ export default function ImportPage() {
                       onClick={() => setSelectedFilterTopic(t.topic_vi)}
                       className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 shrink-0 ${
                         selectedFilterTopic === t.topic_vi
-                          ? 'bg-violet-600 text-white shadow-sm'
-                          : 'bg-white text-gray-600 border border-violet-100 hover:bg-violet-50'
+                          ? 'bg-orange-600 text-white shadow-sm'
+                          : 'bg-white text-gray-600 border border-slate-200 hover:bg-slate-50'
                       }`}
                     >
                       <span>{t.emoji}</span>
@@ -884,12 +889,12 @@ export default function ImportPage() {
                 </div>
               )}
 
-              <div className="bg-white rounded-3xl p-4 shadow border border-violet-100">
+              <div className="bg-white rounded-2xl p-4 shadow border border-slate-200">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-black text-gray-800">
+                  <h3 className="font-bold text-gray-800">
                     {selectedFilterTopic === 'all' ? 'Xem trước từ vựng' : `Chủ đề: ${selectedFilterTopic}`}
                   </h3>
-                  <span className="text-xs text-gray-400 font-semibold">Nhấn để sửa • ✕ xóa</span>
+                  <span className="text-xs text-slate-500 font-semibold">Nhấn để sửa • ✕ xóa</span>
                 </div>
                 <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[55vh] overflow-y-auto pr-1">
                   <AnimatePresence>
@@ -908,7 +913,7 @@ export default function ImportPage() {
                   ← Thử lại
                 </button>
                 <motion.button whileTap={{ scale: 0.97 }} onClick={() => setStep('save')} disabled={words.length === 0}
-                  className="flex-1 py-3 rounded-2xl font-black text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg disabled:opacity-40">
+                  className="flex-1 py-3 rounded-2xl font-bold text-white bg-orange-600 shadow-sm disabled:opacity-40">
                   Tiếp theo →
                 </motion.button>
               </div>
@@ -918,8 +923,8 @@ export default function ImportPage() {
           {/* ── STEP: Save ── */}
           {step === 'save' && (
             <motion.div key="save" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4">
-              <div className="bg-white rounded-3xl p-6 shadow border border-violet-100 space-y-5">
-                <h2 className="font-black text-gray-800 text-lg">💾 Lưu vào thư viện</h2>
+              <div className="bg-white rounded-2xl p-6 shadow border border-slate-200 space-y-5">
+                <h2 className="font-bold text-gray-800 text-lg">💾 Lưu vào thư viện</h2>
 
                 {/* Save Mode Selector */}
                 <div className="space-y-2">
@@ -929,8 +934,8 @@ export default function ImportPage() {
                       onClick={() => setSaveMode('auto')}
                       className={`w-full p-4 rounded-2xl border-2 text-left transition-all relative ${
                         saveMode === 'auto'
-                          ? 'border-violet-500 bg-violet-50 shadow-md ring-1 ring-violet-400'
-                          : 'border-gray-200 bg-white hover:border-violet-300 hover:bg-violet-50/40'
+                          ? 'border-violet-500 bg-slate-50 shadow-sm ring-1 ring-violet-400'
+                          : 'border-gray-200 bg-white hover:border-violet-300 hover:bg-slate-50/40'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -938,8 +943,8 @@ export default function ImportPage() {
                           <span className="text-2xl">🤖</span>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-black text-gray-900 text-sm">AI tự động phân loại theo chủ đề</span>
-                              <span className="text-[10px] font-black uppercase tracking-wider bg-violet-600 text-white px-2 py-0.5 rounded-full shadow-xs">
+                              <span className="font-bold text-gray-900 text-sm">AI tự động phân loại theo chủ đề</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider bg-orange-600 text-white px-2 py-0.5 rounded-full shadow-xs">
                                 Khuyên dùng
                               </span>
                             </div>
@@ -949,7 +954,7 @@ export default function ImportPage() {
                           </div>
                         </div>
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${
-                          saveMode === 'auto' ? 'border-violet-600 bg-violet-600 text-white text-xs font-bold' : 'border-gray-300'
+                          saveMode === 'auto' ? 'border-violet-600 bg-orange-600 text-white text-xs font-bold' : 'border-gray-300'
                         }`}>
                           {saveMode === 'auto' && '✓'}
                         </div>
@@ -963,15 +968,15 @@ export default function ImportPage() {
                       onClick={() => setSaveMode('new')}
                       className={`p-3 rounded-2xl text-xs font-bold border-2 text-left transition-all ${
                         saveMode === 'new'
-                          ? 'border-violet-500 bg-violet-50 text-violet-800 ring-1 ring-violet-300'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-violet-200'
+                          ? 'border-violet-500 bg-slate-50 text-orange-700 ring-1 ring-violet-300'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-slate-200'
                       }`}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
                         <span>✨</span>
                         <span className="font-bold">Gom vào 1 chủ đề</span>
                       </div>
-                      <p className="text-[11px] text-gray-400">Tự đặt tên chủ đề chung</p>
+                      <p className="text-[11px] text-slate-500">Tự đặt tên chủ đề chung</p>
                     </button>
 
                     <button
@@ -980,15 +985,15 @@ export default function ImportPage() {
                       disabled={customCats.length === 0}
                       className={`p-3 rounded-2xl text-xs font-bold border-2 text-left transition-all disabled:opacity-40 ${
                         saveMode === 'existing'
-                          ? 'border-violet-500 bg-violet-50 text-violet-800 ring-1 ring-violet-300'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-violet-200'
+                          ? 'border-violet-500 bg-slate-50 text-orange-700 ring-1 ring-violet-300'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-slate-200'
                       }`}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
                         <span>📂</span>
                         <span className="font-bold">Thêm vào có sẵn</span>
                       </div>
-                      <p className="text-[11px] text-gray-400">
+                      <p className="text-[11px] text-slate-500">
                         {customCats.length === 0 ? 'Chưa có chủ đề nào' : 'Gộp vào bài cũ'}
                       </p>
                     </button>
@@ -1005,18 +1010,18 @@ export default function ImportPage() {
                       {groupedTopics.map((t, idx) => (
                         <div
                           key={t.topic_vi + idx}
-                          className="flex items-center justify-between p-3 rounded-2xl bg-violet-50/60 border border-violet-100"
+                          className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/60 border border-slate-200"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <span className="text-2xl">{t.emoji}</span>
                             <div className="min-w-0">
-                              <p className="font-black text-gray-800 text-sm truncate">{t.topic_vi}</p>
-                              <p className="text-[11px] text-gray-400 truncate">
+                              <p className="font-bold text-gray-800 text-sm truncate">{t.topic_vi}</p>
+                              <p className="text-[11px] text-slate-500 truncate">
                                 {t.words.map((w) => w.en).slice(0, 4).join(', ')}{t.words.length > 4 ? '...' : ''}
                               </p>
                             </div>
                           </div>
-                          <span className="text-xs font-black bg-white px-2.5 py-1 rounded-full text-violet-700 shadow-xs border border-violet-100 shrink-0">
+                          <span className="text-xs font-bold bg-white px-2.5 py-1 rounded-full text-orange-700 shadow-xs border border-slate-200 shrink-0">
                             {t.words.length} từ
                           </span>
                         </div>
@@ -1040,13 +1045,13 @@ export default function ImportPage() {
                         {EMOJIS_PRESET.map((e) => (
                           <button key={e} onClick={() => setCatEmoji(e)}
                             className={`w-10 h-10 rounded-xl text-2xl flex items-center justify-center transition-all ${
-                              catEmoji === e ? 'bg-violet-100 ring-2 ring-violet-400 scale-110' : 'bg-gray-50 hover:bg-violet-50'
+                              catEmoji === e ? 'bg-violet-100 ring-2 ring-violet-400 scale-110' : 'bg-gray-50 hover:bg-slate-50'
                             }`}>{e}</button>
                         ))}
                       </div>
                     </div>
                     <div className="flex gap-3">
-                      <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center text-3xl border-2 border-violet-200 shrink-0">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-3xl border-2 border-slate-200 shrink-0">
                         {catEmoji}
                       </div>
                       <input type="text" value={catName} onChange={(e) => setCatName(e.target.value)}
@@ -1054,7 +1059,7 @@ export default function ImportPage() {
                         placeholder="Tên chủ đề (VD: Từ vựng lớp 1)"
                         className="flex-1 border-2 border-gray-200 focus:border-violet-400 rounded-2xl px-4 py-3 font-bold text-sm focus:outline-none" />
                     </div>
-                    <p className="text-xs text-gray-400 font-semibold">Sẽ lưu toàn bộ {words.length} từ vào 1 chủ đề này</p>
+                    <p className="text-xs text-slate-500 font-semibold">Sẽ lưu toàn bộ {words.length} từ vào 1 chủ đề này</p>
                   </motion.div>
                 )}
 
@@ -1066,19 +1071,19 @@ export default function ImportPage() {
                       {customCats.map((cat) => (
                         <button key={cat.id} onClick={() => setTargetCatId(cat.id)}
                           className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition-all ${
-                            targetCatId === cat.id ? 'border-violet-400 bg-violet-50' : 'border-gray-100 bg-gray-50 hover:border-violet-200'
+                            targetCatId === cat.id ? 'border-violet-400 bg-slate-50' : 'border-gray-100 bg-gray-50 hover:border-slate-200'
                           }`}>
                           <span className="text-2xl">{cat.emoji}</span>
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-gray-800 text-sm truncate">{cat.name_vi}</p>
-                            <p className="text-xs text-gray-400">{cat.words.length} từ hiện có</p>
+                            <p className="text-xs text-slate-500">{cat.words.length} từ hiện có</p>
                           </div>
-                          {targetCatId === cat.id && <span className="text-violet-500 font-black text-lg">✓</span>}
+                          {targetCatId === cat.id && <span className="text-violet-500 font-bold text-lg">✓</span>}
                         </button>
                       ))}
                     </div>
                     {targetCatId && (
-                      <p className="text-xs text-gray-400 font-semibold">
+                      <p className="text-xs text-slate-500 font-semibold">
                         Sẽ thêm {words.length} từ mới (từ trùng lặp tự động bỏ qua)
                       </p>
                     )}
@@ -1099,7 +1104,7 @@ export default function ImportPage() {
                         ? !catName.trim()
                         : !targetCatId
                   }
-                  className="flex-1 py-3 rounded-2xl font-black text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg disabled:opacity-40">
+                  className="flex-1 py-3 rounded-2xl font-bold text-white bg-orange-600 shadow-sm disabled:opacity-40">
                   💾 Lưu vào app
                 </motion.button>
               </div>
@@ -1112,11 +1117,11 @@ export default function ImportPage() {
               initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
               transition={{ type: 'spring', stiffness: 300, damping: 24 }}
               className="space-y-4">
-              <div className="bg-white rounded-3xl p-6 shadow-2xl border-2 border-violet-100 text-center">
+              <div className="bg-white rounded-2xl p-6 shadow-sm border-2 border-slate-200 text-center">
                 <motion.div initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 18, delay: 0.1 }}
                   className="text-6xl mb-3 inline-block">🎉</motion.div>
-                <h2 className="font-black text-2xl text-violet-700 mb-1">
+                <h2 className="font-bold text-2xl text-orange-700 mb-1">
                   {saveMode === 'auto' ? 'Đã tự động phân loại thành công!' : 'Đã lưu thành công!'}
                 </h2>
                 <p className="text-gray-500 text-xs mb-3">
@@ -1130,11 +1135,11 @@ export default function ImportPage() {
                 </p>
 
                 {/* Banner thông báo đồng thời lưu vào mục Từ mới của bé */}
-                <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 text-left shadow-xs">
+                <div className="mb-4 p-3.5 rounded-2xl bg-slate-50 border-2 border-amber-200 text-left shadow-xs">
                   <div className="flex items-start gap-2.5">
                     <span className="text-2xl shrink-0">🌟</span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-black text-amber-900 text-xs sm:text-sm">
+                      <p className="font-bold text-amber-900 text-xs sm:text-sm">
                         Đã tự động đồng bộ vào mục &ldquo;🌟 Từ mới của bé&rdquo;
                       </p>
                       <p className="text-[11px] text-amber-700 font-medium mt-0.5">
@@ -1145,14 +1150,14 @@ export default function ImportPage() {
                   <div className="mt-3 pt-2.5 border-t border-amber-200 flex gap-2">
                     <button
                       onClick={() => router.push('/learn/custom_new_words')}
-                      className="flex-1 py-2 px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="flex-1 py-2 px-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>▶</span>
                       <span>Học toàn bộ từ mới</span>
                     </button>
                     <button
                       onClick={() => router.push('/test/custom_new_words')}
-                      className="flex-1 py-2 px-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-95 text-white font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="flex-1 py-2 px-2.5 bg-orange-600 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>🎯</span>
                       <span>8 Dạng bài tập</span>
@@ -1168,17 +1173,17 @@ export default function ImportPage() {
                 </div>
                 <div className="space-y-2 mb-6 max-h-56 overflow-y-auto text-left">
                   {savedCats.map((cat) => (
-                    <div key={cat.id} className="flex items-center justify-between p-3 rounded-2xl bg-violet-50 border border-violet-100">
+                    <div key={cat.id} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-2xl">{cat.emoji}</span>
                         <div className="min-w-0">
                           <p className="font-bold text-gray-800 text-sm truncate">{cat.name_vi}</p>
-                          <p className="text-xs text-gray-400">{cat.words.length} từ</p>
+                          <p className="text-xs text-slate-500">{cat.words.length} từ</p>
                         </div>
                       </div>
                       <button
                         onClick={() => router.push(`/learn/${cat.id}`)}
-                        className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer"
+                        className="px-3 py-1.5 bg-orange-600 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
                       >
                         Học chủ đề →
                       </button>
@@ -1190,16 +1195,16 @@ export default function ImportPage() {
                   {savedCats.length > 0 && (
                     <motion.button whileTap={{ scale: 0.97 }}
                       onClick={() => router.push(`/learn/${savedCats[0].id}`)}
-                      className="py-3 rounded-2xl font-black text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg cursor-pointer">
+                      className="py-3 rounded-2xl font-bold text-white bg-orange-600 shadow-sm cursor-pointer">
                       📖 Học ngay: {savedCats[0].emoji} {savedCats[0].name_vi}
                     </motion.button>
                   )}
                   <button onClick={handleReset}
-                    className="py-3 rounded-2xl font-bold text-violet-600 border-2 border-violet-200 hover:bg-violet-50 transition-colors cursor-pointer">
+                    className="py-3 rounded-2xl font-bold text-orange-700 border-2 border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
                     📥 Thêm từ vựng nữa
                   </button>
                   <button onClick={() => router.push('/')}
-                    className="py-2 font-bold text-gray-400 text-sm hover:text-gray-600 transition-colors cursor-pointer">
+                    className="py-2 font-bold text-slate-500 text-sm hover:text-gray-600 transition-colors cursor-pointer">
                     🏠 Về trang chủ
                   </button>
                 </div>

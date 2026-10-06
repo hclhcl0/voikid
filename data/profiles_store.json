@@ -4,35 +4,1490 @@
       "id": "default",
       "name": "Bé Yêu",
       "avatar": "🦁",
-      "gradeId": "lop1",
+      "gradeId": "lop4",
       "color": "orange",
       "createdAt": "2026-10-02",
       "code": "BEYEU01"
-    },
-    {
-      "id": "child_1790991294905_1jb3",
-      "name": "Bé Bống",
-      "avatar": "🐰",
-      "gradeId": "lop4",
-      "color": "pink",
-      "createdAt": "2026-10-03",
-      "code": "BONG88"
-    },
-    {
-      "id": "profile_1790951322628",
-      "name": "Bé Bông",
-      "avatar": "🐰",
-      "gradeId": "maugiao",
-      "color": "pink",
-      "createdAt": "2026-10-02T14:28:42.628Z",
-      "code": "BONG35"
     }
   ],
   "progresses": {
     "default": {
+      "storySessions": {
+        "story_2a7a4670889136e239018d6f90369aa2f0a078ea2ffe7e6f145fac1a114b5db8": {
+          "id": "story_2a7a4670889136e239018d6f90369aa2f0a078ea2ffe7e6f145fac1a114b5db8",
+          "profileId": "default",
+          "unitId": "lop1_unit1",
+          "lesson": {
+            "title": "In the School Playground",
+            "sentences": [
+              {
+                "en": "Hi, I am Bill.",
+                "vi": "Xin chào, tớ là Bill.",
+                "patternIndexes": [
+                  0
+                ],
+                "id": "s1"
+              },
+              {
+                "en": "I play with a ball.",
+                "vi": "Tớ chơi với quả bóng.",
+                "patternIndexes": [],
+                "id": "s2"
+              },
+              {
+                "en": "My red bike is fast.",
+                "vi": "Chiếc xe đạp đỏ của tớ chạy nhanh.",
+                "patternIndexes": [],
+                "id": "s3"
+              },
+              {
+                "en": "Bye, Bill.",
+                "vi": "Tạm biệt, Bill.",
+                "patternIndexes": [
+                  0
+                ],
+                "id": "s4"
+              }
+            ],
+            "vocabulary": [
+              {
+                "en": "Ball",
+                "vi": "Quả bóng",
+                "ipa": "bɔl",
+                "sentenceId": "s2",
+                "id": "v1"
+              },
+              {
+                "en": "Bike",
+                "vi": "Xe đạp",
+                "ipa": "baɪk",
+                "sentenceId": "s3",
+                "id": "v2"
+              }
+            ],
+            "questions": [
+              {
+                "en": "What does Bill play with?",
+                "vi": "Bill chơi với cái gì?",
+                "options": [
+                  "a ball",
+                  "a book"
+                ],
+                "answerIndex": 0,
+                "sentenceId": "s2",
+                "explanationVi": "Câu s2 cho biết Bill chơi với một quả bóng.",
+                "id": "q1"
+              },
+              {
+                "en": "What color is the bike?",
+                "vi": "Xe đạp màu gì?",
+                "options": [
+                  "red",
+                  "blue"
+                ],
+                "answerIndex": 0,
+                "sentenceId": "s3",
+                "explanationVi": "Câu s3 nêu rõ chiếc xe đạp có màu đỏ.",
+                "id": "q2"
+              }
+            ],
+            "id": "story_2a7a4670889136e239018d6f90369aa2f0a078ea2ffe7e6f145fac1a114b5db8",
+            "unitId": "lop1_unit1",
+            "grade": 1,
+            "topic": "In the school playground",
+            "band": "standard",
+            "variant": 0,
+            "patterns": [
+              "Hi, I'm Bill. / Bye, Bill."
+            ],
+            "sourceVersion": 1,
+            "generatedAt": "2026-10-05T09:31:07.638Z"
+          },
+          "updatedAt": "2026-10-05T09:31:07.654Z",
+          "read": false,
+          "listened": false,
+          "speakingPracticed": false,
+          "completed": false,
+          "answers": {}
+        },
+        "story_459d66fe3801d14faabe7866f6e81bf47a5288339d011f134478c3b4765ed8b1": {
+          "id": "story_459d66fe3801d14faabe7866f6e81bf47a5288339d011f134478c3b4765ed8b1",
+          "profileId": "default",
+          "unitId": "lop4_c2_unit_2_time_and_dail",
+          "lesson": {
+            "title": "My Daily Routine",
+            "sentences": [
+              {
+                "en": "Every morning I get up at six o'clock.",
+                "vi": "Mỗi buổi sáng tôi thức dậy lúc sáu giờ.",
+                "patternIndexes": [],
+                "id": "s1"
+              },
+              {
+                "en": "I have breakfast at seven o'clock.",
+                "vi": "Tôi ăn sáng lúc bảy giờ.",
+                "patternIndexes": [
+                  1
+                ],
+                "id": "s2"
+              },
+              {
+                "en": "I go to school at half past seven.",
+                "vi": "Tôi đi học lúc bảy giờ rưỡi.",
+                "patternIndexes": [
+                  1
+                ],
+                "id": "s3"
+              },
+              {
+                "en": "At twelve o'clock I eat lunch.",
+                "vi": "Vào lúc mười hai giờ tôi ăn trưa.",
+                "patternIndexes": [],
+                "id": "s4"
+              },
+              {
+                "en": "In the afternoon I play games at four o'clock.",
+                "vi": "Vào buổi chiều tôi chơi trò chơi lúc bốn giờ.",
+                "patternIndexes": [
+                  1
+                ],
+                "id": "s5"
+              },
+              {
+                "en": "In the evening I have dinner at seven o'clock.",
+                "vi": "Vào buổi tối tôi ăn tối lúc bảy giờ.",
+                "patternIndexes": [
+                  1
+                ],
+                "id": "s6"
+              },
+              {
+                "en": "I go to bed at nine o'clock.",
+                "vi": "Tôi đi ngủ lúc chín giờ.",
+                "patternIndexes": [
+                  1
+                ],
+                "id": "s7"
+              },
+              {
+                "en": "My daily routine helps me stay healthy.",
+                "vi": "Thói quen hàng ngày giúp tôi luôn khỏe mạnh.",
+                "patternIndexes": [],
+                "id": "s8"
+              }
+            ],
+            "vocabulary": [
+              {
+                "en": "Get up",
+                "vi": "thức dậy",
+                "ipa": "/ɡet ʌp/",
+                "sentenceId": "s1",
+                "id": "v1"
+              },
+              {
+                "en": "Have breakfast",
+                "vi": "ăn sáng",
+                "ipa": "/hæv ˈbrekfəst/",
+                "sentenceId": "s2",
+                "id": "v2"
+              },
+              {
+                "en": "Go to school",
+                "vi": "đi học",
+                "ipa": "/ɡəʊ tuː skuːl/",
+                "sentenceId": "s3",
+                "id": "v3"
+              },
+              {
+                "en": "Go to bed",
+                "vi": "đi ngủ",
+                "ipa": "/ɡəʊ tuː bed/",
+                "sentenceId": "s7",
+                "id": "v4"
+              },
+              {
+                "id": "scan_v1",
+                "en": "Every morning",
+                "vi": "Mỗi buổi sáng",
+                "ipa": "",
+                "sentenceId": "s1"
+              },
+              {
+                "id": "scan_v2",
+                "en": "six o'clock",
+                "vi": "sáu giờ",
+                "ipa": "",
+                "sentenceId": "s1"
+              },
+              {
+                "id": "scan_v3",
+                "en": "seven o'clock",
+                "vi": "bảy giờ",
+                "ipa": "",
+                "sentenceId": "s2"
+              },
+              {
+                "id": "scan_v4",
+                "en": "half past seven",
+                "vi": "bảy giờ rưỡi",
+                "ipa": "",
+                "sentenceId": "s3"
+              },
+              {
+                "id": "scan_v5",
+                "en": "twelve o'clock",
+                "vi": "mười hai giờ",
+                "ipa": "",
+                "sentenceId": "s4"
+              },
+              {
+                "id": "scan_v6",
+                "en": "eat lunch",
+                "vi": "ăn trưa",
+                "ipa": "",
+                "sentenceId": "s4"
+              },
+              {
+                "id": "scan_v7",
+                "en": "play games",
+                "vi": "chơi trò chơi",
+                "ipa": "",
+                "sentenceId": "s5"
+              },
+              {
+                "id": "scan_v8",
+                "en": "four o'clock",
+                "vi": "bốn giờ",
+                "ipa": "",
+                "sentenceId": "s5"
+              },
+              {
+                "id": "scan_v9",
+                "en": "have dinner",
+                "vi": "ăn tối",
+                "ipa": "",
+                "sentenceId": "s6"
+              },
+              {
+                "id": "scan_v10",
+                "en": "nine o'clock",
+                "vi": "chín giờ",
+                "ipa": "",
+                "sentenceId": "s7"
+              },
+              {
+                "id": "scan_v11",
+                "en": "daily routine",
+                "vi": "thói quen hàng ngày",
+                "ipa": "",
+                "sentenceId": "s8"
+              },
+              {
+                "id": "scan_v12",
+                "en": "stay healthy",
+                "vi": "giữ gìn sức khỏe",
+                "ipa": "",
+                "sentenceId": "s8"
+              }
+            ],
+            "questions": [
+              {
+                "en": "What time do you get up?",
+                "vi": "Bạn thức dậy lúc mấy giờ?",
+                "options": [
+                  "at seven o'clock",
+                  "at six o'clock",
+                  "at nine o'clock"
+                ],
+                "answerIndex": 1,
+                "sentenceId": "s1",
+                "explanationVi": "Câu đầu tiên trong bài cho biết nhân vật thức dậy lúc sáu giờ.",
+                "id": "q1"
+              },
+              {
+                "en": "What time do you go to bed?",
+                "vi": "Bạn đi ngủ lúc mấy giờ?",
+                "options": [
+                  "at nine o'clock",
+                  "at twelve o'clock",
+                  "at seven o'clock"
+                ],
+                "answerIndex": 0,
+                "sentenceId": "s7",
+                "explanationVi": "Câu thứ bảy trong bài cho biết nhân vật đi ngủ lúc chín giờ tối.",
+                "id": "q2"
+              }
+            ],
+            "id": "story_459d66fe3801d14faabe7866f6e81bf47a5288339d011f134478c3b4765ed8b1",
+            "unitId": "lop4_c2_unit_2_time_and_dail",
+            "grade": 4,
+            "topic": "Time and daily routines",
+            "band": "support",
+            "variant": 0,
+            "patterns": [
+              "What time is it? – It's...",
+              "What time do you...? – I... at..."
+            ],
+            "sourceVersion": 1,
+            "generatedAt": "2026-10-05T13:05:32.842Z",
+            "vocabularyScannedAt": "2026-10-06T01:39:48.431Z"
+          },
+          "updatedAt": "2026-10-06T01:39:48.431Z",
+          "read": false,
+          "listened": true,
+          "speakingPracticed": false,
+          "completed": false,
+          "answers": {},
+          "savedAt": "2026-10-05T13:05:32.848Z"
+        }
+      },
+      "deletedStories": {
+        "story_6e4152794965b501be8524f43938758164c1e218410e803e8ba81c7fe07b68a6": "2026-10-05T13:04:39.124Z",
+        "story_cc3966e4a492c44a17e7a3e7d9cfb801cd226517411093aa73213af24e2d1c64": "2026-10-05T13:04:42.622Z",
+        "story_4c650af22ef0a377fa91564d8b981a8fa6e30507ae79d223180951cc5b24a3b5": "2026-10-05T13:05:02.436Z"
+      },
+      "ipaPractice": {},
+      "learningSessions": {
+        "b4041405-7ff2-4cd2-965d-4edbb6ad8d93": {
+          "id": "b4041405-7ff2-4cd2-965d-4edbb6ad8d93",
+          "profileId": "default",
+          "unitId": "lop1_unit1",
+          "contentVersion": 1,
+          "mode": "path",
+          "createdAt": "2026-10-05T05:12:53.628Z",
+          "updatedAt": "2026-10-05T05:18:34.584Z",
+          "stage": "activities",
+          "cardIndex": 2,
+          "cardMode": "familiar",
+          "cardRatings": {
+            "l1_u1_ball": "remember",
+            "l1_u1_bike": "remember",
+            "l1_u1_book": "remember"
+          },
+          "activities": [
+            {
+              "id": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_ball:path",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Ball",
+              "hint": "Ball — Quả bóng",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                },
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                }
+              ],
+              "answerId": "l1_u1_ball"
+            },
+            {
+              "id": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_bike:path",
+              "vocabularyId": "l1_u1_bike",
+              "senseId": "l1_u1_bike:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Bike",
+              "hint": "Bike — Xe đạp",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                },
+                {
+                  "id": "l1_u1_bike",
+                  "text": "Xe đạp"
+                }
+              ],
+              "answerId": "l1_u1_bike"
+            },
+            {
+              "id": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_book:path",
+              "vocabularyId": "l1_u1_book",
+              "senseId": "l1_u1_book:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Book",
+              "hint": "Book — Quyển sách",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_bike",
+                  "text": "Xe đạp"
+                },
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                }
+              ],
+              "answerId": "l1_u1_book"
+            },
+            {
+              "id": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:context:l1_u1_ball:context-choice",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:context"
+              ],
+              "skill": "context",
+              "instruction": "Trong câu này, “Ball” có nghĩa gì?",
+              "hint": "Một quả bóng.",
+              "kind": "context-choice",
+              "text": "A ball.",
+              "options": [
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                },
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                }
+              ],
+              "answerId": "l1_u1_ball"
+            },
+            {
+              "id": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:context:l1_u1_bike:context-choice",
+              "vocabularyId": "l1_u1_bike",
+              "senseId": "l1_u1_bike:sense1",
+              "objectiveIds": [
+                "lop1_unit1:context"
+              ],
+              "skill": "context",
+              "instruction": "Trong câu này, “Bike” có nghĩa gì?",
+              "hint": "Một chiếc xe đạp.",
+              "kind": "context-choice",
+              "text": "A bike.",
+              "options": [
+                {
+                  "id": "l1_u1_bike",
+                  "text": "Xe đạp"
+                },
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                }
+              ],
+              "answerId": "l1_u1_bike"
+            },
+            {
+              "id": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:context:l1_u1_book:context-choice",
+              "vocabularyId": "l1_u1_book",
+              "senseId": "l1_u1_book:sense1",
+              "objectiveIds": [
+                "lop1_unit1:context"
+              ],
+              "skill": "context",
+              "instruction": "Trong câu này, “Book” có nghĩa gì?",
+              "hint": "Một quyển sách.",
+              "kind": "context-choice",
+              "text": "A book.",
+              "options": [
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                },
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                }
+              ],
+              "answerId": "l1_u1_book"
+            }
+          ],
+          "activityIndex": 3,
+          "evidence": {
+            "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_ball:path": {
+              "activityId": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_ball:path",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "attempts": 1,
+              "firstCorrect": true,
+              "correct": true,
+              "hinted": false,
+              "revealed": false,
+              "audioPlayed": false,
+              "response": "l1_u1_ball",
+              "completedAt": "2026-10-05T05:15:49.701Z",
+              "reviewDueDate": "2026-10-06"
+            },
+            "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_bike:path": {
+              "activityId": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_bike:path",
+              "vocabularyId": "l1_u1_bike",
+              "senseId": "l1_u1_bike:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "attempts": 1,
+              "firstCorrect": true,
+              "correct": true,
+              "hinted": true,
+              "revealed": false,
+              "audioPlayed": false,
+              "response": "l1_u1_bike",
+              "completedAt": "2026-10-05T05:16:13.371Z",
+              "reviewDueDate": "2026-10-06"
+            },
+            "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_book:path": {
+              "activityId": "lop1_unit1:v1:b4041405-7ff2-4cd2-965d-4edbb6ad8d93:l1_u1_book:path",
+              "vocabularyId": "l1_u1_book",
+              "senseId": "l1_u1_book:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "attempts": 1,
+              "firstCorrect": true,
+              "correct": true,
+              "hinted": false,
+              "revealed": false,
+              "audioPlayed": false,
+              "response": "l1_u1_book",
+              "completedAt": "2026-10-05T05:16:20.077Z",
+              "reviewDueDate": "2026-10-06"
+            }
+          },
+          "sceneIndex": 2,
+          "resourceRead": true,
+          "applicationResponse": "",
+          "applicationCompleted": false,
+          "speakingPracticed": false,
+          "completed": false,
+          "rewardGranted": false
+        },
+        "749a5efe-8e43-49c9-ae16-ad7a79cbaad5": {
+          "id": "749a5efe-8e43-49c9-ae16-ad7a79cbaad5",
+          "profileId": "default",
+          "unitId": "lop1_unit1",
+          "contentVersion": 2,
+          "mode": "path",
+          "createdAt": "2026-10-05T05:23:18.860Z",
+          "updatedAt": "2026-10-05T05:24:04.961Z",
+          "stage": "result",
+          "cardIndex": 2,
+          "cardMode": "familiar",
+          "cardRatings": {
+            "l1_u1_ball": "remember",
+            "l1_u1_bike": "remember",
+            "l1_u1_book": "remember"
+          },
+          "activities": [
+            {
+              "id": "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_ball:path",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Ball",
+              "hint": "Ball — Quả bóng",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                },
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                }
+              ],
+              "answerId": "l1_u1_ball"
+            },
+            {
+              "id": "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_bike:path",
+              "vocabularyId": "l1_u1_bike",
+              "senseId": "l1_u1_bike:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Bike",
+              "hint": "Bike — Xe đạp",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_bike",
+                  "text": "Xe đạp"
+                },
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                }
+              ],
+              "answerId": "l1_u1_bike"
+            },
+            {
+              "id": "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_book:path",
+              "vocabularyId": "l1_u1_book",
+              "senseId": "l1_u1_book:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Book",
+              "hint": "Book — Quyển sách",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                },
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                }
+              ],
+              "answerId": "l1_u1_book"
+            },
+            {
+              "id": "lop1_unit1:context-detail:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:context",
+              "kind": "context-choice",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:context"
+              ],
+              "skill": "context",
+              "instruction": "Trong cảnh đầu tiên, con gặp đồ vật nào?",
+              "hint": "Cảnh đầu tiên: A ball. — Một quả bóng.",
+              "text": "Nhớ lại tình huống vừa đọc. Có thể mở gợi ý nếu con cần hỗ trợ.",
+              "options": [
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Ball"
+                },
+                {
+                  "id": "l1_u1_bike",
+                  "text": "Bike"
+                }
+              ],
+              "answerId": "l1_u1_ball"
+            }
+          ],
+          "activityIndex": 3,
+          "evidence": {
+            "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_ball:path": {
+              "history": [
+                {
+                  "response": "l1_u1_ball",
+                  "correct": true,
+                  "at": "2026-10-05T05:23:24.701Z"
+                }
+              ],
+              "activityId": "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_ball:path",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "attempts": 1,
+              "firstCorrect": true,
+              "correct": true,
+              "hinted": false,
+              "revealed": false,
+              "audioPlayed": false,
+              "response": "l1_u1_ball",
+              "completedAt": "2026-10-05T05:23:24.701Z",
+              "reviewDueDate": "2026-10-06"
+            },
+            "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_bike:path": {
+              "history": [
+                {
+                  "response": "l1_u1_book",
+                  "correct": false,
+                  "at": "2026-10-05T05:23:31.355Z"
+                },
+                {
+                  "response": "l1_u1_bike",
+                  "correct": true,
+                  "at": "2026-10-05T05:23:39.167Z"
+                }
+              ],
+              "activityId": "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_bike:path",
+              "vocabularyId": "l1_u1_bike",
+              "senseId": "l1_u1_bike:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "attempts": 2,
+              "firstCorrect": false,
+              "correct": true,
+              "hinted": true,
+              "revealed": false,
+              "audioPlayed": false,
+              "response": "l1_u1_bike",
+              "completedAt": "2026-10-05T05:23:39.167Z",
+              "reviewDueDate": "2026-10-06"
+            },
+            "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_book:path": {
+              "history": [
+                {
+                  "response": "l1_u1_book",
+                  "correct": true,
+                  "at": "2026-10-05T05:23:46.491Z"
+                }
+              ],
+              "activityId": "lop1_unit1:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:l1_u1_book:path",
+              "vocabularyId": "l1_u1_book",
+              "senseId": "l1_u1_book:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "attempts": 1,
+              "firstCorrect": true,
+              "correct": true,
+              "hinted": false,
+              "revealed": false,
+              "audioPlayed": false,
+              "response": "l1_u1_book",
+              "completedAt": "2026-10-05T05:23:46.491Z",
+              "reviewDueDate": "2026-10-06"
+            },
+            "lop1_unit1:context-detail:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:context": {
+              "history": [
+                {
+                  "response": "l1_u1_ball",
+                  "correct": true,
+                  "at": "2026-10-05T05:23:58.085Z"
+                }
+              ],
+              "activityId": "lop1_unit1:context-detail:v2:749a5efe-8e43-49c9-ae16-ad7a79cbaad5:context",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:context"
+              ],
+              "skill": "context",
+              "attempts": 1,
+              "firstCorrect": true,
+              "correct": true,
+              "hinted": false,
+              "revealed": false,
+              "audioPlayed": false,
+              "response": "l1_u1_ball",
+              "completedAt": "2026-10-05T05:23:58.085Z",
+              "reviewDueDate": "2026-10-06"
+            }
+          },
+          "sceneIndex": 2,
+          "resourceRead": true,
+          "applicationResponse": "",
+          "applicationCompleted": true,
+          "speakingPracticed": true,
+          "completed": true,
+          "rewardGranted": true
+        },
+        "e32a5c47-e589-40b4-beda-ee01f0bced3c": {
+          "id": "e32a5c47-e589-40b4-beda-ee01f0bced3c",
+          "profileId": "default",
+          "unitId": "lop1_unit1",
+          "contentVersion": 2,
+          "mode": "path",
+          "createdAt": "2026-10-05T06:38:13.714Z",
+          "updatedAt": "2026-10-05T06:38:44.925Z",
+          "stage": "activities",
+          "cardIndex": 2,
+          "cardMode": "familiar",
+          "cardRatings": {
+            "l1_u1_ball": "remember",
+            "l1_u1_bike": "remember",
+            "l1_u1_book": "remember"
+          },
+          "activities": [
+            {
+              "id": "lop1_unit1:v2:e32a5c47-e589-40b4-beda-ee01f0bced3c:l1_u1_ball:path",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Ball",
+              "hint": "Ball — Quả bóng",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                },
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                }
+              ],
+              "answerId": "l1_u1_ball"
+            },
+            {
+              "id": "lop1_unit1:v2:e32a5c47-e589-40b4-beda-ee01f0bced3c:l1_u1_bike:path",
+              "vocabularyId": "l1_u1_bike",
+              "senseId": "l1_u1_bike:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Bike",
+              "hint": "Bike — Xe đạp",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                },
+                {
+                  "id": "l1_u1_bike",
+                  "text": "Xe đạp"
+                }
+              ],
+              "answerId": "l1_u1_bike"
+            },
+            {
+              "id": "lop1_unit1:v2:e32a5c47-e589-40b4-beda-ee01f0bced3c:l1_u1_book:path",
+              "vocabularyId": "l1_u1_book",
+              "senseId": "l1_u1_book:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Book",
+              "hint": "Book — Quyển sách",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u1_ball",
+                  "text": "Quả bóng"
+                },
+                {
+                  "id": "l1_u1_book",
+                  "text": "Quyển sách"
+                }
+              ],
+              "answerId": "l1_u1_book"
+            }
+          ],
+          "activityIndex": 1,
+          "evidence": {
+            "lop1_unit1:v2:e32a5c47-e589-40b4-beda-ee01f0bced3c:l1_u1_ball:path": {
+              "history": [
+                {
+                  "response": "l1_u1_ball",
+                  "correct": true,
+                  "at": "2026-10-05T06:38:42.518Z"
+                }
+              ],
+              "activityId": "lop1_unit1:v2:e32a5c47-e589-40b4-beda-ee01f0bced3c:l1_u1_ball:path",
+              "vocabularyId": "l1_u1_ball",
+              "senseId": "l1_u1_ball:sense1",
+              "objectiveIds": [
+                "lop1_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "attempts": 1,
+              "firstCorrect": true,
+              "correct": true,
+              "hinted": false,
+              "revealed": false,
+              "audioPlayed": false,
+              "response": "l1_u1_ball",
+              "completedAt": "2026-10-05T06:38:42.518Z",
+              "reviewDueDate": "2026-10-08"
+            }
+          },
+          "sceneIndex": 0,
+          "resourceRead": false,
+          "applicationResponse": "",
+          "applicationCompleted": false,
+          "speakingPracticed": false,
+          "completed": false,
+          "rewardGranted": false
+        },
+        "9dfeede7-6602-4605-a217-a6d7718c8fad": {
+          "id": "9dfeede7-6602-4605-a217-a6d7718c8fad",
+          "profileId": "default",
+          "unitId": "lop2_unit1",
+          "contentVersion": 2,
+          "mode": "path",
+          "createdAt": "2026-10-05T06:38:56.648Z",
+          "updatedAt": "2026-10-05T06:39:25.468Z",
+          "stage": "activities",
+          "cardIndex": 2,
+          "cardMode": "familiar",
+          "cardRatings": {
+            "lop2_u1_pasta": "remember",
+            "lop2_u1_popcorn": "remember",
+            "lop2_u1_pizza": "remember"
+          },
+          "activities": [
+            {
+              "id": "lop2_unit1:v2:9dfeede7-6602-4605-a217-a6d7718c8fad:lop2_u1_pasta:path",
+              "vocabularyId": "lop2_u1_pasta",
+              "senseId": "lop2_u1_pasta:sense1",
+              "objectiveIds": [
+                "lop2_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Mì Ý",
+              "hint": "Pasta — Mì Ý",
+              "kind": "word-choice",
+              "options": [
+                {
+                  "id": "lop2_u1_popcorn",
+                  "text": "Popcorn"
+                },
+                {
+                  "id": "lop2_u1_pizza",
+                  "text": "Pizza"
+                },
+                {
+                  "id": "lop2_u1_pasta",
+                  "text": "Pasta"
+                }
+              ],
+              "answerId": "lop2_u1_pasta"
+            },
+            {
+              "id": "lop2_unit1:v2:9dfeede7-6602-4605-a217-a6d7718c8fad:lop2_u1_popcorn:path",
+              "vocabularyId": "lop2_u1_popcorn",
+              "senseId": "lop2_u1_popcorn:sense1",
+              "objectiveIds": [
+                "lop2_unit1:spelling"
+              ],
+              "skill": "spelling",
+              "instruction": "Bỏng ngô",
+              "hint": "Popcorn — Bỏng ngô",
+              "kind": "letter-order",
+              "tokens": [
+                {
+                  "id": "lop2_u1_popcorn:letter5",
+                  "text": "r"
+                },
+                {
+                  "id": "lop2_u1_popcorn:letter3",
+                  "text": "c"
+                },
+                {
+                  "id": "lop2_u1_popcorn:letter1",
+                  "text": "o"
+                },
+                {
+                  "id": "lop2_u1_popcorn:letter4",
+                  "text": "o"
+                },
+                {
+                  "id": "lop2_u1_popcorn:letter0",
+                  "text": "P"
+                },
+                {
+                  "id": "lop2_u1_popcorn:letter2",
+                  "text": "p"
+                },
+                {
+                  "id": "lop2_u1_popcorn:letter6",
+                  "text": "n"
+                }
+              ],
+              "answerTokenIds": [
+                "lop2_u1_popcorn:letter0",
+                "lop2_u1_popcorn:letter1",
+                "lop2_u1_popcorn:letter2",
+                "lop2_u1_popcorn:letter3",
+                "lop2_u1_popcorn:letter4",
+                "lop2_u1_popcorn:letter5",
+                "lop2_u1_popcorn:letter6"
+              ],
+              "answer": "Popcorn"
+            },
+            {
+              "id": "lop2_unit1:v2:9dfeede7-6602-4605-a217-a6d7718c8fad:lop2_u1_pizza:path",
+              "vocabularyId": "lop2_u1_pizza",
+              "senseId": "lop2_u1_pizza:sense1",
+              "objectiveIds": [
+                "lop2_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Bánh pizza",
+              "hint": "Pizza — Bánh pizza",
+              "kind": "word-choice",
+              "options": [
+                {
+                  "id": "lop2_u1_pizza",
+                  "text": "Pizza"
+                },
+                {
+                  "id": "lop2_u1_popcorn",
+                  "text": "Popcorn"
+                },
+                {
+                  "id": "lop2_u1_pasta",
+                  "text": "Pasta"
+                }
+              ],
+              "answerId": "lop2_u1_pizza"
+            }
+          ],
+          "activityIndex": 0,
+          "evidence": {},
+          "sceneIndex": 0,
+          "resourceRead": false,
+          "applicationResponse": "",
+          "applicationCompleted": false,
+          "speakingPracticed": false,
+          "completed": false,
+          "rewardGranted": false
+        },
+        "910f7fa5-78f2-4759-95fa-76b953b6edd9": {
+          "id": "910f7fa5-78f2-4759-95fa-76b953b6edd9",
+          "profileId": "default",
+          "unitId": "lop3_unit1",
+          "contentVersion": 2,
+          "mode": "path",
+          "createdAt": "2026-10-05T06:39:41.116Z",
+          "updatedAt": "2026-10-05T06:39:41.116Z",
+          "stage": "cards",
+          "cardIndex": 0,
+          "cardMode": "familiar",
+          "cardRatings": {},
+          "activities": [
+            {
+              "id": "lop3_unit1:v2:910f7fa5-78f2-4759-95fa-76b953b6edd9:l3_s2_hello:path",
+              "vocabularyId": "l3_s2_hello",
+              "senseId": "l3_s2_hello:sense1",
+              "objectiveIds": [
+                "lop3_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "xin chào",
+              "hint": "Hello — xin chào",
+              "kind": "word-choice",
+              "options": [
+                {
+                  "id": "l3_s2_goodbye",
+                  "text": "Goodbye"
+                },
+                {
+                  "id": "l3_s2_fine",
+                  "text": "Fine"
+                },
+                {
+                  "id": "l3_s2_hello",
+                  "text": "Hello"
+                }
+              ],
+              "answerId": "l3_s2_hello"
+            },
+            {
+              "id": "lop3_unit1:v2:910f7fa5-78f2-4759-95fa-76b953b6edd9:l3_s2_hi:path",
+              "vocabularyId": "l3_s2_hi",
+              "senseId": "l3_s2_hi:sense1",
+              "objectiveIds": [
+                "lop3_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "chào",
+              "hint": "Hi — chào",
+              "kind": "word-choice",
+              "options": [
+                {
+                  "id": "l3_s2_fine",
+                  "text": "Fine"
+                },
+                {
+                  "id": "l3_s2_hi",
+                  "text": "Hi"
+                },
+                {
+                  "id": "l3_s2_goodbye",
+                  "text": "Goodbye"
+                }
+              ],
+              "answerId": "l3_s2_hi"
+            },
+            {
+              "id": "lop3_unit1:v2:910f7fa5-78f2-4759-95fa-76b953b6edd9:l3_s2_bye:path",
+              "vocabularyId": "l3_s2_bye",
+              "senseId": "l3_s2_bye:sense1",
+              "objectiveIds": [
+                "lop3_unit1:spelling"
+              ],
+              "skill": "spelling",
+              "instruction": "tạm biệt",
+              "hint": "Bye — tạm biệt",
+              "kind": "spelling",
+              "answers": [
+                "Bye"
+              ]
+            },
+            {
+              "id": "lop3_unit1:v2:910f7fa5-78f2-4759-95fa-76b953b6edd9:l3_s2_goodbye:path",
+              "vocabularyId": "l3_s2_goodbye",
+              "senseId": "l3_s2_goodbye:sense1",
+              "objectiveIds": [
+                "lop3_unit1:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "tạm biệt",
+              "hint": "Goodbye — tạm biệt",
+              "kind": "word-choice",
+              "options": [
+                {
+                  "id": "l3_s2_hi",
+                  "text": "Hi"
+                },
+                {
+                  "id": "l3_s2_goodbye",
+                  "text": "Goodbye"
+                },
+                {
+                  "id": "l3_s2_fine",
+                  "text": "Fine"
+                }
+              ],
+              "answerId": "l3_s2_goodbye"
+            }
+          ],
+          "activityIndex": 0,
+          "evidence": {},
+          "sceneIndex": 0,
+          "resourceRead": false,
+          "applicationResponse": "",
+          "applicationCompleted": false,
+          "speakingPracticed": false,
+          "completed": false,
+          "rewardGranted": false
+        },
+        "c4b989ee-5162-4e06-ab6a-6569863c1dfe": {
+          "id": "c4b989ee-5162-4e06-ab6a-6569863c1dfe",
+          "profileId": "default",
+          "unitId": "lop4_c1_unit_1_my_friends",
+          "contentVersion": 2,
+          "mode": "path",
+          "createdAt": "2026-10-05T06:40:02.241Z",
+          "updatedAt": "2026-10-05T06:42:47.162Z",
+          "stage": "activities",
+          "cardIndex": 5,
+          "cardMode": "familiar",
+          "cardRatings": {
+            "l4_s1_1_america": "remember",
+            "l4_s1_2_australia": "remember",
+            "l4_s1_3_britain": "remember",
+            "l4_s1_4_japan": "remember",
+            "l4_s1_5_malaysia": "remember",
+            "l4_s1_6_singapore": "remember"
+          },
+          "activities": [
+            {
+              "id": "lop4_c1_unit_1_my_friends:v2:c4b989ee-5162-4e06-ab6a-6569863c1dfe:l4_s1_1_america:path",
+              "vocabularyId": "l4_s1_1_america",
+              "senseId": "l4_s1_1_america:sense1",
+              "objectiveIds": [
+                "lop4_c1_unit_1_my_friends:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "nước Mỹ",
+              "hint": "America — nước Mỹ",
+              "kind": "word-choice",
+              "options": [
+                {
+                  "id": "l4_s1_2_australia",
+                  "text": "Australia"
+                },
+                {
+                  "id": "l4_s1_5_malaysia",
+                  "text": "Malaysia"
+                },
+                {
+                  "id": "l4_s1_1_america",
+                  "text": "America"
+                },
+                {
+                  "id": "l4_s1_4_japan",
+                  "text": "Japan"
+                }
+              ],
+              "answerId": "l4_s1_1_america"
+            },
+            {
+              "id": "lop4_c1_unit_1_my_friends:v2:c4b989ee-5162-4e06-ab6a-6569863c1dfe:l4_s1_2_australia:path",
+              "vocabularyId": "l4_s1_2_australia",
+              "senseId": "l4_s1_2_australia:sense1",
+              "objectiveIds": [
+                "lop4_c1_unit_1_my_friends:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "nước Úc",
+              "hint": "Australia — nước Úc",
+              "kind": "word-choice",
+              "options": [
+                {
+                  "id": "l4_s1_3_britain",
+                  "text": "Britain"
+                },
+                {
+                  "id": "l4_s1_6_singapore",
+                  "text": "Singapore"
+                },
+                {
+                  "id": "l4_s1_2_australia",
+                  "text": "Australia"
+                },
+                {
+                  "id": "l4_s1_5_malaysia",
+                  "text": "Malaysia"
+                }
+              ],
+              "answerId": "l4_s1_2_australia"
+            },
+            {
+              "id": "lop4_c1_unit_1_my_friends:v2:c4b989ee-5162-4e06-ab6a-6569863c1dfe:l4_s1_3_britain:path",
+              "vocabularyId": "l4_s1_3_britain",
+              "senseId": "l4_s1_3_britain:sense1",
+              "objectiveIds": [
+                "lop4_c1_unit_1_my_friends:spelling"
+              ],
+              "skill": "spelling",
+              "instruction": "nước Anh",
+              "hint": "Britain — nước Anh",
+              "kind": "spelling",
+              "answers": [
+                "Britain"
+              ]
+            },
+            {
+              "id": "lop4_c1_unit_1_my_friends:v2:c4b989ee-5162-4e06-ab6a-6569863c1dfe:l4_s1_4_japan:path",
+              "vocabularyId": "l4_s1_4_japan",
+              "senseId": "l4_s1_4_japan:sense1",
+              "objectiveIds": [
+                "lop4_c1_unit_1_my_friends:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "nước Nhật Bản",
+              "hint": "Japan — nước Nhật Bản",
+              "kind": "word-choice",
+              "options": [
+                {
+                  "id": "l4_s1_4_japan",
+                  "text": "Japan"
+                },
+                {
+                  "id": "l4_s1_1_america",
+                  "text": "America"
+                },
+                {
+                  "id": "l4_s1_6_singapore",
+                  "text": "Singapore"
+                },
+                {
+                  "id": "l4_s1_3_britain",
+                  "text": "Britain"
+                }
+              ],
+              "answerId": "l4_s1_4_japan"
+            }
+          ],
+          "activityIndex": 0,
+          "evidence": {},
+          "sceneIndex": 0,
+          "resourceRead": false,
+          "applicationResponse": "",
+          "applicationCompleted": false,
+          "speakingPracticed": false,
+          "completed": false,
+          "rewardGranted": false
+        },
+        "0b51385c-a519-4a38-ac07-36a3233ce068": {
+          "id": "0b51385c-a519-4a38-ac07-36a3233ce068",
+          "profileId": "default",
+          "unitId": "lop4_c1_unit_1_my_friends",
+          "contentVersion": 2,
+          "mode": "context-choice",
+          "createdAt": "2026-10-05T06:43:29.970Z",
+          "updatedAt": "2026-10-05T06:43:43.878Z",
+          "stage": "result",
+          "cardIndex": 0,
+          "cardMode": "familiar",
+          "cardRatings": {},
+          "activities": [
+            {
+              "id": "lop4_c1_unit_1_my_friends:context-detail:v2:0b51385c-a519-4a38-ac07-36a3233ce068",
+              "kind": "context-choice",
+              "vocabularyId": "l4_s1_3_britain",
+              "senseId": "l4_s1_3_britain:sense1",
+              "objectiveIds": [
+                "lop4_c1_unit_1_my_friends:context"
+              ],
+              "skill": "context",
+              "instruction": "Ben đến từ nước nào?",
+              "hint": "Ben nói: I'm from Britain.",
+              "text": "Nhớ lại tình huống vừa đọc. Có thể mở gợi ý nếu con cần hỗ trợ.",
+              "options": [
+                {
+                  "id": "l4_s1_2_australia",
+                  "text": "Australia"
+                },
+                {
+                  "id": "l4_s1_4_japan",
+                  "text": "Japan"
+                },
+                {
+                  "id": "l4_s1_3_britain",
+                  "text": "Britain"
+                }
+              ],
+              "answerId": "l4_s1_3_britain"
+            }
+          ],
+          "activityIndex": 0,
+          "evidence": {
+            "lop4_c1_unit_1_my_friends:context-detail:v2:0b51385c-a519-4a38-ac07-36a3233ce068": {
+              "history": [],
+              "activityId": "lop4_c1_unit_1_my_friends:context-detail:v2:0b51385c-a519-4a38-ac07-36a3233ce068",
+              "vocabularyId": "l4_s1_3_britain",
+              "senseId": "l4_s1_3_britain:sense1",
+              "objectiveIds": [
+                "lop4_c1_unit_1_my_friends:context"
+              ],
+              "skill": "context",
+              "attempts": 1,
+              "firstCorrect": false,
+              "correct": false,
+              "hinted": false,
+              "revealed": true,
+              "audioPlayed": false,
+              "response": "",
+              "completedAt": "2026-10-05T06:43:42.244Z",
+              "reviewDueDate": "2026-10-06"
+            }
+          },
+          "sceneIndex": 0,
+          "resourceRead": false,
+          "applicationResponse": "",
+          "applicationCompleted": false,
+          "speakingPracticed": false,
+          "completed": true,
+          "rewardGranted": true
+        },
+        "b93edfd2-f46e-4f75-b2e0-d5856d879a69": {
+          "id": "b93edfd2-f46e-4f75-b2e0-d5856d879a69",
+          "profileId": "default",
+          "unitId": "lop1_unit3",
+          "contentVersion": 2,
+          "mode": "path",
+          "createdAt": "2026-10-05T08:54:29.150Z",
+          "updatedAt": "2026-10-05T08:54:29.151Z",
+          "stage": "cards",
+          "cardIndex": 0,
+          "cardMode": "familiar",
+          "cardRatings": {},
+          "activities": [
+            {
+              "id": "lop1_unit3:v2:b93edfd2-f46e-4f75-b2e0-d5856d879a69:l1_u3_apple:path",
+              "vocabularyId": "l1_u3_apple",
+              "senseId": "l1_u3_apple:sense1",
+              "objectiveIds": [
+                "lop1_unit3:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Apple",
+              "hint": "Apple — Quả táo",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u3_bag",
+                  "text": "Túi xách / Cặp sách"
+                },
+                {
+                  "id": "l1_u3_apple",
+                  "text": "Quả táo"
+                }
+              ],
+              "answerId": "l1_u3_apple"
+            },
+            {
+              "id": "lop1_unit3:v2:b93edfd2-f46e-4f75-b2e0-d5856d879a69:l1_u3_bag:path",
+              "vocabularyId": "l1_u3_bag",
+              "senseId": "l1_u3_bag:sense1",
+              "objectiveIds": [
+                "lop1_unit3:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Bag",
+              "hint": "Bag — Túi xách / Cặp sách",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u3_can",
+                  "text": "Lon / Vỏ lon"
+                },
+                {
+                  "id": "l1_u3_bag",
+                  "text": "Túi xách / Cặp sách"
+                }
+              ],
+              "answerId": "l1_u3_bag"
+            },
+            {
+              "id": "lop1_unit3:v2:b93edfd2-f46e-4f75-b2e0-d5856d879a69:l1_u3_can:path",
+              "vocabularyId": "l1_u3_can",
+              "senseId": "l1_u3_can:sense1",
+              "objectiveIds": [
+                "lop1_unit3:meaning"
+              ],
+              "skill": "meaning",
+              "instruction": "Can",
+              "hint": "Can — Lon / Vỏ lon",
+              "kind": "meaning-choice",
+              "options": [
+                {
+                  "id": "l1_u3_bag",
+                  "text": "Túi xách / Cặp sách"
+                },
+                {
+                  "id": "l1_u3_can",
+                  "text": "Lon / Vỏ lon"
+                }
+              ],
+              "answerId": "l1_u3_can"
+            }
+          ],
+          "activityIndex": 0,
+          "evidence": {},
+          "sceneIndex": 0,
+          "resourceRead": false,
+          "applicationResponse": "",
+          "applicationCompleted": false,
+          "speakingPracticed": false,
+          "completed": false,
+          "rewardGranted": false
+        }
+      },
+      "learningRewardKeys": [
+        "default:lop1_unit1:v2:completion",
+        "default:lop4_c1_unit_1_my_friends:v2:completion"
+      ],
       "totalStars": 96,
       "streak": 1,
-      "lastActiveDate": "2026-10-03",
+      "lastActiveDate": "2026-10-06",
       "wordProgress": {
         "lop4_u1_friends:l4_viet_nam": {
           "wordId": "l4_viet_nam",
@@ -357,75 +1812,37 @@
       ],
       "stickers": [
         {
-          "id": "lop4_u2_time_test_excellent",
-          "name": "Ngôi Sao Xuất Sắc",
-          "emoji": "🌟",
-          "tier": "rare",
-          "setId": "unit_test",
-          "unitId": "lop4_u2_time",
-          "condition": "Đạt bài kiểm tra Unit 2: Thời Gian & Thói Quen hạng excellent",
-          "earnedAt": "2026-10-03T05:14:08.832Z"
-        },
-        {
-          "id": "lop4_u1_friends_test_excellent",
-          "name": "Ngôi Sao Xuất Sắc",
-          "emoji": "🌟",
-          "tier": "rare",
-          "setId": "unit_test",
-          "unitId": "lop4_u1_friends",
-          "condition": "Đạt bài kiểm tra Unit 1: Bạn Bè & Quốc Gia hạng excellent",
-          "earnedAt": "2026-10-03T05:15:24.547Z"
-        },
-        {
-          "id": "lop4_u3_week_test_pass",
-          "name": "Chiến Thắng!",
-          "emoji": "🎉",
+          "id": "default:lop1_unit1:v2:completion",
+          "name": "Bạn chăm luyện",
+          "emoji": "🌱",
           "tier": "basic",
-          "setId": "unit_test",
-          "unitId": "lop4_u3_week",
-          "condition": "Đạt bài kiểm tra Unit 3: Các Ngày Trong Tuần hạng pass",
-          "earnedAt": "2026-10-03T05:16:42.992Z"
+          "setId": "learning-effort",
+          "unitId": "lop1_unit1",
+          "condition": "Hoàn thành chặng luyện bổ trợ",
+          "earnedAt": "2026-10-05T05:24:04.961Z"
         },
         {
-          "id": "lop5_unit1_test_pass",
-          "name": "Chiến Thắng!",
-          "emoji": "🎉",
+          "id": "default:lop4_c1_unit_1_my_friends:v2:completion",
+          "name": "Bạn chăm luyện",
+          "emoji": "🌱",
           "tier": "basic",
-          "setId": "unit_test",
-          "unitId": "lop5_unit1",
-          "condition": "Đạt bài kiểm tra Unit 1: Tất Cả Về Tôi hạng pass",
-          "earnedAt": "2026-10-03T05:17:30.105Z"
+          "setId": "learning-effort",
+          "unitId": "lop4_c1_unit_1_my_friends",
+          "condition": "Hoàn thành chặng luyện bổ trợ",
+          "earnedAt": "2026-10-05T06:43:43.878Z"
         },
         {
-          "id": "lop4_u4_birthday_test_good",
-          "name": "Sao Học Giỏi",
-          "emoji": "⭐",
-          "tier": "star",
-          "setId": "unit_test",
-          "unitId": "lop4_u4_birthday",
-          "condition": "Đạt bài kiểm tra Unit 4: Sinh Nhật & 12 Tháng hạng good",
-          "earnedAt": "2026-10-03T05:18:50.711Z"
-        },
-        {
-          "id": "colors_test_excellent",
-          "name": "Ngôi Sao Xuất Sắc",
-          "emoji": "🌟",
-          "tier": "rare",
-          "setId": "unit_test",
-          "unitId": "colors",
-          "condition": "Đạt bài kiểm tra Màu Sắc hạng excellent",
-          "earnedAt": "2026-10-03T05:20:04.291Z"
-        },
-        {
-          "id": "lop5_unit2_test_pass",
-          "name": "Chiến Thắng!",
-          "emoji": "🎉",
+          "id": "pets_lesson_1",
+          "name": "Gấu chăm luyện",
+          "emoji": "🐼",
           "tier": "basic",
-          "setId": "unit_test",
-          "unitId": "lop5_unit2",
-          "condition": "Đạt bài kiểm tra Unit 2: Ngôi Nhà Của Chúng Tôi hạng pass",
-          "earnedAt": "2026-10-03T05:21:16.236Z"
+          "setId": "pets",
+          "condition": "Hoàn thành 1 chặng luyện bổ trợ.",
+          "earnedAt": "2026-10-06T03:38:33.994Z"
         }
+      ],
+      "stickerStudyDays": [
+        "2026-10-05"
       ],
       "badges": [],
       "unitTestResults": {
@@ -531,46 +1948,6 @@
       },
       "unlockedUnits": [],
       "totalPoints": 350
-    },
-    "child_1790991294905_1jb3": {
-      "totalStars": 18,
-      "streak": 3,
-      "lastActiveDate": "2026-10-02",
-      "wordProgress": {},
-      "dailyStats": []
-    },
-    "profile_1790951322628": {
-      "totalStars": 0,
-      "streak": 0,
-      "lastActiveDate": "",
-      "wordProgress": {},
-      "dailyStats": [],
-      "stickers": [
-        {
-          "id": "custom_new_words_test_excellent",
-          "name": "Ngôi Sao Xuất Sắc",
-          "emoji": "🌟",
-          "tier": "rare",
-          "setId": "unit_test",
-          "unitId": "custom_new_words",
-          "condition": "Đạt bài kiểm tra 🌟 Từ mới của bé hạng excellent",
-          "earnedAt": "2026-10-05T01:42:45.520Z"
-        }
-      ],
-      "badges": [],
-      "unitTestResults": {
-        "custom_new_words": {
-          "unitId": "custom_new_words",
-          "score": 161,
-          "grade": "excellent",
-          "attempts": 1,
-          "fastAnswers": 2,
-          "streak": 11,
-          "completedAt": "2026-10-05T01:42:45.519Z"
-        }
-      },
-      "unlockedUnits": [],
-      "totalPoints": 50
     }
   }
 }

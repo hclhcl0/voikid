@@ -96,13 +96,13 @@ export function AdminGateModal() {
           initial={{ opacity: 0, scale: 0.9, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 15 }}
-          className="bg-white rounded-3xl w-full max-w-sm shadow-2xl border-3 border-violet-200 overflow-hidden"
+          className="bg-white rounded-2xl w-full max-w-sm shadow-sm border-3 border-slate-200 overflow-hidden"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-5 text-white relative text-center">
+          <div className="bg-orange-600 p-5 text-white relative text-center">
             <button
               onClick={closeAdminModal}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white font-black flex items-center justify-center text-sm transition-colors cursor-pointer"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold flex items-center justify-center text-sm transition-colors cursor-pointer"
               aria-label="Đóng"
             >
               ✕
@@ -110,7 +110,7 @@ export function AdminGateModal() {
             <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-2xl mx-auto mb-2 shadow-inner">
               🔒
             </div>
-            <h3 className="font-black text-lg drop-shadow-xs">Xác Thực Quyền Admin</h3>
+            <h3 className="font-bold text-lg drop-shadow-xs">Xác Thực Quyền Admin</h3>
             <p className="text-white/80 text-xs font-semibold mt-0.5">
               Khu vực dành cho Phụ huynh & Quản trị viên
             </p>
@@ -121,7 +121,7 @@ export function AdminGateModal() {
                 type="button"
                 onClick={() => setMode('pin')}
                 className={`flex-1 py-1 rounded-lg transition-all cursor-pointer ${
-                  mode === 'pin' ? 'bg-white text-violet-700 shadow-xs' : 'text-white/80 hover:text-white'
+                  mode === 'pin' ? 'bg-white text-orange-700 shadow-xs' : 'text-white/80 hover:text-white'
                 }`}
               >
                 🔢 Mã PIN
@@ -130,7 +130,7 @@ export function AdminGateModal() {
                 type="button"
                 onClick={() => setMode('math')}
                 className={`flex-1 py-1 rounded-lg transition-all cursor-pointer ${
-                  mode === 'math' ? 'bg-white text-violet-700 shadow-xs' : 'text-white/80 hover:text-white'
+                  mode === 'math' ? 'bg-white text-orange-700 shadow-xs' : 'text-white/80 hover:text-white'
                 }`}
               >
                 🧮 Phép tính phụ huynh
@@ -160,7 +160,7 @@ export function AdminGateModal() {
                         key={idx}
                         className={`w-4 h-4 rounded-full border-2 transition-all ${
                           filled
-                            ? 'bg-violet-600 border-violet-600 scale-125 shadow-xs'
+                            ? 'bg-orange-600 border-violet-600 scale-125 shadow-xs'
                             : 'bg-gray-100 border-gray-300'
                         }`}
                       />
@@ -169,8 +169,8 @@ export function AdminGateModal() {
                 </div>
 
                 {!hasCustomPin && (
-                  <p className="text-center text-[11px] font-bold text-gray-400">
-                    💡 Mã PIN mặc định: <span className="text-violet-600 font-mono">1234</span>
+                  <p className="text-center text-[11px] font-bold text-slate-500">
+                    💡 Mã PIN mặc định: <span className="text-orange-700 font-mono">1234</span>
                   </p>
                 )}
 
@@ -181,7 +181,7 @@ export function AdminGateModal() {
                       key={num}
                       type="button"
                       onClick={() => handleDigit(num)}
-                      className="h-12 rounded-2xl bg-gray-50 hover:bg-violet-50 hover:border-violet-300 border border-gray-200 text-gray-800 font-black text-lg active:scale-95 transition-all shadow-xs cursor-pointer"
+                      className="h-12 rounded-2xl bg-gray-50 hover:bg-slate-50 hover:border-violet-300 border border-gray-200 text-gray-800 font-bold text-lg active:scale-95 transition-all shadow-xs cursor-pointer"
                     >
                       {num}
                     </button>
@@ -196,7 +196,7 @@ export function AdminGateModal() {
                   <button
                     type="button"
                     onClick={() => handleDigit('0')}
-                    className="h-12 rounded-2xl bg-gray-50 hover:bg-violet-50 hover:border-violet-300 border border-gray-200 text-gray-800 font-black text-lg active:scale-95 transition-all shadow-xs cursor-pointer"
+                    className="h-12 rounded-2xl bg-gray-50 hover:bg-slate-50 hover:border-violet-300 border border-gray-200 text-gray-800 font-bold text-lg active:scale-95 transition-all shadow-xs cursor-pointer"
                   >
                     0
                   </button>
@@ -213,7 +213,7 @@ export function AdminGateModal() {
                   <button
                     type="button"
                     onClick={() => handleSubmitPin()}
-                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black text-sm shadow-md transition-all cursor-pointer"
+                    className="w-full py-3 rounded-2xl bg-orange-600 hover:bg-orange-700 hover:bg-orange-700 text-white font-bold text-sm shadow-sm transition-all cursor-pointer"
                   >
                     Mở khóa quyền Admin 🚀
                   </button>
@@ -222,9 +222,9 @@ export function AdminGateModal() {
             ) : (
               /* Math Challenge Mode */
               <form onSubmit={handleSubmitMath} className="space-y-4">
-                <div className="text-center py-2 bg-violet-50 rounded-2xl border border-violet-200">
+                <div className="text-center py-2 bg-slate-50 rounded-2xl border border-slate-200">
                   <p className="text-xs font-bold text-gray-500 mb-1">Hãy giải phép tính dưới đây:</p>
-                  <div className="text-3xl font-black text-violet-700 tracking-wider">
+                  <div className="text-3xl font-bold text-orange-700 tracking-wider">
                     {mathQuestion.q} = ?
                   </div>
                 </div>
@@ -235,14 +235,14 @@ export function AdminGateModal() {
                     value={mathInput}
                     onChange={(e) => setMathInput(e.target.value)}
                     placeholder="Nhập kết quả..."
-                    className="w-full text-center px-4 py-3 rounded-2xl border-2 border-violet-200 focus:border-violet-600 focus:outline-hidden text-gray-800 font-black text-xl"
+                    className="w-full text-center px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-violet-600 focus:outline-hidden text-gray-800 font-bold text-xl"
                     autoFocus
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black text-sm shadow-md transition-all cursor-pointer"
+                  className="w-full py-3.5 rounded-2xl bg-orange-600 hover:bg-orange-700 hover:bg-orange-700 text-white font-bold text-sm shadow-sm transition-all cursor-pointer"
                 >
                   Xác nhận là Phụ Huynh 🚀
                 </button>

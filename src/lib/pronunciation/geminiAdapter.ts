@@ -1,4 +1,5 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { parsePerception, parseAssessment } from './validation';
+import { GoogleGenerativeAI, SchemaType, type Schema } from '@google/generative-ai';
 import { PerceptionResult, AssessmentResult, LessonPolicy } from './types';
 
 // System instructions from sections 7 and 8
@@ -42,13 +43,14 @@ For contentMatch:
 - partial: clearly audible reading omits words from the permitted response.
 - different: clearly audible speech supplies different content.
 - uncertain: the evidence is insufficient or ambiguous.
+When lessonData.allowRepetitions is true for a word task, repeating a complete
+permitted response is matching content. When false, do not apply this exception.
 
-CRITICAL RULE FOR FINAL CONSONANTS:
-- If the target word has an ending consonant (such as final /t/, /s/, /k/, /d/, /p/, /ʃ/, /tʃ/, /z/):
-  * If the speaker articulates the ending sound (even naturally or softly, as long as it is audibly present in the word), judge pronunciation as "acceptable". Do NOT demand an unnatural, exaggerated blast of sound.
-  * ONLY mark "needs_practice" if the ending sound is truly DROPPED, SWALLOWED, or COMPLETELY ABSENT (for example: the speaker clearly said "ca" instead of "cat", "bu" instead of "bus", "fi" instead of "fish").
-  * When marking "needs_practice" for a dropped ending sound, provide a friendly Vietnamese suggestion in issues:
-    e.g. "Con nhớ bật nhẹ âm đuôi /t/ ở cuối từ nhé!" or "Con nhớ xì nhẹ âm đuôi gió /s/ ở cuối từ nhé!".
+FINAL CONSONANTS:
+Assess the audible ending together with vowels, consonants and stress. An audible
+ending alone does not make pronunciation acceptable. Do not demand an exaggerated
+release of final stops. Never infer an ending solely from the recognized spelling.
+Only report a dropped ending when the recording supports that observation.
 
 For usable recordings with matching content, judge pronunciation as acceptable,
 needs_practice, or uncertain. Recognizing the intended word alone is not sufficient
@@ -76,17 +78,18 @@ export async function runPerceptionBranch(
   audioBase64: string,
   mimeType: string,
   apiKey: string,
-  modelName = 'gemini-1.5-flash' // Using a standard available model for audio
+  modelName = 'gemini-3.5-flash-lite',
+  timeoutMs = 20000
 ): Promise<PerceptionResult> {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,
+    systemInstruction: PROMPT_A,
     generationConfig: {
       responseMimeType: 'application/json',
-      // In a real app we'd define responseSchema here if the SDK supports it.
-      // For now, prompt-engineering the JSON output.
+      responseSchema: { type: SchemaType.OBJECT, properties: { speechStatus: { type: SchemaType.STRING, format: 'enum', enum: ['clear','unclear','no_speech'] }, transcript: { type: SchemaType.STRING, nullable: true }, interference: { type: SchemaType.STRING, format: 'enum', enum: ['none_detected','suspected'] } }, required: ['speechStatus','transcript','interference'] },
     },
-  });
+  }, { timeout: timeoutMs });
 
   const userInstruction = `Transcribe this recording. Return a JSON object with:
 {
@@ -97,12 +100,12 @@ export async function runPerceptionBranch(
 
   const result = await model.generateContent([
     { inlineData: { data: audioBase64, mimeType } },
-    { text: PROMPT_A + '\n\n' + userInstruction }
+    { text: userInstruction }
   ]);
   
   const text = result.response.text().trim();
   const cleaned = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
-  return JSON.parse(cleaned) as PerceptionResult;
+  return parsePerception(JSON.parse(cleaned));
 }
 
 export async function runAssessmentBranch(
@@ -111,15 +114,18 @@ export async function runAssessmentBranch(
   policy: LessonPolicy,
   apiKey: string,
   enableRawScore: boolean,
-  modelName = 'gemini-1.5-flash'
+  modelName = 'gemini-3.5-flash-lite',
+  timeoutMs = 20000
 ): Promise<AssessmentResult> {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,
+    systemInstruction: PROMPT_B_BASE,
     generationConfig: {
       responseMimeType: 'application/json',
+      responseSchema: { type: SchemaType.OBJECT, properties: { assessability: { type: SchemaType.STRING, format: 'enum', enum: ['usable','uncertain','unusable'] }, contentMatch: { type: SchemaType.STRING, format: 'enum', enum: ['match','partial','different','uncertain'] }, pronunciation: { type: SchemaType.STRING, format: 'enum', enum: ['acceptable','needs_practice','uncertain','not_applicable'] }, rawModelScore: { type: SchemaType.NUMBER, nullable: true }, issues: { type: SchemaType.ARRAY, items: { type: SchemaType.OBJECT, properties: { kind: { type: SchemaType.STRING, format: 'enum', enum: ['sound','stress','fluency'] }, targetTokenIndex: { type: SchemaType.INTEGER }, suggestionVi: { type: SchemaType.STRING } }, required: ['kind','targetTokenIndex','suggestionVi'] } } }, required: ['assessability','contentMatch','pronunciation','rawModelScore','issues'] } as Schema,
     },
-  });
+  }, { timeout: timeoutMs });
 
   const lessonData = JSON.stringify({
     taskKind: policy.taskKind,
@@ -128,6 +134,7 @@ export async function runAssessmentBranch(
     phonetic: policy.phonetic || null,
     targetEndingSound: policy.endingSound || null,
     acceptedResponses: policy.acceptedResponses,
+    allowRepetitions: policy.allowRepetitions === true,
   });
 
   const userInstruction = `Lesson data: ${lessonData}
@@ -145,10 +152,11 @@ Remember: enableRawScore is ${enableRawScore}. If false, rawModelScore MUST be n
 
   const result = await model.generateContent([
     { inlineData: { data: audioBase64, mimeType } },
-    { text: PROMPT_B_BASE + '\n\n' + userInstruction }
+    { text: userInstruction }
   ]);
 
   const text = result.response.text().trim();
   const cleaned = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
-  return JSON.parse(cleaned) as AssessmentResult;
+  return parseAssessment(JSON.parse(cleaned), policy.targetText.split(/\s+/).filter(Boolean).length);
 }
+

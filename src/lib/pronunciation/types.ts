@@ -7,6 +7,7 @@ export type LessonPolicy = {
   acceptedResponses: string[];
   acceptedTranscriptAliases: string[];
   policyVersion: string;
+  allowRepetitions?: boolean;
   phonetic?: string;
   endingSound?: string;
 };

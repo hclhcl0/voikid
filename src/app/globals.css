@@ -132,3 +132,61 @@ html, body { overscroll-behavior: none; }
 /* ── Hide scrollbar but keep scroll ─────────── */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.learning-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  font-weight: 800;
+}
+.learning-shell { overflow-wrap: anywhere; }
+.learning-shell button, .learning-shell a, .learning-shell input, .learning-shell textarea { outline-offset: 3px; }
+.learning-shell :focus-visible { outline: 3px solid #7c3aed; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Quiet surfaces shared by the learning screens. */
+.learning-shell {
+  background: #f8fafc;
+  color: #1e293b;
+}
+.learning-button { border-radius: 12px; font-weight: 700; transition: background-color 150ms, border-color 150ms; }
+.learning-shell .rounded-3xl { border-radius: 20px; }
+.learning-shell .shadow-sm { box-shadow: 0 1px 3px rgb(15 23 42 / 0.04); }
+.clean-home :focus-visible { outline: 3px solid #c2410c; outline-offset: 3px; }
+.clean-home a, .clean-home button { -webkit-tap-highlight-color: transparent; }
+@media (max-width: 420px) {
+  .clean-home header .learning-button { padding-inline: 10px; }
+}
+
+/* Shared application controls; status colors remain local to each screen. */
+:root {
+  --ui-page: #f8fafc;
+  --ui-surface: #fff;
+  --ui-border: #e2e8f0;
+  --ui-ink: #1e293b;
+  --ui-accent: #ea580c;
+}
+body { background: var(--ui-page); color: var(--ui-ink); }
+button, input, textarea, select { font-family: inherit; }
+button:not(:disabled), summary, select { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 3px solid #c2410c;
+  outline-offset: 3px;
+}
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea) {
+  border-radius: 12px;
+  min-height: 44px;
+}
+:where(input[type="checkbox"], input[type="radio"]) { accent-color: var(--ui-accent); }
+.learning-shell :focus-visible { outline-color: #c2410c; }
+.learning-button { gap: 6px; }
+@media (max-width: 640px) {
+  input, textarea, select { font-size: 16px; }
+}
+

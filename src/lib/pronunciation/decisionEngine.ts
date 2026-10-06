@@ -107,34 +107,6 @@ export function decideAttemptResult(
         scoreType: finalScoreType,
       };
     } else if (assessment.pronunciation === 'needs_practice') {
-      // ĐỐI CHIẾU ÂM ĐUÔI VỚI NHÁNH A (PERCEPTION):
-      // Nếu Nhánh B báo 'needs_practice' vì nghi ngờ thiếu âm đuôi,
-      // nhưng Nhánh A (ASR khách quan không biết trước bài tập) đã nghe và nhận diện được âm đuôi rõ ràng (vd: nghe rõ "cat", "cats"):
-      // Điều này chứng minh âm đuôi có tồn tại trong tín hiệu âm thanh và không bị nuốt.
-      // Chuẩn hóa về 'acceptable' -> status: 'pass' để tránh bắt bẻ quá mức gây ức chế cho người học.
-      const onlyEndingSoundIssue = !assessment.issues || assessment.issues.length === 0 || assessment.issues.every(iss => 
-        iss.suggestionVi?.toLowerCase().includes('âm đuôi') || 
-        iss.suggestionVi?.toLowerCase().includes('bật') ||
-        iss.suggestionVi?.toLowerCase().includes('xì') ||
-        iss.suggestionVi?.toLowerCase().includes('cuối')
-      );
-
-      if (policy.taskKind === 'word' && onlyEndingSoundIssue && isEndingSoundArticulatedInTranscript(perception.transcript, policy)) {
-        if (scoreMode === 'estimated' && assessment.rawModelScore !== null) {
-          finalScore = Math.max(assessment.rawModelScore, 85);
-          finalScoreType = 'estimated';
-        }
-        return {
-          ...baseResult,
-          status: 'pass',
-          reason: 'acceptable',
-          contentStatus: 'matched',
-          passed: true,
-          score: finalScore,
-          scoreType: finalScoreType,
-        };
-      }
-
       if (scoreMode === 'estimated' && assessment.rawModelScore !== null) {
          finalScore = assessment.rawModelScore;
          finalScoreType = 'estimated';
@@ -201,41 +173,7 @@ export function decideAttemptResult(
   };
 }
 
-function isEndingSoundArticulatedInTranscript(
-  transcript: string | null,
-  policy: LessonPolicy
-): boolean {
-  if (!transcript) return false;
-  const cleanTranscript = transcript.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-  const tokens = cleanTranscript.split(/\s+/).filter(Boolean);
-  if (tokens.length === 0) return false;
-
-  const target = policy.targetText.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
-  if (!target) return false;
-
-  // 1. Nếu transcript chứa chính xác target hoặc target + 's' (ví dụ "cat", "cats", "bird", "birds", "bus")
-  if (tokens.includes(target) || tokens.includes(target + 's')) {
-    return true;
-  }
-
-  // 2. Nếu target có âm đuôi (như /t/, /s/, /k/, /d/, /p/, /ʃ/)
-  // và một token trong transcript kết thúc bằng ký tự âm đuôi đó
-  const sound = policy.endingSound?.toLowerCase() || '';
-  for (const token of tokens) {
-    if (sound.includes('t') && (token.endsWith('t') || token.endsWith('ts') || token.endsWith('te'))) return true;
-    if (sound.includes('s') && (token.endsWith('s') || token.endsWith('se') || token.endsWith('ce'))) return true;
-    if (sound.includes('k') && (token.endsWith('k') || token.endsWith('ck') || token.endsWith('ke'))) return true;
-    if (sound.includes('d') && (token.endsWith('d') || token.endsWith('de'))) return true;
-    if (sound.includes('p') && (token.endsWith('p') || token.endsWith('pe'))) return true;
-    if (sound.includes('ʃ') && token.endsWith('sh')) return true;
-    if (sound.includes('tʃ') && token.endsWith('ch')) return true;
-    if (sound.includes('ks') && token.endsWith('x')) return true;
-  }
-
-  return false;
-}
-
-function createServiceError(baseResult: any, reason: AttemptResult['reason']): AttemptResult {
+function createServiceError(baseResult: Pick<AttemptResult, 'attemptId' | 'engineVersion' | 'rubricVersion' | 'calibrationVersion' | 'feedbackVi'>, reason: AttemptResult['reason']): AttemptResult {
   return {
     ...baseResult,
     status: 'service_error',

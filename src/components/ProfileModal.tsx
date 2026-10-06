@@ -6,8 +6,16 @@ import { useProfileContext, AVATAR_LIST, COLOR_THEMES } from '@/context/ProfileC
 import { GRADE_LEVELS } from '@/lib/vocabulary';
 import { UserProfile } from '@/types';
 import { useAdminContext } from '@/context/AdminContext';
+import { useAuth } from '@/context/AuthContext';
 
 export function ProfileModal() {
+  const {
+    account,
+    isGuest,
+    isAuthenticated,
+    openAuthModal,
+  } = useAuth();
+
   const {
     profiles,
     activeProfile,
@@ -173,13 +181,13 @@ export function ProfileModal() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 15 }}
           transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-          className="bg-white rounded-3xl w-full max-w-md shadow-2xl border-[3px] border-orange-200 overflow-hidden my-auto"
+          className="bg-white rounded-2xl w-full max-w-md shadow-sm border-[3px] border-slate-200 overflow-hidden my-auto"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 p-5 text-white relative">
+          <div className="bg-orange-600 p-5 text-white relative">
             <button
               onClick={closeProfileModal}
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/30 backdrop-blur text-white font-black flex items-center justify-center hover:bg-white/40 transition-colors"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/30 backdrop-blur text-white font-bold flex items-center justify-center hover:bg-white/40 transition-colors"
               aria-label="Đóng"
             >
               ✕
@@ -187,7 +195,7 @@ export function ProfileModal() {
             <div className="flex items-center gap-3">
               <span className="text-3xl">👨‍👩‍👧</span>
               <div>
-                <h3 className="font-black text-xl leading-tight drop-shadow-sm">
+                <h3 className="font-bold text-xl leading-tight drop-shadow-sm">
                   {mode === 'list' && 'Đăng Nhập & Đổi Bé Học'}
                   {mode === 'code_login' && 'Đăng Nhập Từ Máy Khác 📲'}
                   {mode === 'create' && 'Thêm Bé Mới 🎈'}
@@ -208,7 +216,7 @@ export function ProfileModal() {
                 <button
                   type="button"
                   onClick={() => setMode('list')}
-                  className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     mode === 'list' ? 'bg-white text-orange-600 shadow-sm' : 'text-white/80 hover:text-white'
                   }`}
                 >
@@ -217,7 +225,7 @@ export function ProfileModal() {
                 <button
                   type="button"
                   onClick={() => setMode('code_login')}
-                  className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     mode === 'code_login' ? 'bg-white text-orange-600 shadow-sm' : 'text-white/80 hover:text-white'
                   }`}
                 >
@@ -231,6 +239,31 @@ export function ProfileModal() {
           <div className="p-5 max-h-[75vh] overflow-y-auto">
             {mode === 'list' ? (
               <div className="space-y-4">
+                {/* Account Mode Banner (Guest vs Registered) */}
+                <div className="p-3 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 bg-slate-50 border-slate-200">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-2xl shrink-0">{isAuthenticated ? '☁️' : '👤'}</span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-gray-800 truncate">
+                        {isAuthenticated ? (account?.displayName || account?.email) : 'Chế độ Khách (Dữ liệu trên máy)'}
+                      </p>
+                      <p className="text-[11px] text-gray-500 font-semibold truncate">
+                        {isAuthenticated ? 'Đã liên kết Đám Mây PostgreSQL' : 'Đăng nhập để lưu tiến độ trên Đám Mây'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeProfileModal();
+                      openAuthModal(isAuthenticated ? 'login' : 'register');
+                    }}
+                    className="py-1.5 px-3 rounded-xl bg-orange-600 text-white font-bold text-xs shrink-0 shadow-xs hover:opacity-95 transition-all cursor-pointer"
+                  >
+                    {isAuthenticated ? 'Tài khoản' : 'Đăng nhập'}
+                  </button>
+                </div>
+
                 {/* Profile Cards */}
                 <div className="space-y-2.5">
                   {profiles.map((p) => {
@@ -251,13 +284,13 @@ export function ProfileModal() {
                         }}
                         className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer relative flex items-center gap-3.5 ${
                           isActive
-                            ? 'bg-amber-50/90 border-amber-400 shadow-md ring-2 ring-amber-300/50'
+                            ? 'bg-amber-50/90 border-amber-400 shadow-sm ring-2 ring-amber-300/50'
                             : 'bg-white hover:bg-gray-50 border-gray-200'
                         }`}
                       >
                         {/* Avatar */}
                         <div
-                          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${theme.bg} flex items-center justify-center text-3xl shadow-md shrink-0`}
+                          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${theme.bg} flex items-center justify-center text-3xl shadow-sm shrink-0`}
                         >
                           {p.avatar}
                         </div>
@@ -265,9 +298,9 @@ export function ProfileModal() {
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-black text-gray-800 text-base truncate">{p.name}</h4>
+                            <h4 className="font-bold text-gray-800 text-base truncate">{p.name}</h4>
                             {isActive && (
-                              <span className="text-[10px] bg-amber-500 text-white font-black px-2 py-0.5 rounded-full shrink-0">
+                              <span className="text-[10px] bg-amber-500 text-white font-bold px-2 py-0.5 rounded-full shrink-0">
                                 Đang học ✓
                               </span>
                             )}
@@ -276,7 +309,7 @@ export function ProfileModal() {
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-xs text-gray-500 font-semibold">{grade.label}</span>
                             <span className="text-gray-300">•</span>
-                            <span className="text-xs font-black text-amber-600 flex items-center gap-0.5">
+                            <span className="text-xs font-bold text-amber-600 flex items-center gap-0.5">
                               ⭐ {stars} sao
                             </span>
                           </div>
@@ -289,7 +322,7 @@ export function ProfileModal() {
                             <button
                               type="button"
                               onClick={(e) => handleCopyCode(code, e)}
-                              className="text-[10px] text-gray-400 hover:text-orange-600 font-bold px-1.5 py-0.5 rounded transition-colors"
+                              className="text-[10px] text-slate-500 hover:text-orange-600 font-bold px-1.5 py-0.5 rounded transition-colors"
                               title="Sao chép mã đăng nhập để dùng trên điện thoại khác"
                             >
                               {copiedCode === code ? '✓ Đã chép' : '📋 Chép mã'}
@@ -324,7 +357,7 @@ export function ProfileModal() {
                 {/* Add child button */}
                 <button
                   onClick={handleOpenCreate}
-                  className="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-orange-300 bg-orange-50/60 hover:bg-orange-100/70 text-orange-600 font-black text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                  className="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-orange-300 bg-orange-50/60 hover:bg-orange-100/70 text-orange-600 font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                 >
                   <span className="text-lg">+</span> Thêm tài khoản bé mới
                 </button>
@@ -351,7 +384,7 @@ export function ProfileModal() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-black text-gray-700 mb-1.5 uppercase tracking-wide">
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                     Tên bé hoặc Mã tài khoản:
                   </label>
                   <input
@@ -359,7 +392,7 @@ export function ProfileModal() {
                     value={loginQuery}
                     onChange={(e) => setLoginQuery(e.target.value)}
                     placeholder="Ví dụ: Bé Bống hoặc BONG88..."
-                    className="w-full px-4 py-3 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-base bg-orange-50/20"
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-base bg-orange-50/20"
                     autoFocus
                   />
                 </div>
@@ -371,14 +404,14 @@ export function ProfileModal() {
                       setMode('list');
                       setLoginMsg(null);
                     }}
-                    className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-black text-sm hover:bg-gray-100 transition-colors cursor-pointer"
+                    className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-100 transition-colors cursor-pointer"
                   >
                     Quay lại
                   </button>
                   <button
                     type="submit"
                     disabled={loginLoading}
-                    className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-md transition-all cursor-pointer disabled:opacity-50"
+                    className="flex-1 py-3 rounded-2xl bg-orange-600 hover:bg-orange-700 hover:bg-orange-700 text-white font-bold text-sm shadow-sm transition-all cursor-pointer disabled:opacity-50"
                   >
                     {loginLoading ? 'Đang kiểm tra...' : 'Vào học ngay 🚀'}
                   </button>
@@ -395,7 +428,7 @@ export function ProfileModal() {
 
                 {/* Child Name */}
                 <div>
-                  <label className="block text-xs font-black text-gray-700 mb-1.5 uppercase tracking-wide">
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                     Tên của bé:
                   </label>
                   <input
@@ -403,7 +436,7 @@ export function ProfileModal() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Ví dụ: Bé Bống, Minh Quân, Bo..."
-                    className="w-full px-4 py-3 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
                     maxLength={30}
                     autoFocus
                   />
@@ -412,24 +445,24 @@ export function ProfileModal() {
                 {/* Optional Custom Account Code */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-black text-gray-700 uppercase tracking-wide">
+                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">
                       Mã tài khoản (tùy chọn):
                     </label>
-                    <span className="text-[11px] text-gray-400">Tự tạo nếu để trống</span>
+                    <span className="text-[11px] text-slate-500">Tự tạo nếu để trống</span>
                   </div>
                   <input
                     type="text"
                     value={customCode}
                     onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
                     placeholder="Ví dụ: BONG88, BO12..."
-                    className="w-full px-4 py-2.5 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-mono font-bold text-sm bg-orange-50/20 uppercase"
+                    className="w-full px-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-mono font-bold text-sm bg-orange-50/20 uppercase"
                     maxLength={15}
                   />
                 </div>
 
                 {/* Grade Selection */}
                 <div>
-                  <label className="block text-xs font-black text-gray-700 mb-1.5 uppercase tracking-wide">
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                     Lớp của bé:
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -452,7 +485,7 @@ export function ProfileModal() {
 
                 {/* Avatar Picker */}
                 <div>
-                  <label className="block text-xs font-black text-gray-700 mb-1.5 uppercase tracking-wide">
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                     Chọn con vật đại diện:
                   </label>
                   <div className="grid grid-cols-6 gap-2">
@@ -476,7 +509,7 @@ export function ProfileModal() {
 
                 {/* Color Theme */}
                 <div>
-                  <label className="block text-xs font-black text-gray-700 mb-1.5 uppercase tracking-wide">
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
                     Màu sắc yêu thích:
                   </label>
                   <div className="flex gap-2">
@@ -517,14 +550,14 @@ export function ProfileModal() {
                       setMode('list');
                       setEditingProfileId(null);
                     }}
-                    className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-black text-sm hover:bg-gray-100 transition-colors cursor-pointer"
+                    className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-100 transition-colors cursor-pointer"
                   >
                     Quay lại
                   </button>
                   <button
                     type="button"
                     onClick={handleSave}
-                    className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-md transition-all cursor-pointer"
+                    className="flex-1 py-3 rounded-2xl bg-orange-600 hover:bg-orange-700 hover:bg-orange-700 text-white font-bold text-sm shadow-sm transition-all cursor-pointer"
                   >
                     {mode === 'create' ? 'Tạo tài khoản' : 'Lưu thay đổi'}
                   </button>

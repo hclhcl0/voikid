@@ -1,0 +1,618 @@
+'use client';
+
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useSettings } from '@/hooks/useSettings';
+import { useProfileContext } from '@/context/ProfileContext';
+import { useAdminContext } from '@/context/AdminContext';
+import { useAuth } from '@/context/AuthContext';
+
+// ── Status badge ────────────────────────────────────────────────────────────
+function StatusBadge({ hasKey }: { hasKey: boolean }) {
+  return (
+    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold ${
+      hasKey
+        ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+        : 'bg-amber-100 text-amber-700 border border-amber-300'
+    }`}>
+      <span className={`w-2 h-2 rounded-full ${hasKey ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+      {hasKey ? 'Đã cài đặt ✓' : 'Chưa có API Key'}
+    </div>
+  );
+}
+
+// ── Main Settings Page ──────────────────────────────────────────────────────
+export default function SettingsPanel({ embedded = false }: { embedded?: boolean }) {
+  const router = useRouter();
+  const { apiKey, maskedKey, hasKey, hydrated, saveApiKey } = useSettings();
+  const { account, isAuthenticated, openAuthModal, logout: authLogout, cloudProfiles } = useAuth();
+  const {
+    profiles,
+    activeProfileId,
+    setActiveProfileId,
+    openProfileModal,
+    getProfileStars,
+  } = useProfileContext();
+
+  const [input,     setInput]     = useState('');
+  const [showKey,   setShowKey]   = useState(false);
+  const [saved,     setSaved]     = useState(false);
+  const [testing,   setTesting]   = useState(false);
+  const [testResult, setTestResult] = useState<'ok' | 'fail' | null>(null);
+  const [testError,  setTestError]  = useState<string>('');
+  const [deleted,   setDeleted]   = useState(false);
+
+  const handleSave = () => {
+    const key = input.trim();
+    if (!key) return;
+    saveApiKey(key);
+    setInput('');
+    setSaved(true);
+    setTestResult(null);
+    setTestError('');
+    setDeleted(false);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const handleDelete = () => {
+    saveApiKey('');
+    setInput('');
+    setTestResult(null);
+    setTestError('');
+    setDeleted(true);
+    setTimeout(() => setDeleted(false), 3000);
+  };
+
+  const handleTest = async () => {
+    const raw = input.trim() || apiKey;
+    const match = raw.match(/(AQ\.[A-Za-z0-9_-]+|AIza[A-Za-z0-9_-]+)/);
+    const keyToTest = match ? match[1] : raw;
+    setTesting(true);
+    setTestResult(null);
+    setTestError('');
+    try {
+      const res = await fetch('/api/test-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: keyToTest }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setTestResult('ok');
+        setTestError(data.fromEnv ? 'Đang dùng API Key từ biến môi trường máy chủ.' : '');
+      } else {
+        setTestResult('fail');
+        setTestError(data.details || data.error || 'Không kết nối được tới Google Gemini.');
+      }
+    } catch (e) {
+      setTestResult('fail');
+      setTestError(String(e));
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const {
+    isAdmin,
+    openAdminModal,
+    logoutAdmin,
+    changePin,
+    resetPinToDefault,
+    hasCustomPin,
+  } = useAdminContext();
+
+  const [oldPin, setOldPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [pinStatus, setPinStatus] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+
+  const handleChangePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = changePin(oldPin, newPin);
+    if (res.success) {
+      setPinStatus({ type: 'ok', text: res.message });
+      setOldPin('');
+      setNewPin('');
+      setTimeout(() => setPinStatus(null), 3000);
+    } else {
+      setPinStatus({ type: 'err', text: res.message });
+    }
+  };
+
+  const handleResetPin = () => {
+    if (confirm('Đặt lại mã PIN Admin về mặc định (1234)?')) {
+      resetPinToDefault();
+      setPinStatus({ type: 'ok', text: 'Đã đặt lại mã PIN về mặc định (1234)!' });
+      setTimeout(() => setPinStatus(null), 3000);
+    }
+  };
+
+  if (!embedded && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-sm border-2 border-slate-200 space-y-5"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center text-3xl mx-auto shadow-inner">
+            🔒
+          </div>
+          <div>
+            <h2 className="font-bold text-xl text-gray-800">Khu Vực Quản Trị Viên</h2>
+            <p className="text-xs text-gray-500 font-semibold mt-1">
+              Cài đặt hệ thống, API Key và cấu hình chỉ dành cho Phụ huynh & Quản trị viên.
+            </p>
+          </div>
+          <button
+            onClick={() => openAdminModal()}
+            className="w-full py-3.5 rounded-2xl bg-orange-600 hover:bg-orange-700 hover:bg-orange-700 text-white font-bold text-sm shadow-sm transition-all cursor-pointer"
+          >
+            🔑 Mở Khóa Quyền Admin
+          </button>
+          <button
+            onClick={() => router.push('/')}
+            className="w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            ← Về Trang Học Của Bé
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={embedded ? "space-y-6" : "min-h-screen bg-slate-50"}>
+
+      {/* Header */}
+      {!embedded && <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-slate-200 px-4 py-3 shadow-2xs">
+        <div className="max-w-5xl mx-auto flex items-center gap-3 w-full">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.back()}
+              className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-orange-700 hover:bg-violet-100 transition-colors cursor-pointer"
+              title="Quay lại"
+            >←</button>
+            <Link
+              href="/"
+              className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs cursor-pointer"
+              title="Về trang chủ"
+            >🏠</Link>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-bold text-xl text-gray-800 flex items-center gap-2">
+              <span>⚙️ Cài Đặt</span>
+              <Link href="/admin" className="learning-button text-sm bg-orange-50 text-orange-800">Quản trị server →</Link>
+              <span className="text-[11px] font-bold bg-violet-100 text-orange-700 px-2 py-0.5 rounded-full">
+                👑 Admin
+              </span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={logoutAdmin}
+              className="text-xs font-bold text-gray-500 hover:text-rose-600 flex items-center gap-1 px-3 py-2 rounded-xl bg-gray-100 hover:bg-rose-50 transition-colors cursor-pointer"
+              title="Khóa quyền quản trị viên"
+            >
+              <span>🔒</span>
+              <span className="hidden sm:inline">Khóa</span>
+            </button>
+            {hydrated && <StatusBadge hasKey={hasKey} />}
+          </div>
+        </div>
+      </header>}
+
+      <div className={embedded ? "space-y-6" : "max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6"}>
+
+        {/* ── Tài Khoản Phụ Huynh & Đồng Bộ Đám Mây ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl p-5 shadow border border-slate-200 relative overflow-hidden"
+        >
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">☁️</span>
+              <div>
+                <h2 className="font-bold text-base text-gray-800">Tài Khoản Phụ Huynh (Cá Nhân)</h2>
+                <p className="text-xs text-gray-500 font-semibold">
+                  Đồng bộ tiến độ học của các bé lên Đám Mây PostgreSQL & học trên mọi thiết bị
+                </p>
+              </div>
+            </div>
+
+            {isAuthenticated ? (
+              <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full border border-emerald-200 shrink-0">
+                ✓ Đã Đăng Nhập
+              </span>
+            ) : (
+              <span className="text-xs bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full border border-amber-200 shrink-0">
+                👤 Chế độ Khách
+              </span>
+            )}
+          </div>
+
+          {isAuthenticated && account ? (
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-gray-800">{account.displayName || 'Phụ huynh'}</p>
+                <p className="text-xs text-gray-600 font-medium">{account.email}</p>
+                <p className="text-[11px] text-orange-700 font-bold mt-1">
+                  Đã liên kết {cloudProfiles.length} hồ sơ bé trên Đám Mây
+                </p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('login')}
+                  className="py-2 px-3.5 rounded-xl bg-orange-500 text-white font-bold text-xs hover:bg-orange-600 transition-colors cursor-pointer shadow-xs"
+                >
+                  Quản lý tài khoản
+                </button>
+                <button
+                  type="button"
+                  onClick={() => authLogout()}
+                  className="py-2 px-3.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-orange-50/70 p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-amber-900 font-bold leading-relaxed">
+                  Hiện bạn đang ở <strong>Chế độ Khách</strong> (dữ liệu lưu trên máy này). Hãy tạo tài khoản phụ huynh để lưu bài học, số sao của bé vĩnh viễn và không sợ mất khi đổi thiết bị!
+                </p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('register')}
+                  className="py-2.5 px-4 rounded-xl bg-orange-600 text-white font-bold text-xs hover:opacity-95 transition-opacity shadow-sm cursor-pointer"
+                >
+                  ➕ Thêm / Đăng Ký Tài Khoản
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('login')}
+                  className="py-2.5 px-3 rounded-xl bg-white border border-orange-300 text-orange-600 font-bold text-xs hover:bg-orange-50 transition-colors shadow-xs cursor-pointer"
+                >
+                  🔑 Đăng Nhập
+                </button>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {/* ── Quản Lý Mã PIN Admin ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl p-5 shadow border border-slate-200"
+        >
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="text-2xl">🔐</span>
+            <div>
+              <h2 className="font-bold text-base text-gray-800">Mã PIN Admin / Phụ Huynh</h2>
+              <p className="text-xs text-gray-500 font-semibold">Bảo vệ cài đặt để tránh các bé vô tình sửa đổi</p>
+            </div>
+          </div>
+
+          {pinStatus && (
+            <div
+              className={`p-3 rounded-2xl text-xs font-bold mb-3 ${
+                pinStatus.type === 'ok'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+              }`}
+            >
+              {pinStatus.text}
+            </div>
+          )}
+
+          <form onSubmit={handleChangePin} className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-600 mb-1">Mã PIN cũ:</label>
+                <input
+                  type="password"
+                  value={oldPin}
+                  onChange={(e) => setOldPin(e.target.value)}
+                  placeholder="Mã hiện tại"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono font-bold focus:border-violet-500 focus:outline-hidden"
+                  maxLength={8}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-600 mb-1">Mã PIN mới (4-8 số):</label>
+                <input
+                  type="password"
+                  value={newPin}
+                  onChange={(e) => setNewPin(e.target.value)}
+                  placeholder="Mã mới"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono font-bold focus:border-violet-500 focus:outline-hidden"
+                  maxLength={8}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              {hasCustomPin ? (
+                <button
+                  type="button"
+                  onClick={handleResetPin}
+                  className="text-[11px] text-slate-500 hover:text-rose-500 font-bold"
+                >
+                  🔄 Đặt lại về mặc định (1234)
+                </button>
+              ) : (
+                <span className="text-[11px] text-slate-500">
+                  Mã mặc định: <code className="text-orange-700 font-bold">1234</code>
+                </span>
+              )}
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-600 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+              >
+                Đổi mã PIN
+              </button>
+            </div>
+          </form>
+        </motion.div>
+
+        {/* ── Quản lý hồ sơ các bé ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl p-5 shadow border border-slate-200"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="text-3xl">👨‍👩‍👧</span>
+              <div>
+                <h2 className="font-bold text-base text-gray-800">Tài Khoản Các Bé</h2>
+                <p className="text-xs text-gray-500 font-semibold">Quản lý nhiều bé trên cùng thiết bị</p>
+              </div>
+            </div>
+            <button
+              onClick={openProfileModal}
+              className="px-3 py-1.5 rounded-xl bg-orange-100 text-orange-600 hover:bg-orange-200 font-bold text-xs transition-colors cursor-pointer"
+            >
+              Cài đặt ⚙️
+            </button>
+          </div>
+
+          <div className="space-y-2 mt-3">
+            {profiles.map((p) => {
+              const isActive = p.id === activeProfileId;
+              const stars = getProfileStars(p.id);
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => setActiveProfileId(p.id)}
+                  className={`p-3 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${
+                    isActive ? 'bg-amber-50/90 border-amber-400 ring-2 ring-amber-300/40' : 'bg-gray-50/70 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{p.avatar}</span>
+                    <div>
+                      <p className="font-bold text-sm text-gray-800">{p.name}</p>
+                      <p className="text-xs text-slate-500 font-semibold">⭐ {stars} sao</p>
+                    </div>
+                  </div>
+                  {isActive ? (
+                    <span className="text-xs bg-amber-500 text-white font-bold px-2.5 py-1 rounded-full">
+                      Đang học ✓
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-500 font-bold hover:text-orange-600">
+                      Chọn bé này →
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={openProfileModal}
+            className="w-full mt-3 py-2.5 rounded-xl border border-dashed border-orange-300 text-orange-600 hover:bg-orange-50 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span>+</span> Thêm tài khoản bé mới
+          </button>
+        </motion.div>
+
+        {/* ── Input key ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-2xl p-5 shadow border border-slate-200"
+        >
+          <h3 className="font-bold text-gray-800 mb-4">🔑 Gemini API Key</h3>
+
+          {/* Current key display */}
+          {hydrated && hasKey && (
+            <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
+              <span className="text-2xl">✅</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-emerald-600 mb-0.5">Key hiện tại</p>
+                <p className="font-mono text-sm text-gray-700 truncate">
+                  {showKey ? apiKey : maskedKey}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowKey((v) => !v)}
+                className="text-xs font-bold text-slate-500 hover:text-gray-600 transition-colors flex-shrink-0"
+              >
+                {showKey ? '🙈 Ẩn' : '👁 Xem'}
+              </button>
+            </div>
+          )}
+
+          {/* Input field */}
+          <div className="relative mb-3">
+            <input
+              type={showKey ? 'text' : 'password'}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+              placeholder="AIzaSy... (dán API key vào đây)"
+              className="w-full rounded-2xl border-2 border-gray-200 focus:border-violet-400 focus:outline-none px-4 py-3.5 font-mono text-sm bg-gray-50 focus:bg-white transition-all pr-20"
+            />
+            {input && (
+              <button
+                onClick={() => setInput('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-gray-600 text-xs font-bold px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+              >✕ Xóa</button>
+            )}
+          </div>
+
+          {/* Buttons row */}
+          <div className="flex gap-2">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleSave}
+              disabled={!input.trim()}
+              className="flex-1 py-3 rounded-2xl font-bold text-sm bg-orange-600 text-white shadow-sm shadow-violet-200 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+            >
+              💾 Lưu Key
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleTest}
+              disabled={testing || (!input.trim() && !hasKey)}
+              className="px-4 py-3 rounded-2xl font-bold text-sm bg-slate-50 text-orange-700 border-2 border-slate-200 hover:bg-violet-100 disabled:opacity-40 transition-colors"
+            >
+              {testing ? '⏳' : '🧪 Test'}
+            </motion.button>
+          </div>
+
+          {/* Feedback messages */}
+          <AnimatePresence>
+            {saved && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-3 bg-emerald-50 border border-emerald-300 rounded-2xl p-3 flex items-center gap-2"
+              >
+                <span className="text-lg">🎉</span>
+                <p className="text-sm font-bold text-emerald-700">API Key đã được lưu thành công!</p>
+              </motion.div>
+            )}
+            {deleted && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-3 bg-gray-50 border border-gray-200 rounded-2xl p-3 flex items-center gap-2"
+              >
+                <span className="text-lg">🗑️</span>
+                <p className="text-sm font-bold text-gray-600">Đã xóa API Key.</p>
+              </motion.div>
+            )}
+            {testResult === 'ok' && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-3 bg-emerald-50 border border-emerald-300 rounded-2xl p-3 flex items-center gap-2"
+              >
+                <span className="text-lg">✅</span>
+                <div>
+                  <p className="text-sm font-bold text-emerald-700">API Key hợp lệ! Sẵn sàng sử dụng.</p>
+                  {testError && <p className="text-xs text-emerald-600 mt-0.5">{testError}</p>}
+                </div>
+              </motion.div>
+            )}
+            {testResult === 'fail' && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-3 bg-rose-50 border border-rose-300 rounded-2xl p-3 flex items-start gap-2"
+              >
+                <span className="text-lg mt-0.5">❌</span>
+                <div>
+                  <p className="text-sm font-bold text-rose-700">Kiểm tra không thành công</p>
+                  <p className="text-xs text-rose-600 mt-0.5 break-all">{testError || 'Key không hợp lệ hoặc hết quota. Kiểm tra lại tại aistudio.google.com'}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Delete existing key */}
+          {hydrated && hasKey && (
+            <button
+              onClick={handleDelete}
+              className="mt-3 w-full text-xs font-bold text-slate-500 hover:text-rose-500 transition-colors py-2"
+            >
+              🗑️ Xóa API Key hiện tại
+            </button>
+          )}
+        </motion.div>
+
+        {/* ── Security note ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-blue-50 border border-blue-200 rounded-2xl p-5"
+        >
+          <h3 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
+            <span>🔒</span> Bảo mật
+          </h3>
+          <ul className="space-y-2 text-xs text-blue-700 font-semibold">
+            <li>• API Key được lưu <strong>trên thiết bị của bạn</strong> (localStorage), không gửi lên server nào khác.</li>
+            <li>• Chỉ dùng để gọi Gemini API khi bé luyện phát âm.</li>
+            <li>• Bạn có thể xóa key bất cứ lúc nào bằng nút "Xóa API Key".</li>
+            <li>• Không chia sẻ API Key với người khác để tránh hết quota.</li>
+          </ul>
+        </motion.div>
+
+        {/* ── Vocabulary & Backup link ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="bg-white rounded-2xl p-5 border-2 border-slate-200 shadow-sm"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+                <span>📚</span> Quản lý kho từ vựng
+              </h3>
+              <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                Sửa từ, xóa chủ đề, xuất & nhập file JSON sao lưu
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/manage')}
+              className="px-3.5 py-2 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-sm transition-colors"
+            >
+              Mở →
+            </button>
+          </div>
+        </motion.div>
+
+        {/* ── Back button ── */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => router.push('/')}
+          className="w-full py-4 rounded-2xl font-bold text-gray-600 border-2 border-gray-200 bg-white hover:border-violet-300 hover:text-orange-700 transition-colors"
+        >
+          🏠 Về trang chủ
+        </motion.button>
+
+      </div>
+    </div>
+  );
+}
+

@@ -1,0 +1,162 @@
+{
+  "repository": "https://github.com/microsoft/fluentui-emoji",
+  "revision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc",
+  "license": "MIT",
+  "assets": [
+    {
+      "emoji": "🐱",
+      "filename": "cat_face_3d.png",
+      "path": "assets/Cat face/3D/cat_face_3d.png"
+    },
+    {
+      "emoji": "🐶",
+      "filename": "dog_face_3d.png",
+      "path": "assets/Dog face/3D/dog_face_3d.png"
+    },
+    {
+      "emoji": "🐰",
+      "filename": "rabbit_face_3d.png",
+      "path": "assets/Rabbit face/3D/rabbit_face_3d.png"
+    },
+    {
+      "emoji": "🦊",
+      "filename": "fox_3d.png",
+      "path": "assets/Fox/3D/fox_3d.png"
+    },
+    {
+      "emoji": "🐼",
+      "filename": "panda_3d.png",
+      "path": "assets/Panda/3D/panda_3d.png"
+    },
+    {
+      "emoji": "🦁",
+      "filename": "lion_3d.png",
+      "path": "assets/Lion/3D/lion_3d.png"
+    },
+    {
+      "emoji": "🦄",
+      "filename": "unicorn_3d.png",
+      "path": "assets/Unicorn/3D/unicorn_3d.png"
+    },
+    {
+      "emoji": "🐉",
+      "filename": "dragon_3d.png",
+      "path": "assets/Dragon/3D/dragon_3d.png"
+    },
+    {
+      "emoji": "🌈",
+      "filename": "rainbow_3d.png",
+      "path": "assets/Rainbow/3D/rainbow_3d.png"
+    },
+    {
+      "emoji": "🪄",
+      "filename": "magic_wand_3d.png",
+      "path": "assets/Magic wand/3D/magic_wand_3d.png"
+    },
+    {
+      "emoji": "💎",
+      "filename": "gem_stone_3d.png",
+      "path": "assets/Gem stone/3D/gem_stone_3d.png"
+    },
+    {
+      "emoji": "👑",
+      "filename": "crown_3d.png",
+      "path": "assets/Crown/3D/crown_3d.png"
+    },
+    {
+      "emoji": "🚀",
+      "filename": "rocket_3d.png",
+      "path": "assets/Rocket/3D/rocket_3d.png"
+    },
+    {
+      "emoji": "🧭",
+      "filename": "compass_3d.png",
+      "path": "assets/Compass/3D/compass_3d.png"
+    },
+    {
+      "emoji": "🏝️",
+      "filename": "desert_island_3d.png",
+      "path": "assets/Desert island/3D/desert_island_3d.png"
+    },
+    {
+      "emoji": "🪐",
+      "filename": "ringed_planet_3d.png",
+      "path": "assets/Ringed planet/3D/ringed_planet_3d.png"
+    },
+    {
+      "emoji": "🌍",
+      "filename": "globe_showing_europe-africa_3d.png",
+      "path": "assets/Globe showing europe-africa/3D/globe_showing_europe-africa_3d.png"
+    },
+    {
+      "emoji": "🎒",
+      "filename": "backpack_3d.png",
+      "path": "assets/Backpack/3D/backpack_3d.png"
+    },
+    {
+      "emoji": "🌟",
+      "filename": "glowing_star_3d.png",
+      "path": "assets/Glowing star/3D/glowing_star_3d.png"
+    },
+    {
+      "emoji": "⭐",
+      "filename": "star_3d.png",
+      "path": "assets/Star/3D/star_3d.png"
+    },
+    {
+      "emoji": "🏆",
+      "filename": "trophy_3d.png",
+      "path": "assets/Trophy/3D/trophy_3d.png"
+    },
+    {
+      "emoji": "🎖️",
+      "filename": "military_medal_3d.png",
+      "path": "assets/Military medal/3D/military_medal_3d.png"
+    },
+    {
+      "emoji": "🎉",
+      "filename": "party_popper_3d.png",
+      "path": "assets/Party popper/3D/party_popper_3d.png"
+    },
+    {
+      "emoji": "🎯",
+      "filename": "bullseye_3d.png",
+      "path": "assets/Bullseye/3D/bullseye_3d.png"
+    },
+    {
+      "emoji": "🌱",
+      "filename": "seedling_3d.png",
+      "path": "assets/Seedling/3D/seedling_3d.png"
+    },
+    {
+      "emoji": "🔥",
+      "filename": "fire_3d.png",
+      "path": "assets/Fire/3D/fire_3d.png"
+    },
+    {
+      "emoji": "💯",
+      "filename": "hundred_points_3d.png",
+      "path": "assets/Hundred points/3D/hundred_points_3d.png"
+    },
+    {
+      "emoji": "🎁",
+      "filename": "wrapped_gift_3d.png",
+      "path": "assets/Wrapped gift/3D/wrapped_gift_3d.png"
+    },
+    {
+      "emoji": "📚",
+      "filename": "books_3d.png",
+      "path": "assets/Books/3D/books_3d.png"
+    },
+    {
+      "emoji": "👂",
+      "filename": "ear_3d_default.png",
+      "path": "assets/Ear/Default/3D/ear_3d_default.png"
+    },
+    {
+      "emoji": "🔤",
+      "filename": "input_latin_letters_3d.png",
+      "path": "assets/Input latin letters/3D/input_latin_letters_3d.png"
+    }
+  ]
+}

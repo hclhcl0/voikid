@@ -34,7 +34,7 @@ export function IpaWordDecoderModal({ word, onClose }: Props) {
     setActiveTokenId(token.id);
     if (token.sound) {
       // Phát âm âm thanh của phoneme
-      speak(token.sound.speech_cue, 'en-US', 0.5);
+      speak(token.sound.sample_word, 'en-US', 0.7);
     }
   };
 
@@ -239,10 +239,10 @@ export function IpaWordDecoderModal({ word, onClose }: Props) {
                         {/* Button play audio sound */}
                         <button
                           type="button"
-                          onClick={() => speak(activeToken.sound!.speech_cue, 'en-US', 0.45)}
+                          onClick={() => speak(activeToken.sound!.sample_word, 'en-US', 0.7)}
                           className="px-3 py-1.5 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-700 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
                         >
-                          <span>🔊</span> Nghe âm
+                          <span>🔊</span> Nghe âm trong từ
                         </button>
                       </div>
 
@@ -286,7 +286,7 @@ export function IpaWordDecoderModal({ word, onClose }: Props) {
                   className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                   onClick={onClose}
                 >
-                  <span>📖</span> Mở Bảng 44 Âm IPA Chuẩn Quốc Tế Cho Bé
+                  <span>📖</span> Mở bài luyện âm và bảng IPA
                 </Link>
               </div>
             </div>

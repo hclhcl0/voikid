@@ -1,34 +1,33 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { getCategoryById } from '@/lib/vocabulary';
+import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useTTS } from '@/hooks/useTTS';
 import { useProgress } from '@/hooks/useProgress';
 import { useSettings } from '@/hooks/useSettings';
-import { useKidsPhonics } from '@/hooks/useKidsPhonics';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
 import { useEnrichedWord } from '@/hooks/useEnrichedWord';
-import { KidsPhonicsDisplay, KidsPhonicsLoading } from '@/components/KidsPhonicsDisplay';
-import { ChildBadge } from '@/components/ChildBadge';
-import { WordImage } from '@/components/WordImage';
+import { WordLearningNavigation } from '@/components/learning/WordLearningNavigation';
+import { WordStudyCard } from '@/components/learning/WordStudyCard';
+import { WordCardSlider } from '@/components/learning/WordCardSlider';
 import { PronunciationResult, Word } from '@/types';
 
 // ── Mic button with wave animation ────────────────────────────────────────
 function MicButton({ status, onClick }: { status: string; onClick: () => void }) {
   const isRecording = status === 'recording';
   const isProcessing = status === 'processing';
+  const isRequesting = status === 'requesting';
 
   return (
     <div className="flex flex-col items-center gap-3">
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={onClick}
-        disabled={isProcessing}
+        disabled={isProcessing || isRequesting}
         className={`relative w-28 h-28 rounded-full flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition-all font-bold ${
           isRecording
             ? 'bg-gradient-to-br from-rose-500 to-red-600 animate-record-pulse'
@@ -41,7 +40,7 @@ function MicButton({ status, onClick }: { status: string; onClick: () => void })
           {isProcessing ? '⏳' : isRecording ? '⏹️' : '🎙️'}
         </span>
         <span className="text-xs">
-          {isProcessing ? 'Đang chấm...' : isRecording ? 'Dừng lại' : 'Nhấn để nói'}
+          {isRequesting ? 'Đang mở mic...' : isProcessing ? 'Đang chấm...' : isRecording ? 'Dừng lại' : 'Nhấn để nói'}
         </span>
       </motion.button>
 
@@ -142,7 +141,7 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
       <div className="bg-white/90 backdrop-blur rounded-2xl px-3.5 py-2 mb-3.5 border border-amber-200/80 shadow-xs flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className="text-base">🎯</span>
-          <span className="text-xs font-bold text-gray-700">Mục tiêu tốt nghiệp:</span>
+          <span className="text-xs font-bold text-gray-700">Lượt đọc rõ liên tiếp:</span>
         </div>
         <div>
           <span className={`text-xs font-black px-2.5 py-1 rounded-full ${
@@ -153,10 +152,10 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
               : 'bg-gray-100 text-gray-500'
           }`}>
             {consecutivePasses >= 2
-              ? '⭐⭐ Đạt 2/2 lần (Tốt nghiệp 🎉)'
+              ? '⭐⭐ Đã đọc rõ 2 lượt'
               : consecutivePasses === 1
-              ? '⭐ Đúng 1/2 (Đọc chuẩn thêm 1 lần)'
-              : '⚪ 0/2 lần đúng'}
+              ? '⭐ Đã đọc rõ 1 lượt'
+              : 'Chưa có lượt đọc rõ'}
           </span>
         </div>
       </div>
@@ -265,89 +264,25 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
   );
 }
 
-// ── Word card with KidsPhonics & mouth tip ─────────────────────────────────
-function SpeakWordCard({
-  word,
-  isSpeaking,
-  onSpeak,
-  onSpeakSlow,
-}: {
-  word: Word;
-  isSpeaking: boolean;
-  onSpeak: () => void;
-  onSpeakSlow: () => void;
-}) {
-  const { phonics, loading: phonicsLoading } = useKidsPhonics(word.en, word.phonetic, word.kids_phonics);
-
-  return (
-    <motion.div
-      key={word.id}
-      initial={{ opacity: 0, x: 40 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -40 }}
-      className="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-2 border-rose-100 text-center"
-    >
-      <p className="text-xs md:text-sm font-bold text-rose-400 mb-2">
-        🎤 Hãy đọc to từ này bằng tiếng Anh!
-      </p>
-      <div className="flex items-center justify-center min-h-[110px] md:min-h-[140px] mb-2">
-        <WordImage word={word} size="2xl" showSkeleton />
-      </div>
-      <p
-        className="font-bold text-4xl md:text-5xl text-rose-600 tracking-normal"
-        style={{ fontFamily: 'var(--font-andika), "Andika", sans-serif' }}
-      >
-        {word.en}
-      </p>
-
-      {/* ── Kids Phonics & Mouth tip ── */}
-      <div className="my-2 min-h-[48px] flex items-center justify-center">
-        {phonicsLoading ? (
-          <KidsPhonicsLoading />
-        ) : phonics ? (
-          <KidsPhonicsDisplay phonics={phonics} />
-        ) : (
-          <p className="text-gray-400 italic text-base">{word.phonetic}</p>
-        )}
-      </div>
-
-      <p className="text-gray-600 font-bold text-sm mt-1">{word.vi}</p>
-
-      {/* Listen model pronunciation: Normal & Slow */}
-      <div className="mt-3 flex items-center justify-center gap-2">
-        <button
-          onClick={onSpeak}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black transition-all bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 shadow-xs"
-        >
-          <span>🔊</span> Nghe chuẩn
-        </button>
-        <button
-          onClick={onSpeakSlow}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-black transition-all bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 shadow-xs"
-        >
-          <span>🐢</span> Đọc chậm (0.35x)
-        </button>
-      </div>
-    </motion.div>
-  );
-}
 
 // ── Main Speak Page ────────────────────────────────────────────────────────
 export default function SpeakPage() {
+  const { categories: serverCategories } = useVocabularyCatalog();
   const params   = useParams<{ catId: string }>();
   const router   = useRouter();
   const [mounted, setMounted] = useState(false);
-  const { categories: customCats, updateWord, graduateWord } = useCustomCategories();
+  const { categories: customCats, updateWord } = useCustomCategories();
 
   const cat = useMemo(() => {
     if (params.catId?.startsWith('custom_')) {
-      return customCats.find((c) => c.id === params.catId) || getCategoryById(params.catId);
+      return customCats.find((c) => c.id === params.catId) || serverCategories.find(c => c.id === params.catId);
     }
-    return getCategoryById(params.catId);
-  }, [params.catId, customCats, mounted]);
+    return serverCategories.find(c => c.id === params.catId);
+  }, [params.catId, customCats, mounted, serverCategories]);
 
-  const { speak, isSpeaking } = useTTS();
+  const { speak, isSpeaking, audioSource } = useTTS();
   const recorder = useAudioRecorder();
+  const submittedRecording = useRef<{ blob: Blob | null; attemptId: string }>({ blob: null, attemptId: '' });
   const { recordAttempt, getWordProgress, findWordProgress } = useProgress();
   const { apiKey, hasKey, hydrated: settingsHydrated } = useSettings();
 
@@ -357,7 +292,6 @@ export default function SpeakPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [isPlayingInMicArea, setIsPlayingInMicArea] = useState(false);
-  const [graduated, setGraduated] = useState(false);
   const [consecutiveCount, setConsecutiveCount] = useState<number>(0);
   const micAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -429,11 +363,13 @@ export default function SpeakPage() {
     setApiError(null);
 
     try {
+      if (submittedRecording.current.blob !== recorder.audioBlob) submittedRecording.current = { blob: recorder.audioBlob, attemptId: crypto.randomUUID() };
       const mimeType = recorder.audioBlob?.type || 'audio/webm';
       const res = await fetch('/api/pronunciation', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          attemptId: submittedRecording.current.attemptId,
           audioBase64: recorder.audioBase64,
           mimeType,
           targetWord: word.en,
@@ -461,27 +397,20 @@ export default function SpeakPage() {
       const prevProg = (word?.id ? (getWordProgress(cat.id, word.id) || findWordProgress(word.id)) : null);
       const prevPasses = prevProg?.consecutivePasses ?? 0;
 
-      recordAttempt(cat.id, word.id, data.score, data.status);
+      recordAttempt(cat.id, word.id, data.score, data.status, data.attemptId);
 
       if (data.passed) {
-        const nextPasses = prevPasses + 1;
+        const nextPasses = prevProg?.lastPronunciationAttemptId === data.attemptId ? prevPasses : prevPasses + 1;
         setConsecutiveCount(nextPasses);
 
         if (nextPasses >= 2) {
-          // 🎉 Tốt nghiệp: Đọc đúng 2 lần liên tiếp!
+          // Động viên bé; lượt đọc rõ không xác nhận thành thạo.
           confetti({ particleCount: 130, spread: 80, origin: { y: 0.6 } });
-          const isInNewWords = customCats.some(
-            (c) => c.id === 'custom_new_words' && c.words.some((w) => w.id === word.id)
-          );
-          if (cat.id === 'custom_new_words' || isInNewWords) {
-            setGraduated(true);
-            setTimeout(() => graduateWord(word.id), 1200);
-          }
         } else {
-          // Đúng lần 1 (1/2) -> Bắn pháo hoa nhỏ động viên, chưa tốt nghiệp
+          // Động viên lần đọc rõ đầu tiên.
           confetti({ particleCount: 50, spread: 55, origin: { y: 0.6 } });
         }
-      } else {
+      } else if (data.status === 'practice') {
         // Đọc sai -> Chuỗi đúng liên tiếp reset về 0 (tránh học vẹt/ăn may)
         setConsecutiveCount(0);
       }
@@ -507,7 +436,6 @@ export default function SpeakPage() {
       recorder.resetRecorder();
       setResult(null);
       setRecordedBlob(null);
-      setGraduated(false);
       recorder.startRecording();
     }
   }, [recorder]);
@@ -518,7 +446,6 @@ export default function SpeakPage() {
       setIndex((i) => i + 1);
       setResult(null);
       setRecordedBlob(null);
-      setGraduated(false);
       recorder.resetRecorder();
       setTimeout(() => speak(cat.words[index + 1].en), 200);
     }
@@ -527,7 +454,6 @@ export default function SpeakPage() {
   const goRetry = useCallback(() => {
     setResult(null);
     setRecordedBlob(null);
-    setGraduated(false);
     recorder.resetRecorder();
   }, [recorder]);
 
@@ -544,7 +470,6 @@ export default function SpeakPage() {
           setIndex((i) => Math.max(0, i - 1));
           setResult(null);
           setRecordedBlob(null);
-          setGraduated(false);
           recorder.resetRecorder();
         }
       } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
@@ -566,85 +491,31 @@ export default function SpeakPage() {
     );
   }
 
-  const pct = ((index + 1) / total) * 100;
   const micStatus = loading ? 'processing' : recorder.status;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-fuchsia-50">
+    <div className="min-h-screen bg-slate-50">
 
-      {/* Top bar */}
-      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-rose-100 px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center font-bold text-rose-600 hover:bg-rose-100 transition-colors cursor-pointer"
-            title="Quay lại"
-            aria-label="Quay lại"
-          >←</button>
+      <WordLearningNavigation categoryId={cat.id} emoji={cat.emoji} index={index} total={total} mode="speak" />
 
-          <Link
-            href="/"
-            className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs"
-            title="Về trang chủ"
-            aria-label="Về trang chủ"
-          >🏠</Link>
-
-          <div className="flex-1 min-w-0">
-            <div className="h-3 bg-rose-100 rounded-full overflow-hidden">
-              <motion.div animate={{ width: `${pct}%` }} className="h-full rounded-full bg-gradient-to-r from-rose-400 to-pink-500" />
-            </div>
-            <p className="text-xs text-gray-400 font-bold mt-1 text-right">{index + 1} / {total}</p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <ChildBadge variant="compact" />
-            <div className="text-2xl">{cat.emoji}</div>
-          </div>
-        </div>
-      </header>
-
-      {/* Mode tabs */}
-      <div className="px-4 pt-4 flex gap-2 max-w-xl md:max-w-2xl lg:max-w-5xl mx-auto">
-        <Link
-          href="/"
-          className="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-500 hover:text-orange-600 hover:bg-orange-50 border border-gray-100 transition-all flex items-center justify-center gap-1 shrink-0 shadow-xs"
-          title="Về trang chủ"
-        >
-          <span>🏠</span>
-          <span>Home</span>
-        </Link>
-        {[
-          { label: '📖 Học',    href: `/learn/${cat.id}`,  active: false },
-          { label: '🧩 Đố vui', href: `/quiz/${cat.id}`,   active: false },
-          { label: '🎤 Nói',   href: `/speak/${cat.id}`,  active: true  },
-        ].map((tab) => (
-          <button
-            key={tab.label}
-            onClick={() => !tab.active && router.push(tab.href)}
-            className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-              tab.active
-                ? 'bg-rose-500 text-white shadow-lg shadow-rose-200'
-                : 'bg-white text-gray-500 hover:bg-rose-50 border border-gray-100'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="px-4 pt-4 pb-24 max-w-xl md:max-w-3xl lg:max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="px-4 pt-4 pb-24 max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 gap-4 items-start">
 
           {/* Left Column: Word display */}
-          <div className="lg:col-span-6 space-y-4">
+          <div className="space-y-4">
+            <WordCardSlider previousDisabled={index===0||recorder.status==='recording'||loading} nextDisabled={index===total-1||recorder.status==='recording'||loading} onPrevious={()=>{setIndex(Math.max(0,index-1));setResult(null);setRecordedBlob(null);recorder.resetRecorder();}} onNext={goNext}>
             <AnimatePresence mode="wait">
-              <SpeakWordCard
+              <WordStudyCard
                 key={word.id}
                 word={word}
-                isSpeaking={isSpeaking}
-                onSpeak={() => speak(word.en, 'en-US', 0.85)}
-                onSpeakSlow={() => speak(word.en, 'en-US', 0.35)}
+                audioSource={audioSource}
+                prevStars={getWordProgress(cat.id,word.id)?.stars??0}
+                speakingMode={isSpeaking?'normal':null}
+                onListenNormal={() => speak(word.en, 'en-US', 0.85)}
+                onListenSlow={() => speak(word.en, 'en-US', 0.35)}
               />
             </AnimatePresence>
+            </WordCardSlider>
 
             {/* Desktop keyboard helper */}
             <div className="hidden lg:flex items-center justify-center gap-3 text-xs font-semibold text-gray-400 bg-white/70 backdrop-blur py-2.5 px-4 rounded-2xl border border-rose-100 shadow-2xs">
@@ -655,12 +526,20 @@ export default function SpeakPage() {
           </div>
 
           {/* Right Column: Mic, feedback & controls */}
-          <div className="lg:col-span-6 space-y-4">
+          <div className="space-y-4">
 
             {/* Mic area */}
             {!result && (
-              <div className="bg-white rounded-3xl p-6 shadow-xl border-2 border-rose-100 flex flex-col items-center gap-4">
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col items-center gap-4">
                 <MicButton status={micStatus} onClick={handleMicClick} />
+                {recorder.status === 'recording' && (
+                  <div className="w-48 text-center">
+                    <div role="meter" aria-label="Mức âm thanh micro" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(recorder.inputLevel * 100)} className="h-2 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-full rounded-full bg-orange-500 transition-all" style={{ width: `${Math.round(recorder.inputLevel * 100)}%` }} />
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">Con đọc rõ vào micro nhé</p>
+                  </div>
+                )}
 
                 {/* Quick listen button if child just recorded & mic is idle */}
                 {(recordedBlob || recorder.audioBlob) && !loading && (
@@ -696,7 +575,7 @@ export default function SpeakPage() {
                 )}
 
                 {/* No key warning banner */}
-                {settingsHydrated && !hasKey && !apiError && (
+                {settingsHydrated && !hasKey && !recorder.hasServerKey && !apiError && (
                   <button
                     onClick={() => router.push('/settings')}
                     className="w-full bg-violet-50 border border-violet-200 rounded-2xl p-3 text-xs font-bold text-violet-600 text-center hover:bg-violet-100 transition-colors cursor-pointer"
@@ -710,27 +589,6 @@ export default function SpeakPage() {
                 </p>
               </div>
             )}
-
-            {/* 🌟 Tốt nghiệp banner – khi bé đọc đúng 2 lần liên tiếp */}
-            <AnimatePresence>
-              {graduated && (
-                <motion.div
-                  key="graduated"
-                  initial={{ opacity: 0, y: -20, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="bg-gradient-to-br from-amber-100 via-yellow-50 to-orange-100 border-2 border-amber-300 rounded-3xl p-5 text-center shadow-lg"
-                >
-                  <div className="text-4xl mb-2 animate-bounce">🌟</div>
-                  <p className="text-amber-800 font-black text-lg leading-tight">Đọc chuẩn 2 lần liên tiếp! 🎉</p>
-                  <p className="text-amber-600 text-sm font-semibold mt-1">
-                    Từ <span className="font-black text-amber-800">&ldquo;{word.en}&rdquo;</span> đã{' '}
-                    <span className="text-green-700 font-black">chính thức tốt nghiệp</span> khỏi danh sách Từ mới!
-                  </p>
-                  <p className="text-amber-500 text-xs mt-2">✨ Đã chuyển vào lịch ôn tập ngắt quãng của bé!</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* Score card */}
             <AnimatePresence>
@@ -747,25 +605,6 @@ export default function SpeakPage() {
               )}
             </AnimatePresence>
 
-            {/* Navigation */}
-            {!result && (
-              <div className="flex gap-3">
-                <button
-                  onClick={() => { setIndex(Math.max(0, index-1)); setResult(null); recorder.resetRecorder(); }}
-                  disabled={index === 0}
-                  className="flex-1 py-3.5 rounded-2xl font-bold border-2 border-gray-200 text-gray-500 disabled:opacity-30 bg-white hover:border-rose-300 transition-colors cursor-pointer min-h-[46px]"
-                >
-                  ◀ Trước
-                </button>
-                <button
-                  onClick={goNext}
-                  disabled={index === total - 1}
-                  className="flex-1 py-3.5 rounded-2xl font-bold bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg disabled:opacity-40 transition-all cursor-pointer min-h-[46px]"
-                >
-                  Bỏ qua ▶
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -8,13 +8,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { GRADE_LEVELS, GRADE_METAS, CATEGORIES } from '@/lib/vocabulary';
+import { GRADE_LEVELS, GRADE_METAS } from '@/lib/vocabulary';
 import { useProfileContext } from '@/context/ProfileContext';
+import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useCustomCategories, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
 import { ChildBadge } from '@/components/ChildBadge';
 import { EXERCISE_METAS } from '@/components/exercises';
 
 export default function TestHubPage() {
+  const { categories: serverCategories } = useVocabularyCatalog();
   const { activeProfile } = useProfileContext();
   const { categories: customCats } = useCustomCategories();
   const [selectedGrade, setSelectedGrade] = useState<string>(
@@ -23,7 +25,7 @@ export default function TestHubPage() {
   const [filterStation, setFilterStation] = useState<string>('all');
 
   const newWordsCat = customCats.find((c) => c.id === NEW_WORDS_CAT_ID && c.words.length > 0);
-  const builtinInGrade = CATEGORIES.filter((c: any) => (c.gradeId || c.grade) === selectedGrade);
+  const builtinInGrade = serverCategories.filter((c: any) => (c.gradeId || c.grade) === selectedGrade);
   const customForGrade = customCats.filter(
     (c: any) => c.id !== NEW_WORDS_CAT_ID && (!c.gradeId || c.gradeId === selectedGrade)
   );

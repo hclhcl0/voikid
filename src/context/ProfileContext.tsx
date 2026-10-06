@@ -1,7 +1,16 @@
 'use client';
 
+import { useAuth } from '@/context/AuthContext';
 import React, { createContext, useContext, useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { AppProgress, UserProfile, WordProgress, DailyStats, UnitTestResult, Sticker } from '@/types';
+import type { LearningSession } from '@/lib/learning/types';
+import type { StorySession } from '@/lib/stories/types';
+import { validStorySession } from '@/lib/stories/learning';
+import { deleteStory } from '@/lib/stories/library';
+import { mergeIpaPractice, validIpaRecord, type IpaPracticeRecord } from '@/lib/ipa/practice';
+import { useBackendSession } from '@/hooks/useBackendSession';
+import { applyLearningSession } from '@/lib/learning/progress';
+import { applyStickerRewards, isDueIpaReview } from '@/lib/stickers';
 
 export const PROFILES_STORAGE_KEY = 'vocakids_profiles_v1';
 export const ACTIVE_PROFILE_STORAGE_KEY = 'vocakids_active_profile_id';
@@ -61,6 +70,26 @@ export const defaultProgress = (): AppProgress => ({
   totalPoints: 0,
 });
 
+// Preserve legacy fields while recovering safely from malformed stored data.
+export function readProgress(raw: string): AppProgress {
+  try {
+    const value = JSON.parse(raw);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return defaultProgress();
+    const next = { ...defaultProgress(), ...value } as AppProgress;
+    for (const key of ['totalStars', 'streak', 'totalPoints'] as const) {
+      if (typeof next[key] !== 'number' || !Number.isFinite(next[key])) next[key] = 0;
+    }
+    next.wordProgress = next.wordProgress && typeof next.wordProgress === 'object' && !Array.isArray(next.wordProgress) ? Object.fromEntries(Object.entries(next.wordProgress).filter(([, word]) => word && typeof word === 'object' && typeof word.wordId === 'string')) : {};
+    next.dailyStats = Array.isArray(next.dailyStats) ? next.dailyStats.filter(s => s && typeof s.date === 'string') : [];
+    next.stickers = Array.isArray(next.stickers) ? next.stickers.filter(Boolean) : [];
+    next.badges = Array.isArray(next.badges) ? next.badges.filter(Boolean) : [];
+    next.unlockedUnits = Array.isArray(next.unlockedUnits) ? next.unlockedUnits.filter(id => typeof id === 'string') : [];
+    next.unitTestResults = next.unitTestResults && typeof next.unitTestResults === 'object' ? next.unitTestResults : {};
+    next.learningRewardKeys = Array.isArray(next.learningRewardKeys) ? next.learningRewardKeys.filter(id => typeof id === 'string') : [];
+    return next;
+  } catch { return defaultProgress(); }
+}
+
 function generateCleanCode(name: string): string {
   const clean = name
     .normalize('NFD')
@@ -75,6 +104,11 @@ function generateCleanCode(name: string): string {
 }
 
 interface ProfileContextType {
+  reconcileStickerRewards: () => void;
+  saveIpaPractice: (record: IpaPracticeRecord) => {success: boolean; message?: string};
+  deleteStorySession: (id:string) => {success:boolean;message?:string};
+  saveStorySession: (session: StorySession) => { success: boolean; message?: string };
+  saveLearningSession: (session: LearningSession) => { success: boolean; message?: string };
   profiles: UserProfile[];
   activeProfile: UserProfile;
   activeProfileId: string;
@@ -100,7 +134,8 @@ interface ProfileContextType {
     catId: string,
     wordId: string,
     score: number | null,
-    status: 'pass' | 'practice' | 'retry' | 'service_error'
+    status: 'pass' | 'practice' | 'retry' | 'service_error',
+    attemptId?: string
   ) => void;
   getWordProgress: (catId: string, wordId: string) => WordProgress | null;
   findWordProgress: (wordId: string) => WordProgress | null;
@@ -118,23 +153,45 @@ interface ProfileContextType {
 const ProfileContext = createContext<ProfileContextType | null>(null);
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
+  const { account } = useAuth();
+  const previousAccount = useRef<string | null>(null);
   const [profiles, setProfiles] = useState<UserProfile[]>([DEFAULT_PROFILE]);
   const [activeProfileId, setActiveProfileIdState] = useState<string>('default');
   const [progress, setProgress] = useState<AppProgress>(defaultProgress());
   const [hydrated, setHydrated] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (!account?.role) {
+      if (previousAccount.current) { Promise.resolve().then(() => { setProfiles([DEFAULT_PROFILE]); setActiveProfileIdState(DEFAULT_PROFILE.id); setProgress(defaultProgress()); }); }
+      previousAccount.current = null; return;
+    }
+    previousAccount.current = account.id;
+    const controller = new AbortController();
+    fetch('/api/family', { signal: controller.signal, cache: 'no-store' }).then(r => r.json()).then(data => {
+      if (!data.success) return;
+      setProfiles(data.profiles);
+      for (const profile of data.profiles) localStorage.setItem(getProfileProgressKey(profile.id), JSON.stringify(data.progresses[profile.id]));
+      const first = data.profiles[0];
+      if (first) { setActiveProfileIdState(first.id); setProgress(data.progresses[first.id] ?? defaultProgress()); }
+    }).catch(() => {});
+    return () => controller.abort();
+  }, [account?.id, account?.role]);
+
   // Sync debounce timer ref
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeoutRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const backendSession=useBackendSession();
 
   // Helper to send progress to server
   const syncToServer = useCallback((pId: string, prog: AppProgress, pProfile?: UserProfile) => {
     if (typeof window === 'undefined') return;
-    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    const pending = syncTimeoutRef.current.get(pId);
+    if (pending) clearTimeout(pending);
 
-    syncTimeoutRef.current = setTimeout(async () => {
+    const timer = setTimeout(async () => {
+      syncTimeoutRef.current.delete(pId);
       try {
-        await fetch('/api/profiles', {
+        await fetch(backendSession.authenticated?'/api/admin/profiles':'/api/profiles', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -148,7 +205,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         console.warn('Background sync error (offline or unreachable):', e);
       }
     }, 1200);
-  }, []);
+    syncTimeoutRef.current.set(pId, timer);
+  }, [backendSession.authenticated]);
 
   // Load profiles & active profile & initial progress on mount + sync from server
   useEffect(() => {
@@ -183,7 +241,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       const progKey = getProfileProgressKey(activeId);
       const rawProg = localStorage.getItem(progKey);
       if (rawProg) {
-        setProgress(JSON.parse(rawProg) as AppProgress);
+        setProgress(readProgress(rawProg));
       } else {
         setProgress(defaultProgress());
       }
@@ -200,6 +258,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           const data = await res.json();
           if (data.success && Array.isArray(data.profiles) && data.profiles.length > 0) {
             setProfiles((prev) => {
+              if (data.exclusive) return data.profiles;
               // Merge server profiles with local profiles
               const map = new Map<string, UserProfile>();
               for (const p of data.profiles) {
@@ -243,6 +302,43 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [activeProfileId, activeProfile, syncToServer]);
 
   // Switch active profile
+  const saveIpaPractice = useCallback((record: IpaPracticeRecord) => {
+    if (!hydrated || !validIpaRecord(record, activeProfileId)) return {success:false, message:'Hồ sơ đã thay đổi. Mở lại bài luyện.'};
+    const next=applyStickerRewards({...progress,ipaPractice:mergeIpaPractice(progress.ipaPractice,{[record.sound]:record},activeProfileId)},activeProfileId,record.updatedAt,isDueIpaReview(progress.ipaPractice?.[record.sound],record,activeProfileId));
+    try {
+      localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));
+      setProgress(next);syncToServer(activeProfileId,next,activeProfile);
+      return {success:true};
+    } catch {return {success:false,message:'Chưa lưu được bài luyện. Hãy thử lại.'};}
+  },[hydrated,activeProfileId,activeProfile,progress,syncToServer]);
+
+  const saveLearningSession = useCallback((session: LearningSession): { success: boolean; message?: string } => {
+    if (session.profileId !== activeProfileId) return { success: false, message: 'Hồ sơ đã thay đổi. Vui lòng mở lại bài học.' };
+    const next = applyStickerRewards(applyLearningSession(progress, session), activeProfileId, session.updatedAt);
+    try {
+      localStorage.setItem(getProfileProgressKey(activeProfileId), JSON.stringify(next));
+      setProgress(next);
+      syncToServer(activeProfileId, next, activeProfile);
+      return { success: true };
+    } catch {
+      return { success: false, message: 'Không lưu được tiến trình trên thiết bị. Giữ màn hình này và thử lại sau khi giải phóng bộ nhớ.' };
+    }
+  }, [activeProfileId, activeProfile, progress, syncToServer]);
+  const saveStorySession = useCallback((session:StorySession):{success:boolean;message?:string}=>{
+    if(!validStorySession(session,activeProfileId)) return {success:false,message:'Hồ sơ hoặc bài đọc đã thay đổi. Mở lại bài học.'};
+    const next=applyStickerRewards({...progress,lastActiveDate:new Date().toISOString().slice(0,10),storySessions:{...progress.storySessions,[session.id]:session}},activeProfileId,session.updatedAt);
+    try {
+      localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));setProgress(next);syncToServer(activeProfileId,next,activeProfile);return {success:true};
+    } catch {return {success:false,message:'Chưa lưu được tiến độ bài đọc. Hãy thử lại.'};}
+  },[activeProfileId,activeProfile,progress,syncToServer]);
+  const deleteStorySession=useCallback((id:string):{success:boolean;message?:string}=>{
+    try {
+      const next=deleteStory(progress,id,activeProfileId);
+      localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));setProgress(next);syncToServer(activeProfileId,next,activeProfile);
+      return {success:true};
+    } catch(error) {return {success:false,message:error instanceof Error?error.message:'Chưa xóa được đoạn văn.'};}
+  },[activeProfileId,activeProfile,progress,syncToServer]);
+
   const setActiveProfileId = useCallback((id: string) => {
     if (!profiles.some((p) => p.id === id)) return;
     setActiveProfileIdState(id);
@@ -251,7 +347,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       const progKey = getProfileProgressKey(id);
       const rawProg = localStorage.getItem(progKey);
       if (rawProg) {
-        setProgress(JSON.parse(rawProg) as AppProgress);
+        setProgress(readProgress(rawProg));
       } else {
         const empty = defaultProgress();
         setProgress(empty);
@@ -403,7 +499,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       try {
         localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, newActive);
         const rawProg = localStorage.getItem(getProfileProgressKey(newActive));
-        setProgress(rawProg ? JSON.parse(rawProg) : defaultProgress());
+        setProgress(rawProg ? readProgress(rawProg) : defaultProgress());
       } catch {}
     }
 
@@ -436,7 +532,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   // Reset progress for a specific profile
   const resetProfileProgress = useCallback((id: string) => {
-    const empty = defaultProgress();
+    const empty = {...defaultProgress(),progressResetAt:new Date().toISOString()};
     try {
       localStorage.setItem(getProfileProgressKey(id), JSON.stringify(empty));
     } catch {}
@@ -491,7 +587,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   // Record a word attempt with Consecutive Pass & Spaced Repetition logic
   const recordAttempt = useCallback(
-    (catId: string, wordId: string, score: number | null, status: 'pass' | 'practice' | 'retry' | 'service_error') => {
+    (catId: string, wordId: string, score: number | null, status: 'pass' | 'practice' | 'retry' | 'service_error', attemptId?: string) => {
       if (status === 'retry' || status === 'service_error') {
         return;
       }
@@ -512,27 +608,20 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           mastered: false,
         };
 
+        if (attemptId && existing.lastPronunciationAttemptId === attemptId) return prev;
         const prevPasses = existing.consecutivePasses ?? 0;
         let consecutivePasses = prevPasses;
         let mastered = existing.mastered ?? false;
-        let masteredAt = existing.masteredAt;
+        const masteredAt = existing.masteredAt;
         let intervalDays = existing.intervalDays ?? 1;
         let reviewDueDate = existing.reviewDueDate;
 
         if (status === 'pass') {
           consecutivePasses = prevPasses + 1;
-          // Cơ chế tốt nghiệp: Đọc đúng 2 lần liên tiếp
-          if (consecutivePasses >= 2) {
-            if (!mastered) {
-              mastered = true;
-              masteredAt = today;
-              intervalDays = 1;
-              reviewDueDate = addDays(today, 1); // Hẹn ôn lại vào ngày mai (Chu kỳ 1)
-            } else {
-              // Ôn tập thành công định kỳ: tăng chu kỳ (1 -> 3 -> 7 -> 14 -> 30 ngày)
-              intervalDays = getNextReviewInterval(intervalDays);
-              reviewDueDate = addDays(today, intervalDays);
-            }
+          // Chỉ duy trì lịch ôn cho từ đã thành thạo; AI không tự xác nhận thành thạo.
+          if (consecutivePasses >= 2 && mastered) {
+            intervalDays = getNextReviewInterval(intervalDays);
+            reviewDueDate = addDays(today, intervalDays);
           }
         } else if (status === 'practice') {
           // Bé đọc chưa đạt / phát âm sai:
@@ -546,6 +635,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         }
 
         const updated: WordProgress = {
+          lastPronunciationAttemptId: attemptId,
           ...existing,
           stars:          Math.max(existing.stars, stars),
           attempts:       existing.attempts + 1,
@@ -571,12 +661,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           dailyStats.push({ date: today, wordsStudied: 1, totalStars: stars, streak: prev.streak });
         }
 
-        const next: AppProgress = updateStreak({
+        const next: AppProgress = applyStickerRewards(updateStreak({
           ...prev,
           totalStars:   prev.totalStars + (stars - existing.stars),
           wordProgress: { ...prev.wordProgress, [key]: updated },
           dailyStats,
-        });
+        }),activeProfileId);
 
         try {
           const progKey = getProfileProgressKey(activeProfileId);
@@ -659,7 +749,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [progress.wordProgress]);
 
   const resetAll = useCallback(() => {
-    const next = defaultProgress();
+    const next = {...defaultProgress(),progressResetAt:new Date().toISOString()};
     saveProgress(next);
   }, [saveProgress]);
 
@@ -669,7 +759,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     return progress.dailyStats.find((d) => d.date === today) ?? null;
   }, [progress.dailyStats]);
 
-  const openProfileModal = useCallback(() => setIsProfileModalOpen(true), []);
+  const openProfileModal = useCallback(() => { if (account?.role !== 'student') setIsProfileModalOpen(true); }, [account?.role]);
   const closeProfileModal = useCallback(() => setIsProfileModalOpen(false), []);
 
   // Record a Unit Test result + auto-award sticker
@@ -684,12 +774,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       const pointsMap: Record<string, number> = { excellent: 50, good: 20, pass: 10, fail: 0 };
       const bonusPoints = pointsMap[result.grade] ?? 0;
 
-      const next: AppProgress = {
+      const next: AppProgress = applyStickerRewards({
         ...prev,
         unitTestResults: { ...(prev.unitTestResults ?? {}), [result.unitId]: saved },
         totalPoints: (prev.totalPoints ?? 0) + bonusPoints,
         // Auto-award sticker on pass/good/excellent (handled by caller)
-      };
+      },activeProfileId,completedAt);
 
       const progKey = getProfileProgressKey(activeProfileId);
       try { localStorage.setItem(progKey, JSON.stringify(next)); } catch {}
@@ -699,6 +789,17 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [activeProfileId, activeProfile, syncToServer]);
 
   // Award a sticker (deduplication by id)
+  const reconcileStickerRewards = useCallback(() => {
+    if (!hydrated) return;
+    setProgress(prev => {
+      const next = applyStickerRewards(prev,activeProfileId);
+      if (next === prev) return prev;
+      try {localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));} catch {}
+      syncToServer(activeProfileId,next,activeProfile);
+      return next;
+    });
+  },[hydrated,activeProfileId,activeProfile,syncToServer]);
+
   const awardSticker = useCallback((stickerData: Omit<Sticker, 'earnedAt'>) => {
     setProgress((prev) => {
       const existing = (prev.stickers ?? []);
@@ -752,7 +853,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       todayStats,
       recordUnitTest,
       awardSticker,
+      reconcileStickerRewards,
       adminUnlockUnit,
+      saveLearningSession,
+      saveIpaPractice,
+      saveStorySession,
+      deleteStorySession,
     }),
     [
       profiles,
@@ -780,7 +886,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       todayStats,
       recordUnitTest,
       awardSticker,
+      reconcileStickerRewards,
       adminUnlockUnit,
+      saveLearningSession,
+      saveIpaPractice,
+      saveStorySession,
+      deleteStorySession,
     ]
   );
 
@@ -816,7 +927,12 @@ export function useProfileContext() {
       todayStats: null,
       recordUnitTest: () => {},
       awardSticker: () => {},
+      reconcileStickerRewards: () => {},
       adminUnlockUnit: () => {},
+      saveLearningSession: () => ({ success: false, message: 'Hồ sơ chưa sẵn sàng.' }),
+      saveIpaPractice: () => ({success:false,message:'Hồ sơ chưa sẵn sàng.'}),
+      saveStorySession: () => ({ success: false, message: 'Hồ sơ chưa sẵn sàng.' }),
+      deleteStorySession: () => ({ success: false, message: 'Hồ sơ chưa sẵn sàng.' }),
     };
   }
   return ctx;

@@ -69,6 +69,7 @@ export interface PronunciationResult {
 }
 
 export interface WordProgress {
+  lastPronunciationAttemptId?: string;
   wordId: string;
   catId: string;
   stars: number;           // 0–3
@@ -118,6 +119,8 @@ export interface Badge {
 export type UnitTestGrade = 'excellent' | 'good' | 'pass' | 'fail';
 
 export interface UnitTestResult {
+  correctAnswers?: number;
+  questionCount?: number;
   unitId: string;
   score: number;           // 0–130
   grade: UnitTestGrade;
@@ -128,6 +131,13 @@ export interface UnitTestResult {
 }
 
 export interface AppProgress {
+  progressResetAt?: string;
+  stickerStudyDays?: string[];
+  ipaPractice?: Record<string, import('@/lib/ipa/practice').IpaPracticeRecord>;
+  storySessions?: Record<string, import('@/lib/stories/types').StorySession>;
+  deletedStories?: Record<string,string>;
+  learningSessions?: Record<string, import('@/lib/learning/types').LearningSession>;
+  learningRewardKeys?: string[];
   totalStars: number;
   streak: number;
   lastActiveDate: string;

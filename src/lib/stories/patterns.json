@@ -1,0 +1,801 @@
+{
+  "source": "tong-hop-sgk-tieng-anh-lop-1-den-5-v2.txt",
+  "version": 1,
+  "units": [
+    {
+      "grade": 1,
+      "number": 1,
+      "topic": "In the school playground",
+      "patterns": [
+        "Hi, I'm Bill. / Bye, Bill."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 2,
+      "topic": "In the dining room",
+      "patterns": [
+        "I have a car."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 3,
+      "topic": "At the street market",
+      "patterns": [
+        "This is my bag."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 4,
+      "topic": "In the bedroom",
+      "patterns": [
+        "This is a dog."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 5,
+      "topic": "At the fish and chip shop",
+      "patterns": [
+        "I like milk."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 6,
+      "topic": "In the classroom",
+      "patterns": [
+        "It's a red pen."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 7,
+      "topic": "In the garden",
+      "patterns": [
+        "There's a garden."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 8,
+      "topic": "In the park",
+      "patterns": [
+        "Touch your hair."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 9,
+      "topic": "In the shop",
+      "patterns": [
+        "How many clocks? – Two."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 10,
+      "topic": "At the zoo",
+      "patterns": [
+        "That's a monkey."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 11,
+      "topic": "At the bus stop",
+      "patterns": [
+        "She's running. / He's running."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 12,
+      "topic": "At the lake",
+      "patterns": [
+        "Look at the lemons."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 13,
+      "topic": "In the school canteen",
+      "patterns": [
+        "She's having noodles."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 14,
+      "topic": "In the toy shop",
+      "patterns": [
+        "I can see a tiger."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 15,
+      "topic": "At the football match",
+      "patterns": [
+        "Point to your hand."
+      ]
+    },
+    {
+      "grade": 1,
+      "number": 16,
+      "topic": "At home",
+      "patterns": [
+        "How many windows can you see? – I can see six."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 1,
+      "topic": "At my birthday party",
+      "patterns": [
+        "The popcorn is yummy."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 2,
+      "topic": "In the backyard",
+      "patterns": [
+        "Is she flying a kite? – Yes, she is. / No, she isn't."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 3,
+      "topic": "At the seaside",
+      "patterns": [
+        "Let's look at the sea!"
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 4,
+      "topic": "In the countryside",
+      "patterns": [
+        "What can you see? – I can see a rainbow."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 5,
+      "topic": "In the classroom",
+      "patterns": [
+        "What's he doing? – He's doing a quiz."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 6,
+      "topic": "On the farm",
+      "patterns": [
+        "Is there a fox? – Yes, there is. / No, there isn't."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 7,
+      "topic": "In the kitchen",
+      "patterns": [
+        "Pass me the jam, please. – Here you are."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 8,
+      "topic": "In the village",
+      "patterns": [
+        "Can you draw a van? – Yes, I can. / No, I can't."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 9,
+      "topic": "In the grocery store",
+      "patterns": [
+        "What do you want? – I want some yams."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 10,
+      "topic": "At the zoo",
+      "patterns": [
+        "Do you like the zoo? – Yes, I do. / No, I don't."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 11,
+      "topic": "In the playground",
+      "patterns": [
+        "They're driving cars."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 12,
+      "topic": "At the café",
+      "patterns": [
+        "The cake is on the table. / The grapes are on the table."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 13,
+      "topic": "In the maths class",
+      "patterns": [
+        "What number is it? – It's eleven."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 14,
+      "topic": "At home",
+      "patterns": [
+        "How old is your brother? – He's nineteen."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 15,
+      "topic": "In the clothes shop",
+      "patterns": [
+        "Where are the shoes? – Over there."
+      ]
+    },
+    {
+      "grade": 2,
+      "number": 16,
+      "topic": "At the campsite",
+      "patterns": [
+        "Is the blanket near the tent? – No, it isn't. It's in the tent."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 1,
+      "topic": "Hello",
+      "patterns": [
+        "Hello / Hi, I'm...",
+        "How are you? – Fine, thank you.",
+        "Goodbye / Bye."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 2,
+      "topic": "Our names",
+      "patterns": [
+        "What's your name? – My name's...",
+        "How old are you? – I'm... years old."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 3,
+      "topic": "Our friends",
+      "patterns": [
+        "This is... / That's...",
+        "Is this/that...? – Yes, it is. / No, it isn't."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 4,
+      "topic": "Our bodies",
+      "patterns": [
+        "What's this? – It's an / a...",
+        "Touch / Open your...!"
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 5,
+      "topic": "My hobbies",
+      "patterns": [
+        "What's your hobby? – It's... / I like..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 6,
+      "topic": "Our school",
+      "patterns": [
+        "Is this our...? – Yes, it is. / No, it isn't.",
+        "Let's go to the... – OK, let's go."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 7,
+      "topic": "Classroom instructions",
+      "patterns": [
+        "..., please!",
+        "May I...? – Yes, you can. / No, you can't."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 8,
+      "topic": "My school things",
+      "patterns": [
+        "I have...",
+        "Do you have...? – Yes, I do. / No, I don't."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 9,
+      "topic": "Colours",
+      "patterns": [
+        "What colour is it? – It's...",
+        "What colour are they? – They're..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 10,
+      "topic": "Break time activities",
+      "patterns": [
+        "I... at break time.",
+        "What do you do at break time? – I..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 11,
+      "topic": "My family",
+      "patterns": [
+        "Who's this/that? – It's my...",
+        "How old is he/she? – He's/She's..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 12,
+      "topic": "Jobs",
+      "patterns": [
+        "What's his/her job? – He's/She's a...",
+        "Is he/she a...? – Yes, he/she is. / No, he/she isn't."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 13,
+      "topic": "My house",
+      "patterns": [
+        "Where's the...? – It's here/there.",
+        "Where are the...? – They're..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 14,
+      "topic": "My bedroom",
+      "patterns": [
+        "There's / There are... in the room.",
+        "The... is/are..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 15,
+      "topic": "At the dining table",
+      "patterns": [
+        "Would you like some...? – Yes, please. / No, thanks.",
+        "What would you like to eat/drink? – I'd like some..., please."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 16,
+      "topic": "My pets",
+      "patterns": [
+        "Do you have any...? – Yes, I do. / No, I don't.",
+        "How many... do you have? – I have..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 17,
+      "topic": "Our toys",
+      "patterns": [
+        "He/She has...",
+        "They have..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 18,
+      "topic": "Playing and doing",
+      "patterns": [
+        "I'm...",
+        "What are you doing? – I'm...",
+        "What's he/she doing? – He's/She's..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 19,
+      "topic": "Outdoor activities",
+      "patterns": [
+        "What's he/she doing outdoors? – He's/She's..."
+      ]
+    },
+    {
+      "grade": 3,
+      "number": 20,
+      "topic": "At the zoo",
+      "patterns": [
+        "What can you see? – I can see...",
+        "What's the... doing? – It's..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 1,
+      "topic": "My friends",
+      "patterns": [
+        "Where are you from? – I'm from...",
+        "Where's he/she from? – He's/She's from..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 2,
+      "topic": "Time and daily routines",
+      "patterns": [
+        "What time is it? – It's...",
+        "What time do you...? – I... at..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 3,
+      "topic": "My week",
+      "patterns": [
+        "What day is it today? – It's...",
+        "What do you do on...? – I..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 4,
+      "topic": "My birthday party",
+      "patterns": [
+        "When's your birthday? – It's in...",
+        "What do you want to eat/drink? – I want..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 5,
+      "topic": "Things we can do",
+      "patterns": [
+        "Can you...? – Yes, I can. / No, I can't.",
+        "Can he/she...? – Yes, he/she can. / No, he/she can't."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 6,
+      "topic": "Our school facilities",
+      "patterns": [
+        "Where's your school? – It's in the...",
+        "How many... are there at your school? – There is / are..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 7,
+      "topic": "Our timetables",
+      "patterns": [
+        "What subjects do you have today? – I have...",
+        "When do you have...? – I have it on..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 8,
+      "topic": "My favourite subjects",
+      "patterns": [
+        "What's your favourite subject? – It's...",
+        "Why do you like...? – Because I want to be..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 9,
+      "topic": "Our sports day",
+      "patterns": [
+        "Is your sports day in...? – Yes, it is. / No, it isn't.",
+        "When's your sports day? – It's in..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 10,
+      "topic": "Our summer holidays",
+      "patterns": [
+        "Were you... last weekend? – Yes, I was. / No, I wasn't.",
+        "Where were you last summer? – I was in..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 11,
+      "topic": "My home",
+      "patterns": [
+        "Where do you live? – I live...",
+        "What's the... like? – It's..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 12,
+      "topic": "Jobs",
+      "patterns": [
+        "What does he/she do? – He's/She's a(n)...",
+        "Where does he/she work? – He/She works..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 13,
+      "topic": "Appearance",
+      "patterns": [
+        "What does he/she look like? – He's/She's... / He/She has..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 14,
+      "topic": "Daily activities",
+      "patterns": [
+        "When do you watch TV? – I watch TV...",
+        "What do you do in the morning? – I..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 15,
+      "topic": "My family's weekends",
+      "patterns": [
+        "Where does he/she go on Saturdays? – He/She goes to...",
+        "What does he/she do on Sundays? – He/She..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 16,
+      "topic": "Weather",
+      "patterns": [
+        "What was the weather like last weekend? – It was...",
+        "Do you want to go to the...? – Great! Let's go. / Sorry, I can't."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 17,
+      "topic": "In the city",
+      "patterns": [
+        "What does it say? – It says '...'.",
+        "How can I get to the...? – Go straight and..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 18,
+      "topic": "At the shopping centre",
+      "patterns": [
+        "Where's the bookshop? – It's...",
+        "How much is the...? – It's... dong."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 19,
+      "topic": "The animal world",
+      "patterns": [
+        "What are these animals? – They're...",
+        "Why do you like...? – Because they..."
+      ]
+    },
+    {
+      "grade": 4,
+      "number": 20,
+      "topic": "At summer camp",
+      "patterns": [
+        "What's he/she doing? – He's/She's...",
+        "What are they doing? – They're..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 1,
+      "topic": "All about me!",
+      "patterns": [
+        "Can you tell me about yourself? – I'm in... / I live in...",
+        "What's your favourite...? – It's..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 2,
+      "topic": "Our homes",
+      "patterns": [
+        "Do you live in this/that...? – Yes, I do. / No, I don't.",
+        "What's your address? – It's..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 3,
+      "topic": "My foreign friends",
+      "patterns": [
+        "What nationality is he/she? – He's/She's...",
+        "What's he/she like? – He's/She's..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 4,
+      "topic": "Our free-time activities",
+      "patterns": [
+        "What do you like doing in your free time? – I like...",
+        "What do you do at the weekend? – I..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 5,
+      "topic": "My future job",
+      "patterns": [
+        "What would you like to be in the future? – I'd like to be a...",
+        "Why would you like to be a...? – Because I'd like to..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 6,
+      "topic": "Our school rooms",
+      "patterns": [
+        "Where's the...? – It's on the...",
+        "Could you tell me the way to..., please?"
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 7,
+      "topic": "Our favourite school activities",
+      "patterns": [
+        "What school activity does he/she like? – He/She likes...",
+        "Why does he/she like...? – Because he/she thinks it's..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 8,
+      "topic": "In our classroom",
+      "patterns": [
+        "Where are the...? – They're...",
+        "Whose... is this? – It's..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 9,
+      "topic": "Our outdoor activities",
+      "patterns": [
+        "Were you at the... yesterday? – Yes, we were. / No, we weren't.",
+        "What did you do yesterday? – We..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 10,
+      "topic": "Our school trip",
+      "patterns": [
+        "Did they go to...? – Yes, they did. / No, they didn't.",
+        "What did they do there? – They..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 11,
+      "topic": "Family time",
+      "patterns": [
+        "Did you...? – Yes, I... / No, I...",
+        "What did your family do in...? – We..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 12,
+      "topic": "Our Tet holiday",
+      "patterns": [
+        "Will you... for Tet? – Yes, I will. / No, I won't. I'll...",
+        "Where will you go at Tet? – I'll go to..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 13,
+      "topic": "Our special days",
+      "patterns": [
+        "What will you do...? – We'll...",
+        "What food/drinks will you have at the party? – We'll have..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 14,
+      "topic": "Staying healthy",
+      "patterns": [
+        "How does he/she stay healthy? – He/She...",
+        "How often does he/she...? – ..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 15,
+      "topic": "Our health",
+      "patterns": [
+        "What's the matter? – I have a...",
+        "You should..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 16,
+      "topic": "Seasons and the weather",
+      "patterns": [
+        "How's the weather in... in...? – It's...",
+        "What do you usually wear in...? – I wear..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 17,
+      "topic": "Stories for children",
+      "patterns": [
+        "Who are the main characters in the story? – They're...",
+        "How did...? – He/She..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 18,
+      "topic": "Means of transport",
+      "patterns": [
+        "Where do you want to visit? – I want to visit...",
+        "How can I get to...? – You can get there..."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 19,
+      "topic": "Places of interest",
+      "patterns": [
+        "What do you think of...? – I think it's / They're...",
+        "How far is it from... to...? – It's about... kilometres."
+      ]
+    },
+    {
+      "grade": 5,
+      "number": 20,
+      "topic": "Our summer holidays",
+      "patterns": [
+        "Where are you going to visit this summer? – I'm going to visit...",
+        "What are you going to do this summer? – I'm going to..."
+      ]
+    }
+  ]
+}

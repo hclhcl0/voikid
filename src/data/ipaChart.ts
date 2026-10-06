@@ -54,7 +54,7 @@ export const IPA_TYPE_METAS: Record<IpaSoundType, { label: string; count: number
     bgSoft: 'bg-purple-50 border-purple-200 text-purple-800',
   },
   unvoiced_consonant: {
-    label: 'Phụ âm vô thanh (Bật hơi)',
+    label: 'Phụ âm vô thanh',
     count: 9,
     badgeColor: 'bg-sky-500 text-white',
     bgSoft: 'bg-sky-50 border-sky-200 text-sky-800',
@@ -75,7 +75,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm I ngắn (Dứt khoát)',
     type: 'short_vowel',
     typeName_vi: 'Nguyên âm ngắn',
-    mouth_action: 'Môi hơi hé, phát âm dứt khoát nửa giây',
+    mouth_action: 'Môi hơi hé, lưỡi thả lỏng, nghe mẫu rồi đọc ngắn gọn',
     mouth_detail: {
       lips: 'Môi hơi hé mở tự nhiên, không căng môi.',
       teeth: 'Hai hàm răng cách nhau một khoảng nhỏ.',
@@ -119,9 +119,9 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm A bẹt (Cực kỳ quan trọng)',
     type: 'short_vowel',
     typeName_vi: 'Nguyên âm ngắn',
-    mouth_action: 'Mở rộng miệng hết cỡ, khóe môi kéo sang 2 bên',
+    mouth_action: 'Mở hàm thoải mái, khóe môi hơi kéo sang hai bên',
     mouth_detail: {
-      lips: 'Mở rộng tối đa cả chiều dọc lẫn chiều ngang.',
+      lips: 'Môi mở tự nhiên, không chu tròn, không cần kéo căng.',
       teeth: 'Răng mở rộng thoải mái.',
       tongue: 'Lưỡi hạ thấp xuống đáy khoang miệng, đầu lưỡi chạm răng dưới.',
       voice_box: 'Thanh quản rung, âm vang to rõ.',
@@ -231,7 +231,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm I dài (Cười mỉm)',
     type: 'long_vowel',
     typeName_vi: 'Nguyên âm dài',
-    mouth_action: 'Cười mỉm môi sang hai bên, ngân dài 1 giây',
+    mouth_action: 'Môi hơi kéo sang hai bên, nghe mẫu rồi ngân âm nhẹ',
     mouth_detail: {
       lips: 'Khóe môi kéo căng sang hai bên như bé đang cười tươi chụp ảnh.',
       teeth: 'Hai hàm răng gần như khép lại.',
@@ -275,7 +275,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm A dài (Trầm sâu)',
     type: 'long_vowel',
     typeName_vi: 'Nguyên âm dài',
-    mouth_action: 'Hạ hàm sâu, phát âm từ trong cuống họng',
+    mouth_action: 'Hạ hàm thoải mái, lưỡi thấp, phát âm nhẹ và rõ',
     mouth_detail: {
       lips: 'Mở rộng theo chiều dọc, thả lỏng sang ngang.',
       teeth: 'Hai hàm răng cách xa nhau.',
@@ -521,7 +521,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm P (Bật hơi đôi môi)',
     type: 'unvoiced_consonant',
     typeName_vi: 'Phụ âm vô thanh',
-    mouth_action: 'Mím chặt hai môi lại rồi bật mạnh luồng hơi ra',
+    mouth_action: 'Khép hai môi, rồi mở môi để luồng hơi bật ra nhẹ',
     mouth_detail: {
       lips: 'Mím chặt hai môi lại để chặn luồng hơi.',
       teeth: 'Răng mở tự nhiên sau môi.',
@@ -543,7 +543,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm T (Đầu lưỡi bật hơi)',
     type: 'unvoiced_consonant',
     typeName_vi: 'Phụ âm vô thanh',
-    mouth_action: 'Đầu lưỡi chạm nướu răng trên rồi bật mạnh hơi',
+    mouth_action: 'Đầu lưỡi chạm nướu sau răng trên, rồi thả ra theo mẫu',
     mouth_detail: {
       lips: 'Môi hơi mở tự nhiên.',
       teeth: 'Hai hàm răng hơi hé.',
@@ -631,7 +631,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm S (Xì hơi như rắn kêu)',
     type: 'unvoiced_consonant',
     typeName_vi: 'Phụ âm vô thanh',
-    mouth_action: 'Hai hàm răng khép hờ, xì hơi mạnh ra',
+    mouth_action: 'Hai hàm răng khép hờ, để hơi đi ra đều như tiếng rắn',
     mouth_detail: {
       lips: 'Khóe môi mở nhẹ sang hai bên.',
       teeth: 'Hai hàm răng khép sát nhau nhưng không cắn chặt.',
@@ -653,7 +653,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm SH chu môi (Ra hiệu suỵt)',
     type: 'unvoiced_consonant',
     typeName_vi: 'Phụ âm vô thanh',
-    mouth_action: 'Chu tròn môi về trước, thổi luồng hơi mạnh',
+    mouth_action: 'Môi hơi chu về trước, để hơi đi ra đều như khi nói suỵt',
     mouth_detail: {
       lips: 'Hai môi chu tròn và nhô rõ ra phía trước.',
       teeth: 'Hai hàm răng khép hờ.',
@@ -787,7 +787,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm V (Răng chạm môi rung cổ)',
     type: 'voiced_consonant',
     typeName_vi: 'Phụ âm hữu thanh',
-    mouth_action: 'Răng trên chạm môi dưới, rung mạnh cổ họng',
+    mouth_action: 'Răng trên chạm nhẹ môi dưới, để hơi ra và cảm nhận cổ họng rung',
     mouth_detail: {
       lips: 'Khẩu hình y hệt âm /f/ (răng cửa trên chạm nhẹ môi dưới).',
       teeth: 'Răng trên lộ chạm mép môi.',
@@ -809,7 +809,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm TH rung cổ (Hữu thanh)',
     type: 'voiced_consonant',
     typeName_vi: 'Phụ âm hữu thanh',
-    mouth_action: 'Đặt đầu lưỡi giữa 2 răng, RUNG MẠNH cổ họng',
+    mouth_action: 'Đầu lưỡi đặt nhẹ giữa hai răng, để hơi ra và cảm nhận cổ họng rung',
     mouth_detail: {
       lips: 'Môi hé mở tự nhiên.',
       teeth: 'Hai hàm răng khép nhẹ kẹp đầu lưỡi ở giữa.',
@@ -831,7 +831,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm Z (Rung như tiếng ong kêu)',
     type: 'voiced_consonant',
     typeName_vi: 'Phụ âm hữu thanh',
-    mouth_action: 'Khép răng xì hơi kèm RUNG MẠNH cổ họng',
+    mouth_action: 'Răng khép hờ, để hơi ra đều và cảm nhận cổ họng rung',
     mouth_detail: {
       lips: 'Môi mở nhẹ sang hai bên.',
       teeth: 'Khẩu hình y hệt âm /s/ (hai hàm răng khép sát nhau).',
@@ -853,7 +853,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm ZH chu môi (Rung hữu thanh)',
     type: 'voiced_consonant',
     typeName_vi: 'Phụ âm hữu thanh',
-    mouth_action: 'Chu môi như SH nhưng RUNG MẠNH cổ họng',
+    mouth_action: 'Môi hơi chu như khi nói suỵt, thêm tiếng rung nhẹ ở cổ họng',
     mouth_detail: {
       lips: 'Khẩu hình y hệt âm /ʃ/ (hai môi chu tròn nhô ra phía trước).',
       teeth: 'Hai hàm răng khép hờ.',
@@ -897,7 +897,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm M (Âm mũi ngậm môi)',
     type: 'voiced_consonant',
     typeName_vi: 'Phụ âm hữu thanh',
-    mouth_action: 'Mím chặt hai môi, hơi thoát ra đường mũi',
+    mouth_action: 'Mím nhẹ hai môi, để âm vang và hơi thoát qua mũi',
     mouth_detail: {
       lips: 'Mím nhẹ hai môi lại với nhau.',
       teeth: 'Hai hàm răng hơi cách nhau.',
@@ -985,7 +985,7 @@ export const ALL_44_IPA_SOUNDS: IpaSound[] = [
     name_vi: 'Âm R (Cong lưỡi không chạm vòm)',
     type: 'voiced_consonant',
     typeName_vi: 'Phụ âm hữu thanh',
-    mouth_action: 'Môi hơi chu, cong đầu lưỡi vào trong họng',
+    mouth_action: 'Môi hơi chu, lưỡi nâng nhẹ nhưng không chạm vòm miệng',
     mouth_detail: {
       lips: 'Hai môi hơi chu tròn nhẹ.',
       teeth: 'Hàm răng hơi hé.',

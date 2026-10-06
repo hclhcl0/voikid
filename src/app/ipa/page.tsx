@@ -6,7 +6,7 @@
 // =============================================
 
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -17,6 +17,9 @@ import {
 } from '@/data/ipaChart';
 import { useTTS } from '@/hooks/useTTS';
 import { IpaSoundDetailModal } from '@/components/IpaSoundDetailModal';
+import { IpaPractice } from '@/components/learning/IpaPractice';
+import { ChildBadge } from '@/components/ChildBadge';
+import { useProfileContext } from '@/context/ProfileContext';
 
 export default function IpaChartPage() {
   const router = useRouter();
@@ -24,6 +27,9 @@ export default function IpaChartPage() {
   const [filterType, setFilterType] = useState<IpaSoundType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSound, setSelectedSound] = useState<IpaSound | null>(null);
+  const [view,setView] = useState<'today'|'review'|'chart'>('today');
+  const [practiceSound,setPracticeSound]=useState<IpaSound|null>(null);
+  const {activeProfileId}=useProfileContext();
 
   // Lọc theo loại âm & tìm kiếm
   const filteredSounds = useMemo(() => {
@@ -48,7 +54,7 @@ export default function IpaChartPage() {
   // Nghe nhanh âm vị
   const handleQuickPlaySound = (sound: IpaSound, e: React.MouseEvent) => {
     e.stopPropagation();
-    speak(sound.speech_cue, 'en-US', 0.5);
+    speak(sound.sample_word, 'en-US', 0.7);
   };
 
   // Nghe từ mẫu
@@ -58,7 +64,7 @@ export default function IpaChartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       {/* ── TOP HEADER ── */}
       <header className="bg-white/90 backdrop-blur sticky top-0 z-40 border-b border-orange-100 px-4 py-3 shadow-xs">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
@@ -81,19 +87,24 @@ export default function IpaChartPage() {
 
           <div className="text-center flex-1 min-w-0">
             <h1 className="text-lg sm:text-xl font-black text-gray-800 truncate">
-              🔤 44 Âm IPA Chuẩn Quốc Tế
+              🔤 Luyện âm tiếng Anh
             </h1>
             <p className="text-[11px] text-gray-500 font-semibold truncate">
-              Bí kíp phát âm chuẩn bản ngữ cho học sinh tiểu học
+              Nghe rõ · Đọc theo · Dùng trong từ và câu
             </p>
           </div>
 
-          <div className="w-10" />
+          <ChildBadge />
         </div>
       </header>
 
       {/* ── MAIN CONTENT ── */}
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <nav aria-label="Chế độ luyện âm" className="flex gap-1 rounded-2xl border border-slate-200 bg-white p-1">
+          {([['today','Bài luyện hôm nay'],['review','Âm cần ôn'],['chart','Bảng âm']] as const).map(([id,label])=><button key={id} aria-pressed={view===id} onClick={()=>{setPracticeSound(null);setView(id);}} className={`flex-1 rounded-xl px-2 py-3 text-sm font-bold transition-colors ${view===id?'bg-orange-600 text-white':'text-slate-600 hover:bg-slate-50'}`}>{label}</button>)}
+        </nav>
+        {view!=='chart'&&<IpaPractice key={`${activeProfileId}:${view}:${practiceSound?.ipa??''}`} view={view} initialSound={practiceSound} onLookup={()=>{setPracticeSound(null);setView('chart');}}/>}
+        {view==='chart'&&<>
         {/* Banner giới thiệu sinh động */}
         <div className="bg-gradient-to-r from-orange-400 via-amber-500 to-rose-400 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
           <div className="absolute -right-4 -bottom-4 text-7xl opacity-20 pointer-events-none select-none">
@@ -101,13 +112,13 @@ export default function IpaChartPage() {
           </div>
           <div className="relative z-10 max-w-lg">
             <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur text-xs font-black mb-2">
-              ⭐ Cẩm nang phát âm chuẩn Anh - Mỹ
+              ⭐ Bảng âm để tra cứu
             </span>
             <h2 className="text-2xl font-black leading-snug drop-shadow-sm">
-              Tập Đọc 44 Âm Quốc Tế Dễ Dàng Như Tiếng Việt!
+              Khám phá từng âm qua từ quen thuộc
             </h2>
             <p className="text-xs text-white/90 font-medium mt-1 leading-relaxed">
-              Bấm vào bất kỳ âm nào để xem <strong>hướng dẫn khẩu hình răng - môi - lưỡi</strong>, mẹo nhớ tiếng Việt và nghe giọng đọc bản ngữ chuẩn từng âm vị.
+              Bấm vào một âm để xem <strong>cách đặt môi và lưỡi</strong>, rồi nghe từ mẫu. Nút nghe phát cả từ; audio âm riêng chưa được bổ sung. Phiên âm có thể khác giữa các giọng Anh và Mỹ.
             </p>
           </div>
         </div>
@@ -198,7 +209,7 @@ export default function IpaChartPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
-              {filteredSounds.map((sound, idx) => {
+              {filteredSounds.map((sound) => {
                 const meta = IPA_TYPE_METAS[sound.type];
 
                 return (
@@ -244,7 +255,7 @@ export default function IpaChartPage() {
                           type="button"
                           onClick={(e) => handleQuickPlaySound(sound, e)}
                           className="w-7 h-7 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-700 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer"
-                          title="Nghe âm này"
+                          title="Nghe âm trong từ mẫu (đọc chậm)"
                         >
                           🔊
                         </button>
@@ -287,11 +298,11 @@ export default function IpaChartPage() {
               </p>
               <ul className="list-disc pl-4 space-y-0.5 text-rose-900 font-bold">
                 <li>TO hơn âm bình thường</li>
-                <li>CAO giọng hơn (như có dấu sắc nhẹ)</li>
+                <li>RÕ và nổi bật hơn trong từ</li>
                 <li>NGÂN DÀI hơn các âm còn lại</li>
               </ul>
               <p className="text-rose-800 text-[11px] italic">
-                Ví dụ: <strong>/ˈsɪti/</strong> → nhấn mạnh chữ <strong>SÍT</strong>, hạ nhẹ chữ <strong>tì</strong>.
+                Ví dụ: <strong>/ˈsɪti/</strong> → âm tiết đầu của <strong>city</strong> được nhấn. Hãy nghe mẫu để bắt chước.
               </p>
             </div>
 
@@ -308,15 +319,16 @@ export default function IpaChartPage() {
               </p>
               <div className="space-y-1 text-sky-900 font-bold">
                 <p>
-                  💨 <strong>Âm Vô Thanh</strong> (/p/, /t/, /k/, /f/, /θ/, /s/, /ʃ/, /tʃ/, /h/): Cổ họng <u>KHÔNG RUNG</u>, chỉ có luồng gió bật ra làm mát lòng bàn tay.
+                  💨 <strong>Âm vô thanh</strong> (/p/, /t/, /k/, /f/, /θ/, /s/, /ʃ/, /tʃ/, /h/): Không rung dây thanh khi tạo âm. Một số âm có hơi bật ra; không phải âm vô thanh nào cũng cần bật hơi mạnh.
                 </p>
                 <p>
-                  🫁 <strong>Âm Hữu Thanh</strong> (/b/, /d/, /ɡ/, /v/, /ð/, /z/, /m/, /n/...): Cổ họng <u>RUNG MẠNH</u> rừ rừ như tiếng động cơ xe.
+                  🫁 <strong>Âm hữu thanh</strong> (/b/, /d/, /ɡ/, /v/, /ð/, /z/, /m/, /n/...): Có rung dây thanh. Đặt tay nhẹ để cảm nhận, không cần gồng cổ hay cố rung mạnh.
                 </p>
               </div>
             </div>
           </div>
         </div>
+        </>}
       </main>
 
       {/* ── MODAL CHI TIẾT ÂM ── */}
@@ -324,6 +336,7 @@ export default function IpaChartPage() {
         <IpaSoundDetailModal
           sound={selectedSound}
           onClose={() => setSelectedSound(null)}
+          onPractice={()=>{setPracticeSound(selectedSound);setSelectedSound(null);setView('today');}}
         />
       )}
     </div>

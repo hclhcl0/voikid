@@ -6,8 +6,13 @@
 
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useBackendSession } from '@/hooks/useBackendSession';
+import { useAuth } from '@/context/AuthContext';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { Category, Word } from '@/types';
+import type {StoryLesson} from '@/lib/stories/types';
+import {wordsFromStory,appendUniqueStoryWords} from '@/lib/stories/vocabulary';
+import type {ContentStore} from '@/lib/backend/types';
 
 const STORAGE_KEY = 'vocakids_custom_categories_v1';
 
@@ -261,9 +266,55 @@ function loadCategoriesFromStorage(): CustomCategory[] {
 }
 
 export function useCustomCategories() {
+  const { account: familyAccount } = useAuth();
+  const adminSession = useBackendSession();
+  const account = adminSession.authenticated ? { id: 'backend_admin', role: 'admin' as const } : familyAccount;
+  const endpoint = adminSession.authenticated ? '/api/admin/family' : '/api/family';
+  const revision = useRef(0);
+  const queue = useRef(Promise.resolve());
+  const [syncError, setSyncError] = useState('');
   const [categories, setCategories] = useState<CustomCategory[]>([]);
   const [hydrated, setHydrated]     = useState(false);
+  const importStoryWords=useCallback(async(lesson:StoryLesson,ids:string[])=>{
+    if(adminSession.loading) throw new Error('Đang kiểm tra quyền quản lý.');
+    if(account?.role==='student') throw new Error('Phụ huynh hoặc admin mới được thêm từ vào kho.');
+    const words=wordsFromStory(lesson,ids,()=>`word_${crypto.randomUUID()}`);
+    if(!words.length) throw new Error('Chọn ít nhất một từ có nghĩa tiếng Việt.');
+    if(adminSession.authenticated) {
+      const response=await fetch('/api/admin/content',{cache:'no-store'});const store=await response.json() as ContentStore&{message?:string};
+      if(!response.ok) throw new Error(store.message||'Chưa mở được kho từ admin.');
+      const merged=appendUniqueStoryWords(store.categories,lesson.unitId,words);
+      if(!merged.added) return {added:0,categoryId:lesson.unitId};
+      const saved=await fetch('/api/admin/content',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({...store,categories:merged.categories})});
+      const result=await saved.json();if(!saved.ok) throw new Error(result.message||'Chưa lưu được từ vựng.');
+      return {added:merged.added,categoryId:lesson.unitId};
+    }
+    let current:CustomCategory[],serverRevision=0;
+    if(account?.role==='parent') {
+      const response=await fetch(endpoint,{cache:'no-store'});const result=await response.json();
+      if(!response.ok||!result.success) throw new Error(result.message||'Chưa mở được kho từ gia đình.');
+      current=result.categories;serverRevision=result.revision;
+    } else current=loadCategoriesFromStorage();
+    const categoryId=`custom_story_${lesson.unitId}`;
+    if(!current.some(cat=>cat.id===categoryId)) current=[...current,{id:categoryId,name_vi:lesson.topic,name_en:lesson.topic,emoji:'📖',color:'from-orange-400 to-amber-500',gradient:'bg-orange-50',words:[],gradeId:`lop${lesson.grade}`,createdAt:new Date().toISOString(),sourceType:'manual',sourceLabel:'Từ vựng trong đoạn văn'}];
+    const merged=appendUniqueStoryWords(current,categoryId,words);
+    if(!merged.added) return {added:0,categoryId};
+    if(account?.role==='parent') {
+      const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_categories',categories:merged.categories,revision:serverRevision})});const result=await response.json();
+      if(!response.ok||!result.success) throw new Error(result.message||'Chưa lưu được kho từ gia đình.');
+      revision.current=result.revision;setCategories(result.categories);
+    } else {localStorage.setItem(STORAGE_KEY,JSON.stringify(merged.categories));setCategories(merged.categories);}
+    setSyncError('');return {added:merged.added,categoryId};
+  },[account?.role,adminSession.authenticated,adminSession.loading,endpoint]);
 
+  useEffect(() => {
+    if (!account?.role) { Promise.resolve().then(() => setCategories(loadCategoriesFromStorage())); return; }
+    const controller = new AbortController();
+    fetch(endpoint, { signal: controller.signal, cache: 'no-store' }).then(r => r.json()).then(data => {
+      if (data.success) { setCategories(data.categories); revision.current = data.revision; }
+    }).catch(() => {});
+    return () => controller.abort();
+  }, [account?.id, account?.role, endpoint]);
   // Sync from localStorage on mount (hydration-safe)
   useEffect(() => {
     const initial = loadCategoriesFromStorage();
@@ -275,11 +326,22 @@ export function useCustomCategories() {
 
   const persist = useCallback((updater: CustomCategory[] | ((prev: CustomCategory[]) => CustomCategory[])) => {
     setCategories((prev) => {
+      if (account?.role === 'student') return prev;
       let current = prev;
       if (current.length === 0 && typeof window !== 'undefined') {
         current = loadCategoriesFromStorage();
       }
       const next = typeof updater === 'function' ? updater(current) : updater;
+      if (account?.role === 'parent' || account?.role === 'admin') {
+        const snapshot = next.map(c => ({ ...c, gradeId: c.gradeId || 'lop1' }));
+        queue.current = queue.current.then(async () => {
+          const response = await fetch('/api/family', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save_categories', categories: snapshot, revision: revision.current }) });
+          const result = await response.json();
+          if (!response.ok) { setSyncError(result.message); return; }
+          revision.current = result.revision; setSyncError('');
+        }).catch(() => setSyncError('Không lưu được kho từ trên server.'));
+        return next;
+      }
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch {
@@ -287,7 +349,7 @@ export function useCustomCategories() {
       }
       return next;
     });
-  }, []);
+  }, [account?.id, account?.role]);
 
   /** Add a brand-new custom category */
   const addCategory = useCallback((
@@ -493,7 +555,9 @@ export function useCustomCategories() {
 
   return {
     categories,
+    importStoryWords,
     hydrated,
+    syncError,
     addCategory,
     addMultipleCategories,
     updateCategory,
@@ -508,4 +572,3 @@ export function useCustomCategories() {
     asCategories,
   };
 }
-
