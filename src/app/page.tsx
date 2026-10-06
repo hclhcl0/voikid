@@ -62,6 +62,7 @@ export default function HomePage() {
           <Link href="/stickers" className="underline decoration-slate-300 underline-offset-4">Sticker</Link>
         </div>
       </section>
+      {!hydrated ? <p role="status" className="text-sm text-slate-500">Đang nạp hồ sơ học sinh…</p> : !activeProfile.id ? <section className="space-y-3 rounded-2xl border border-orange-200 bg-orange-50 p-5"><h2 className="font-bold">Chưa có hồ sơ học sinh</h2><p className="text-sm text-slate-600">Thêm học sinh và chọn lớp để mở bài học phù hợp.</p><Link href="/parent" className="learning-button bg-orange-600 text-white">Thêm học sinh</Link></section> : <>
       <LearningEntry />
       <nav aria-label="Công cụ học tập" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
@@ -95,6 +96,7 @@ export default function HomePage() {
         {!visible.length && <p role="status" className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">{search ? 'Chưa tìm thấy chủ đề. Thử tên khác nhé.' : 'Chưa có chủ đề cho lớp này.'}</p>}
         {isAdmin && <Link href={`/import?targetGrade=${selectedGrade}`} className="learning-button border border-dashed border-slate-300 bg-white text-sm">+ Thêm bài học</Link>}
       </section>
+      </>}
     </main>
     <nav aria-label="Điều hướng chính" className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto grid max-w-lg grid-cols-4 py-2">{[

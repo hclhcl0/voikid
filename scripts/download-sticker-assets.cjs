@@ -9,6 +9,7 @@ const root = path.resolve(__dirname, '..');
 const target = path.join(root, 'public/media/stickers/fluent-3d');
 const raw = `https://raw.githubusercontent.com/microsoft/fluentui-emoji/${revision}/`;
 const emojis = ['🐱','🐶','🐰','🦊','🐼','🦁','🦄','🐉','🌈','🪄','💎','👑','🚀','🧭','🏝️','🪐','🌍','🎒','🌟','⭐','🏆','🎖️','🎉','🎯','🌱','🔥','💯','🎁','📚','👂','🔤'];
+emojis.push('🐠','🐬','🐢','🐙','🦀','🐳','🐵','🦒','🐘','🐯','🦓','🦍','🌸','🐞','🦋','🌷','🌻','🌳','🍓','🧁','🍦','🍩','🍰','🍭','🏎️','🚌','🚁','⛵','🚂','✈️','🎵','🥁','🎸','🎺','🎻','🎤');
 const pngSignature = Buffer.from([137,80,78,71,13,10,26,10]);
 async function download(url) {
   for (let attempt = 0; attempt < 4; attempt++) {

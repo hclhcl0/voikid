@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useProfileContext, COLOR_THEMES } from '@/context/ProfileContext';
 import { useAuth } from '@/context/AuthContext';
@@ -20,6 +21,8 @@ export function ChildBadge({ variant = 'pill', showSwitchHint = true }: ChildBad
       <div className="h-9 w-24 rounded-full bg-white/30 animate-pulse" />
     );
   }
+
+  if (!activeProfile.id) return <Link href="/parent" className="learning-button border border-slate-200 bg-white text-sm">👤 Chọn học sinh</Link>;
 
   const theme = COLOR_THEMES[activeProfile.color] || COLOR_THEMES.orange;
   const grade = GRADE_LEVELS.find((g) => g.id === activeProfile.gradeId) || GRADE_LEVELS[1];

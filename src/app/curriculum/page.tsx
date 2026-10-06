@@ -11,6 +11,7 @@ export default function CurriculumPage() {
   const ctx=useProfileContext();
   const access=useStoryAccess();
   if(!ctx.hydrated||access.loading) return <p role="status" className="p-8">Đang mở các bài đọc…</p>;
+  if(!ctx.activeProfileId) return <main className="mx-auto max-w-lg space-y-4 p-8"><Link href="/" className="text-sm text-slate-500">← VocaKids</Link><h1 className="text-2xl font-bold">Chọn học sinh để mở bài học</h1><p className="text-slate-600">Thêm hồ sơ và chọn lớp tại Góc phụ huynh.</p><Link href="/parent" className="learning-button bg-orange-600 text-white">Thêm học sinh</Link></main>;
   return <StoryBrowser key={ctx.activeProfileId} canManage={access.canManage}/>;
 }
 function StoryBrowser({canManage}:{canManage:boolean}) {

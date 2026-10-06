@@ -1,24 +1,25 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProfileContext, AVATAR_LIST, COLOR_THEMES } from '@/context/ProfileContext';
 import { GRADE_LEVELS } from '@/lib/vocabulary';
 import { UserProfile } from '@/types';
 import { useAdminContext } from '@/context/AdminContext';
 import { useAuth } from '@/context/AuthContext';
+import { useBackendSession } from '@/hooks/useBackendSession';
 
 export function ProfileModal() {
   const {
     account,
-    isGuest,
     isAuthenticated,
     openAuthModal,
   } = useAuth();
+  const adminSession = useBackendSession();
 
   const {
     profiles,
-    activeProfile,
     activeProfileId,
     setActiveProfileId,
     createProfile,
@@ -79,26 +80,28 @@ export function ProfileModal() {
       return;
     }
 
-    if (mode === 'create') {
-      await createProfile({
-        name: cleanName,
-        avatar,
-        gradeId,
-        color,
-        code: customCode.trim() ? customCode.trim().toUpperCase() : undefined,
-      });
-    } else if (mode === 'edit' && editingProfileId) {
-      updateProfile(editingProfileId, {
-        name: cleanName,
-        avatar,
-        gradeId,
-        color,
-        code: customCode.trim() ? customCode.trim().toUpperCase() : undefined,
-      });
-    }
+    try {
+      if (mode === 'create') {
+        await createProfile({
+          name: cleanName,
+          avatar,
+          gradeId,
+          color,
+          code: customCode.trim() ? customCode.trim().toUpperCase() : undefined,
+        });
+      } else if (mode === 'edit' && editingProfileId) {
+        updateProfile(editingProfileId, {
+          name: cleanName,
+          avatar,
+          gradeId,
+          color,
+          code: customCode.trim() ? customCode.trim().toUpperCase() : undefined,
+        });
+      }
 
-    setMode('list');
-    setEditingProfileId(null);
+      setMode('list');
+      setEditingProfileId(null);
+    } catch (error) { setError(error instanceof Error ? error.message : 'Chưa lưu được hồ sơ.'); }
   };
 
   const handleCopyCode = (code: string, e: React.MouseEvent) => {
@@ -245,14 +248,14 @@ export function ProfileModal() {
                     <span className="text-2xl shrink-0">{isAuthenticated ? '☁️' : '👤'}</span>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-gray-800 truncate">
-                        {isAuthenticated ? (account?.displayName || account?.email) : 'Chế độ Khách (Dữ liệu trên máy)'}
+                        {adminSession.authenticated ? 'Quản trị viên' : isAuthenticated ? (account?.displayName || account?.email) : 'Học thử (Dữ liệu trên máy)'}
                       </p>
                       <p className="text-[11px] text-gray-500 font-semibold truncate">
-                        {isAuthenticated ? 'Đã liên kết Đám Mây PostgreSQL' : 'Đăng nhập để lưu tiến độ trên Đám Mây'}
+                        {adminSession.authenticated || isAuthenticated ? 'Hồ sơ học sinh được lưu trên server' : 'Đăng nhập phụ huynh để lưu hồ sơ và tiến độ'}
                       </p>
                     </div>
                   </div>
-                  <button
+                  {adminSession.authenticated ? <Link href="/parent" onClick={closeProfileModal} className="learning-button bg-orange-600 text-xs text-white">Quản lý học sinh</Link> : <button
                     type="button"
                     onClick={() => {
                       closeProfileModal();
@@ -261,7 +264,7 @@ export function ProfileModal() {
                     className="py-1.5 px-3 rounded-xl bg-orange-600 text-white font-bold text-xs shrink-0 shadow-xs hover:opacity-95 transition-all cursor-pointer"
                   >
                     {isAuthenticated ? 'Tài khoản' : 'Đăng nhập'}
-                  </button>
+                  </button>}
                 </div>
 
                 {/* Profile Cards */}

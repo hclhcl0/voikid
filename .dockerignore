@@ -16,6 +16,8 @@ coverage
 
 # Temporary & script data files
 scratch
+.tmp-learning
+.codex
 scripts
 data
 *.py

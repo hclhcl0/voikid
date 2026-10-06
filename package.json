@@ -11,6 +11,7 @@
     "audit:learning": "node scripts/audit-learning.cjs",
     "test:backend": "node --test tests/backend.test.cjs",
     "test:family": "node --test tests/family.test.cjs",
+    "test:profiles": "node --test tests/profile-scope.test.cjs",
     "test:pronunciation": "node --test tests/pronunciation.test.cjs",
     "test:api-keys": "node --test tests/api-keys.test.cjs",
     "test:stories": "node --test tests/stories.test.cjs"

@@ -16,7 +16,8 @@ export function useBackendSession() {
     };
     void refresh();
     window.addEventListener('focus', refresh);
-    return () => { controller.abort(); window.removeEventListener('focus', refresh); };
+    window.addEventListener('vocakids:admin-session-changed', refresh);
+    return () => { controller.abort(); window.removeEventListener('focus', refresh); window.removeEventListener('vocakids:admin-session-changed', refresh); };
   }, []);
   return session;
 }

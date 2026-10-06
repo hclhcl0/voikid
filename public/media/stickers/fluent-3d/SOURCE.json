@@ -157,6 +157,186 @@
       "emoji": "🔤",
       "filename": "input_latin_letters_3d.png",
       "path": "assets/Input latin letters/3D/input_latin_letters_3d.png"
+    },
+    {
+      "emoji": "🐠",
+      "filename": "tropical_fish_3d.png",
+      "path": "assets/Tropical fish/3D/tropical_fish_3d.png"
+    },
+    {
+      "emoji": "🐬",
+      "filename": "dolphin_3d.png",
+      "path": "assets/Dolphin/3D/dolphin_3d.png"
+    },
+    {
+      "emoji": "🐢",
+      "filename": "turtle_3d.png",
+      "path": "assets/Turtle/3D/turtle_3d.png"
+    },
+    {
+      "emoji": "🐙",
+      "filename": "octopus_3d.png",
+      "path": "assets/Octopus/3D/octopus_3d.png"
+    },
+    {
+      "emoji": "🦀",
+      "filename": "crab_3d.png",
+      "path": "assets/Crab/3D/crab_3d.png"
+    },
+    {
+      "emoji": "🐳",
+      "filename": "spouting_whale_3d.png",
+      "path": "assets/Spouting whale/3D/spouting_whale_3d.png"
+    },
+    {
+      "emoji": "🐵",
+      "filename": "monkey_face_3d.png",
+      "path": "assets/Monkey face/3D/monkey_face_3d.png"
+    },
+    {
+      "emoji": "🦒",
+      "filename": "giraffe_3d.png",
+      "path": "assets/Giraffe/3D/giraffe_3d.png"
+    },
+    {
+      "emoji": "🐘",
+      "filename": "elephant_3d.png",
+      "path": "assets/Elephant/3D/elephant_3d.png"
+    },
+    {
+      "emoji": "🐯",
+      "filename": "tiger_face_3d.png",
+      "path": "assets/Tiger face/3D/tiger_face_3d.png"
+    },
+    {
+      "emoji": "🦓",
+      "filename": "zebra_3d.png",
+      "path": "assets/Zebra/3D/zebra_3d.png"
+    },
+    {
+      "emoji": "🦍",
+      "filename": "gorilla_3d.png",
+      "path": "assets/Gorilla/3D/gorilla_3d.png"
+    },
+    {
+      "emoji": "🌸",
+      "filename": "cherry_blossom_3d.png",
+      "path": "assets/Cherry blossom/3D/cherry_blossom_3d.png"
+    },
+    {
+      "emoji": "🐞",
+      "filename": "lady_beetle_3d.png",
+      "path": "assets/Lady beetle/3D/lady_beetle_3d.png"
+    },
+    {
+      "emoji": "🦋",
+      "filename": "butterfly_3d.png",
+      "path": "assets/Butterfly/3D/butterfly_3d.png"
+    },
+    {
+      "emoji": "🌷",
+      "filename": "tulip_3d.png",
+      "path": "assets/Tulip/3D/tulip_3d.png"
+    },
+    {
+      "emoji": "🌻",
+      "filename": "sunflower_3d.png",
+      "path": "assets/Sunflower/3D/sunflower_3d.png"
+    },
+    {
+      "emoji": "🌳",
+      "filename": "deciduous_tree_3d.png",
+      "path": "assets/Deciduous tree/3D/deciduous_tree_3d.png"
+    },
+    {
+      "emoji": "🍓",
+      "filename": "strawberry_3d.png",
+      "path": "assets/Strawberry/3D/strawberry_3d.png"
+    },
+    {
+      "emoji": "🧁",
+      "filename": "cupcake_3d.png",
+      "path": "assets/Cupcake/3D/cupcake_3d.png"
+    },
+    {
+      "emoji": "🍦",
+      "filename": "soft_ice_cream_3d.png",
+      "path": "assets/Soft ice cream/3D/soft_ice_cream_3d.png"
+    },
+    {
+      "emoji": "🍩",
+      "filename": "doughnut_3d.png",
+      "path": "assets/Doughnut/3D/doughnut_3d.png"
+    },
+    {
+      "emoji": "🍰",
+      "filename": "shortcake_3d.png",
+      "path": "assets/Shortcake/3D/shortcake_3d.png"
+    },
+    {
+      "emoji": "🍭",
+      "filename": "lollipop_3d.png",
+      "path": "assets/Lollipop/3D/lollipop_3d.png"
+    },
+    {
+      "emoji": "🏎️",
+      "filename": "racing_car_3d.png",
+      "path": "assets/Racing car/3D/racing_car_3d.png"
+    },
+    {
+      "emoji": "🚌",
+      "filename": "bus_3d.png",
+      "path": "assets/Bus/3D/bus_3d.png"
+    },
+    {
+      "emoji": "🚁",
+      "filename": "helicopter_3d.png",
+      "path": "assets/Helicopter/3D/helicopter_3d.png"
+    },
+    {
+      "emoji": "⛵",
+      "filename": "sailboat_3d.png",
+      "path": "assets/Sailboat/3D/sailboat_3d.png"
+    },
+    {
+      "emoji": "🚂",
+      "filename": "locomotive_3d.png",
+      "path": "assets/Locomotive/3D/locomotive_3d.png"
+    },
+    {
+      "emoji": "✈️",
+      "filename": "airplane_3d.png",
+      "path": "assets/Airplane/3D/airplane_3d.png"
+    },
+    {
+      "emoji": "🎵",
+      "filename": "musical_note_3d.png",
+      "path": "assets/Musical note/3D/musical_note_3d.png"
+    },
+    {
+      "emoji": "🥁",
+      "filename": "drum_3d.png",
+      "path": "assets/Drum/3D/drum_3d.png"
+    },
+    {
+      "emoji": "🎸",
+      "filename": "guitar_3d.png",
+      "path": "assets/Guitar/3D/guitar_3d.png"
+    },
+    {
+      "emoji": "🎺",
+      "filename": "trumpet_3d.png",
+      "path": "assets/Trumpet/3D/trumpet_3d.png"
+    },
+    {
+      "emoji": "🎻",
+      "filename": "violin_3d.png",
+      "path": "assets/Violin/3D/violin_3d.png"
+    },
+    {
+      "emoji": "🎤",
+      "filename": "microphone_3d.png",
+      "path": "assets/Microphone/3D/microphone_3d.png"
     }
   ]
 }

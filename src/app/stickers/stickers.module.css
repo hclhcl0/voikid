@@ -162,3 +162,23 @@
   .card:active { scale: 1; }
   .sparkle { opacity: .4; }
 }
+.editionBadge[data-edition="1"] { color: #854422; background: #fff0df; border-color: #ddad82; }
+.editionBadge[data-edition="2"] { color: #475569; background: linear-gradient(135deg, #f8fafc, #dbe4ef); border-color: #b3c1d2; }
+.editionBadge[data-edition="3"] { color: #854d0e; background: linear-gradient(135deg, #fff8d4, #fde68a); border-color: #e4bb44; }
+.editionBadge[data-edition="4"] { color: #155e75; background: linear-gradient(135deg, #ecfeff, #bde6fb, #e9d5ff); border-color: #79c9e4; }
+.editionBadge[data-edition="5"] { color: #6b21a8; background: linear-gradient(135deg, #f5d0fe, #e9d5ff, #fff1c9); border-color: #c084fc; }
+.editionCard[data-edition="1"] { border-color: #ddad82; }
+.editionCard[data-edition="2"] { border-color: #b3c1d2; background: linear-gradient(160deg, #fff 65%, #edf2f7); }
+.editionCard[data-edition="3"] { border-color: #e4bb44; background: linear-gradient(160deg, #fff 65%, #fff8d4); }
+.editionCard[data-edition="4"] { border-color: #79c9e4; background: linear-gradient(160deg, #fff 60%, #e0f7ff, #f3e8ff); }
+.editionCard[data-edition="5"] { border-color: #c084fc; background: linear-gradient(160deg, #fff 50%, #f3e8ff, #fff1c9); box-shadow: 0 3px 14px #a855f712; }
+.editionBadge[data-edition="1"] { color: #854422; background: #fff0df; border-color: #ddad82; }
+.editionBadge[data-edition="2"] { color: #475569; background: linear-gradient(135deg, #f8fafc, #dbe4ef); border-color: #b3c1d2; }
+.editionBadge[data-edition="3"] { color: #854d0e; background: linear-gradient(135deg, #fff8d4, #fde68a); border-color: #e4bb44; }
+.editionBadge[data-edition="4"] { color: #155e75; background: linear-gradient(135deg, #ecfeff, #bde6fb, #e9d5ff); border-color: #79c9e4; }
+.editionBadge[data-edition="5"] { color: #6b21a8; background: linear-gradient(135deg, #f5d0fe, #e9d5ff, #fff1c9); border-color: #c084fc; }
+.editionCard[data-edition="1"] { border-color: #ddad82; }
+.editionCard[data-edition="2"] { border-color: #b3c1d2; background: linear-gradient(160deg, #fff 65%, #edf2f7); }
+.editionCard[data-edition="3"] { border-color: #e4bb44; background: linear-gradient(160deg, #fff 65%, #fff8d4); }
+.editionCard[data-edition="4"] { border-color: #79c9e4; background: linear-gradient(160deg, #fff 60%, #e0f7ff, #f3e8ff); }
+.editionCard[data-edition="5"] { border-color: #c084fc; background: linear-gradient(160deg, #fff 50%, #f3e8ff, #fff1c9); box-shadow: 0 3px 14px #a855f712; }

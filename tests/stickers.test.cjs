@@ -13,10 +13,11 @@ const empty = () => ({totalStars:0,streak:0,lastActiveDate:'',wordProgress:{},da
 const ids = p => p.stickers.map(s => s.id);
 const story = (id,profileId='child-a',completed=true) => ({id,profileId,unitId:'unit-a',updatedAt:now,read:true,listened:true,speakingPracticed:false,completed,answers:{},lesson:{id,unitId:'unit-a',sentences:[{id:'s1',en:'I like cats.',vi:'Tôi thích mèo.'}],vocabulary:[],questions:[]}});
 
-test('all 24 themed rewards have a local 3D PNG with its license', () => {
+test('all 60 themed rewards across ten collections have a local 3D PNG with its license', () => {
   const assets = require('../src/lib/sticker-assets.json');
-  assert.equal(STICKER_MILESTONES.length,24);
-  assert.equal(new Set(STICKER_MILESTONES.map(s => s.id)).size,24);
+  assert.equal(STICKER_COLLECTIONS.length,10);
+  assert.equal(STICKER_MILESTONES.length,60);
+  assert.equal(new Set(STICKER_MILESTONES.map(s => s.id)).size,60);
   for (const set of STICKER_COLLECTIONS) assert.equal(STICKER_MILESTONES.filter(s => s.setId===set.id).length,6);
   for (const s of STICKER_MILESTONES) {
     const filename = assets[emojiToTwemojiCode(s.emoji)];
@@ -25,6 +26,27 @@ test('all 24 themed rewards have a local 3D PNG with its license', () => {
     assert.equal(buffer.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
   }
   assert.match(fs.readFileSync('public/media/stickers/fluent-3d/LICENSE','utf8'),/MIT License/);
+});
+
+test('new collections unlock from owned evidence at their actual thresholds and remain earned', () => {
+  const one = {...empty(),ipaPractice:{m:practiceRecord('child-a','m',[true,false],new Date(now))}};
+  assert.ok(!ids(applyStickerRewards(one,'child-a',now)).includes('ocean_ipa_2'));
+  const foreign = {...one,ipaPractice:{...one.ipaPractice,s:practiceRecord('child-b','s',[true,true],new Date(now))}};
+  assert.ok(!ids(applyStickerRewards(foreign,'child-a',now)).includes('ocean_ipa_2'));
+  const two = applyStickerRewards({...one,ipaPractice:{...one.ipaPractice,s:practiceRecord('child-a','s',[true,false],new Date(now))}},'child-a',now);
+  assert.ok(ids(two).includes('ocean_ipa_2'));
+  assert.equal(ids(applyStickerRewards(two,'child-a',now)).filter(id=>id==='ocean_ipa_2').length,1);
+  const retained = applyStickerRewards({...empty(),stickers:two.stickers},'child-a',now);
+  assert.ok(ids(retained).includes('ocean_ipa_2'));
+});
+
+test('longer collection milestones count distinct study days without demanding a streak', () => {
+  const dates = Array.from({length:35},(_,i)=>new Date(Date.UTC(2026,6,i * 2 + 1)).toISOString().slice(0,10));
+  const before = applyStickerRewards({...empty(),stickerStudyDays:dates.slice(0,-1)},'child-a',now);
+  assert.ok(!ids(before).includes('music_days_35'));
+  const after = applyStickerRewards({...before,stickerStudyDays:dates},'child-a',now);
+  assert.ok(ids(after).includes('music_days_35'));
+  assert.equal(after.streak,0);
 });
 test('a first attempt earns an effort reward even without a passing score; retries do not duplicate it', () => {
   const p = {...empty(),wordProgress:{'unit:w1':{wordId:'w1',catId:'unit',attempts:1,lastPracticed:'2026-10-06',bestScore:0}}};

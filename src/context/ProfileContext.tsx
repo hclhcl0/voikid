@@ -11,6 +11,7 @@ import { mergeIpaPractice, validIpaRecord, type IpaPracticeRecord } from '@/lib/
 import { useBackendSession } from '@/hooks/useBackendSession';
 import { applyLearningSession } from '@/lib/learning/progress';
 import { applyStickerRewards, isDueIpaReview } from '@/lib/stickers';
+import { profileScope, profileStorageKeys, profilesForScope, selectProfile } from '@/lib/profileScope';
 
 export const PROFILES_STORAGE_KEY = 'vocakids_profiles_v1';
 export const ACTIVE_PROFILE_STORAGE_KEY = 'vocakids_active_profile_id';
@@ -18,13 +19,15 @@ export const LEGACY_PROGRESS_STORAGE_KEY = 'vocakids_progress_v1';
 
 export const DEFAULT_PROFILE: UserProfile = {
   id: 'default',
-  name: 'Bé Yêu',
+  name: 'Học thử',
   avatar: '🦁',
   gradeId: 'lop1',
   color: 'orange',
   createdAt: '2026-10-02',
   code: 'BEYEU01',
 };
+
+const NO_PROFILE: UserProfile = { ...DEFAULT_PROFILE, id: '', name: 'Chọn học sinh', avatar: '👤', code: '' };
 
 export const AVATAR_LIST = [
   { emoji: '🦁', name: 'Sư tử' },
@@ -153,45 +156,33 @@ interface ProfileContextType {
 const ProfileContext = createContext<ProfileContextType | null>(null);
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
-  const { account } = useAuth();
-  const previousAccount = useRef<string | null>(null);
-  const [profiles, setProfiles] = useState<UserProfile[]>([DEFAULT_PROFILE]);
-  const [activeProfileId, setActiveProfileIdState] = useState<string>('default');
+  const { account, isLoading: authLoading } = useAuth();
+  const backendSession = useBackendSession();
+  const scope = profileScope(account?.id, backendSession.authenticated);
+  const { profiles: profilesKey, active: activeKey } = profileStorageKeys(scope);
+  const profilesEndpoint = backendSession.authenticated ? '/api/admin/profiles' : '/api/profiles';
+  const familyEndpoint = backendSession.authenticated ? '/api/admin/family' : account?.role ? '/api/family' : '/api/profiles';
+  const [profiles, setProfiles] = useState<UserProfile[]>([]);
+  const [activeProfileId, setActiveProfileIdState] = useState<string>('');
   const [progress, setProgress] = useState<AppProgress>(defaultProgress());
-  const [hydrated, setHydrated] = useState<boolean>(false);
+  const [loadedScope, setLoadedScope] = useState<string | null>(null);
+  const [refreshIndex, setRefreshIndex] = useState(0);
+  const hydrated = !authLoading && !backendSession.loading && loadedScope === scope;
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!account?.role) {
-      if (previousAccount.current) { Promise.resolve().then(() => { setProfiles([DEFAULT_PROFILE]); setActiveProfileIdState(DEFAULT_PROFILE.id); setProgress(defaultProgress()); }); }
-      previousAccount.current = null; return;
-    }
-    previousAccount.current = account.id;
-    const controller = new AbortController();
-    fetch('/api/family', { signal: controller.signal, cache: 'no-store' }).then(r => r.json()).then(data => {
-      if (!data.success) return;
-      setProfiles(data.profiles);
-      for (const profile of data.profiles) localStorage.setItem(getProfileProgressKey(profile.id), JSON.stringify(data.progresses[profile.id]));
-      const first = data.profiles[0];
-      if (first) { setActiveProfileIdState(first.id); setProgress(data.progresses[first.id] ?? defaultProgress()); }
-    }).catch(() => {});
-    return () => controller.abort();
-  }, [account?.id, account?.role]);
 
   // Sync debounce timer ref
   const syncTimeoutRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
-  const backendSession=useBackendSession();
 
   // Helper to send progress to server
   const syncToServer = useCallback((pId: string, prog: AppProgress, pProfile?: UserProfile) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !hydrated || !pId || (scope === 'guest' && pId === 'default')) return;
     const pending = syncTimeoutRef.current.get(pId);
     if (pending) clearTimeout(pending);
 
     const timer = setTimeout(async () => {
       syncTimeoutRef.current.delete(pId);
       try {
-        await fetch(backendSession.authenticated?'/api/admin/profiles':'/api/profiles', {
+        await fetch(profilesEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -206,91 +197,72 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       }
     }, 1200);
     syncTimeoutRef.current.set(pId, timer);
-  }, [backendSession.authenticated]);
+  }, [hydrated, scope, profilesEndpoint]);
 
-  // Load profiles & active profile & initial progress on mount + sync from server
+  // Account data replaces the guest list; an admin cookie uses its own API path.
   useEffect(() => {
-    let activeId = 'default';
-    try {
-      let loadedProfiles: UserProfile[] = [DEFAULT_PROFILE];
-      const rawProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
-      if (rawProfiles) {
-        const parsed = JSON.parse(rawProfiles);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Ensure each profile has a code
-          loadedProfiles = parsed.map((p) => ({
-            ...p,
+    if (authLoading || backendSession.loading) return;
+    const controller = new AbortController();
+    const timers = syncTimeoutRef.current;
+    const load = async () => {
+      let loadedProfiles: UserProfile[] = [];
+      let savedId: string | null = null;
+      let progresses: Record<string, AppProgress> = {};
+      try {
+        savedId = localStorage.getItem(activeKey);
+        if (scope === 'guest') {
+          const raw = localStorage.getItem(profilesKey);
+          loadedProfiles = profilesForScope(raw ? JSON.parse(raw) : [], scope).map(p => ({
+            ...p, name: p.id === 'default' && p.name === 'Bé Yêu' ? 'Học thử' : p.name,
             code: p.code || generateCleanCode(p.name),
           }));
         }
+      } catch { /* Local storage may be unavailable. Server accounts still load. */ }
+      if (scope === 'guest') {
+        if (!loadedProfiles.length) loadedProfiles = [DEFAULT_PROFILE];
       } else {
-        localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify([DEFAULT_PROFILE]));
-      }
-      setProfiles(loadedProfiles);
-
-      const storedActiveId = localStorage.getItem(ACTIVE_PROFILE_STORAGE_KEY);
-      if (storedActiveId && loadedProfiles.some((p) => p.id === storedActiveId)) {
-        activeId = storedActiveId;
-      } else {
-        activeId = loadedProfiles[0].id;
-        localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, activeId);
-      }
-      setActiveProfileIdState(activeId);
-
-      // Load progress for this active child
-      const progKey = getProfileProgressKey(activeId);
-      const rawProg = localStorage.getItem(progKey);
-      if (rawProg) {
-        setProgress(readProgress(rawProg));
-      } else {
-        setProgress(defaultProgress());
-      }
-    } catch (e) {
-      console.error('Error hydrating profiles/progress:', e);
-    }
-    setHydrated(true);
-
-    // Initial server fetch to sync profiles and progress across devices
-    (async () => {
-      try {
-        const res = await fetch('/api/profiles');
-        if (res.ok) {
+        try {
+          const res = await fetch(familyEndpoint, { signal: controller.signal, cache: 'no-store' });
           const data = await res.json();
-          if (data.success && Array.isArray(data.profiles) && data.profiles.length > 0) {
-            setProfiles((prev) => {
-              if (data.exclusive) return data.profiles;
-              // Merge server profiles with local profiles
-              const map = new Map<string, UserProfile>();
-              for (const p of data.profiles) {
-                map.set(p.id, p);
-              }
-              for (const p of prev) {
-                if (!map.has(p.id)) {
-                  map.set(p.id, p);
-                }
-              }
-              const merged = Array.from(map.values());
-              try {
-                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(merged));
-              } catch {}
-              return merged;
-            });
+          if (res.ok && data.success) {
+            loadedProfiles = profilesForScope(data.profiles, scope);
+            progresses = data.progresses ?? {};
           }
-        }
-      } catch (err) {
-        // Offline / unreachable is normal in some environments
+        } catch { /* An unavailable account must not fall back to a guest child. */ }
       }
-    })();
-  }, []);
+      if (controller.signal.aborted) return;
+      const selected = selectProfile(loadedProfiles, savedId);
+      let nextProgress = defaultProgress();
+      try {
+        for (const p of loadedProfiles) if (progresses[p.id]) localStorage.setItem(getProfileProgressKey(p.id), JSON.stringify(progresses[p.id]));
+        if (selected) nextProgress = readProgress(JSON.stringify(progresses[selected.id] ?? JSON.parse(localStorage.getItem(getProfileProgressKey(selected.id)) || '{}')));
+        localStorage.setItem(profilesKey, JSON.stringify(loadedProfiles));
+        if (selected) localStorage.setItem(activeKey, selected.id);
+        else localStorage.removeItem(activeKey);
+      } catch { if (selected && progresses[selected.id]) nextProgress = readProgress(JSON.stringify(progresses[selected.id])); }
+      setProfiles(loadedProfiles);
+      setActiveProfileIdState(selected?.id ?? '');
+      setProgress(nextProgress);
+      setLoadedScope(scope);
+    };
+    // Also defer the guest-only hydration so state updates happen after the effect.
+    void Promise.resolve().then(load);
+    return () => {
+      controller.abort();
+      for (const timer of timers.values()) clearTimeout(timer);
+      timers.clear();
+    };
+  }, [authLoading, backendSession.loading, scope, profilesKey, activeKey, familyEndpoint, refreshIndex]);
 
   // Active Profile object
   const activeProfile = useMemo(() => {
-    return profiles.find((p) => p.id === activeProfileId) || profiles[0] || DEFAULT_PROFILE;
-  }, [profiles, activeProfileId]);
+    return (hydrated && (profiles.find((p) => p.id === activeProfileId) || profiles[0])) || (scope === 'guest' ? DEFAULT_PROFILE : NO_PROFILE);
+  }, [profiles, activeProfileId, hydrated, scope]);
 
   // Save progress for active profile
   const saveProgress = useCallback((next: AppProgress, targetProfileId?: string) => {
     const pId = targetProfileId || activeProfileId;
+    if (!hydrated || !pId) return;
     setProgress(next);
     try {
       const progKey = getProfileProgressKey(pId);
@@ -299,12 +271,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       console.error('Error saving progress:', e);
     }
     syncToServer(pId, next, activeProfile);
-  }, [activeProfileId, activeProfile, syncToServer]);
+  }, [activeProfileId, activeProfile, syncToServer, hydrated]);
 
   // Switch active profile
   const saveIpaPractice = useCallback((record: IpaPracticeRecord) => {
-    if (!hydrated || !validIpaRecord(record, activeProfileId)) return {success:false, message:'Hồ sơ đã thay đổi. Mở lại bài luyện.'};
-    const next=applyStickerRewards({...progress,ipaPractice:mergeIpaPractice(progress.ipaPractice,{[record.sound]:record},activeProfileId)},activeProfileId,record.updatedAt,isDueIpaReview(progress.ipaPractice?.[record.sound],record,activeProfileId));
+    if (!hydrated || !activeProfileId || !validIpaRecord(record, activeProfileId)) return {success:false, message:'Hồ sơ đã thay đổi. Mở lại bài luyện.'};
+    const next=applyStickerRewards({...progress,ipaPractice:mergeIpaPractice(progress.ipaPractice,{[record.sound]:record},activeProfileId)},activeProfileId,record.updatedAt,isDueIpaReview(progress.ipaPractice?.[record.sound],record,activeProfileId),activeProfile.gradeId);
     try {
       localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));
       setProgress(next);syncToServer(activeProfileId,next,activeProfile);
@@ -313,8 +285,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   },[hydrated,activeProfileId,activeProfile,progress,syncToServer]);
 
   const saveLearningSession = useCallback((session: LearningSession): { success: boolean; message?: string } => {
-    if (session.profileId !== activeProfileId) return { success: false, message: 'Hồ sơ đã thay đổi. Vui lòng mở lại bài học.' };
-    const next = applyStickerRewards(applyLearningSession(progress, session), activeProfileId, session.updatedAt);
+    if (!hydrated || !activeProfileId || session.profileId !== activeProfileId) return { success: false, message: 'Chọn học sinh rồi mở lại bài học.' };
+    const next = applyStickerRewards(applyLearningSession(progress, session), activeProfileId, session.updatedAt,false,activeProfile.gradeId);
     try {
       localStorage.setItem(getProfileProgressKey(activeProfileId), JSON.stringify(next));
       setProgress(next);
@@ -323,27 +295,28 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return { success: false, message: 'Không lưu được tiến trình trên thiết bị. Giữ màn hình này và thử lại sau khi giải phóng bộ nhớ.' };
     }
-  }, [activeProfileId, activeProfile, progress, syncToServer]);
+  }, [activeProfileId, activeProfile, progress, syncToServer, hydrated]);
   const saveStorySession = useCallback((session:StorySession):{success:boolean;message?:string}=>{
-    if(!validStorySession(session,activeProfileId)) return {success:false,message:'Hồ sơ hoặc bài đọc đã thay đổi. Mở lại bài học.'};
-    const next=applyStickerRewards({...progress,lastActiveDate:new Date().toISOString().slice(0,10),storySessions:{...progress.storySessions,[session.id]:session}},activeProfileId,session.updatedAt);
+    if(!hydrated || !activeProfileId || !validStorySession(session,activeProfileId)) return {success:false,message:'Chọn học sinh rồi mở lại bài học.'};
+    const next=applyStickerRewards({...progress,lastActiveDate:new Date().toISOString().slice(0,10),storySessions:{...progress.storySessions,[session.id]:session}},activeProfileId,session.updatedAt,false,activeProfile.gradeId);
     try {
       localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));setProgress(next);syncToServer(activeProfileId,next,activeProfile);return {success:true};
     } catch {return {success:false,message:'Chưa lưu được tiến độ bài đọc. Hãy thử lại.'};}
-  },[activeProfileId,activeProfile,progress,syncToServer]);
+  },[activeProfileId,activeProfile,progress,syncToServer,hydrated]);
   const deleteStorySession=useCallback((id:string):{success:boolean;message?:string}=>{
+    if (!hydrated || !activeProfileId) return {success:false,message:'Chọn học sinh trước khi quản lý bài đọc.'};
     try {
       const next=deleteStory(progress,id,activeProfileId);
       localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));setProgress(next);syncToServer(activeProfileId,next,activeProfile);
       return {success:true};
     } catch(error) {return {success:false,message:error instanceof Error?error.message:'Chưa xóa được đoạn văn.'};}
-  },[activeProfileId,activeProfile,progress,syncToServer]);
+  },[activeProfileId,activeProfile,progress,syncToServer,hydrated]);
 
   const setActiveProfileId = useCallback((id: string) => {
-    if (!profiles.some((p) => p.id === id)) return;
+    if (!hydrated || !profiles.some((p) => p.id === id)) return;
     setActiveProfileIdState(id);
     try {
-      localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, id);
+      localStorage.setItem(activeKey, id);
       const progKey = getProfileProgressKey(id);
       const rawProg = localStorage.getItem(progKey);
       if (rawProg) {
@@ -356,7 +329,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Error switching active profile:', e);
     }
-  }, [profiles]);
+  }, [profiles, activeKey, hydrated]);
 
   // Login with Name or Account Code (sync across devices)
   const loginWithCodeOrName = useCallback(async (query: string): Promise<{ success: boolean; message?: string; profile?: UserProfile }> => {
@@ -367,13 +340,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     // Try server login first to fetch latest progress from other devices
     try {
-      const res = await fetch('/api/profiles', {
+      const res = await fetch(profilesEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', query: cleanQuery }),
       });
       const data = await res.json();
-      if (data.success && data.profile) {
+      if (data.success && profilesForScope([data.profile], scope).length) {
         const p: UserProfile = data.profile;
         const prog: AppProgress = data.progress || defaultProgress();
 
@@ -382,7 +355,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           const exists = prev.some((item) => item.id === p.id);
           const next = exists ? prev.map((item) => (item.id === p.id ? p : item)) : [...prev, p];
           try {
-            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(next));
+            localStorage.setItem(profilesKey, JSON.stringify(next));
           } catch {}
           return next;
         });
@@ -391,7 +364,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         setActiveProfileIdState(p.id);
         setProgress(prog);
         try {
-          localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, p.id);
+          localStorage.setItem(activeKey, p.id);
           localStorage.setItem(getProfileProgressKey(p.id), JSON.stringify(prog));
         } catch {}
 
@@ -417,52 +390,60 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       success: false,
       message: `Không tìm thấy bé với tên hoặc mã "${cleanQuery}". Bạn hãy kiểm tra lại hoặc tạo tài khoản mới nhé!`,
     };
-  }, [profiles, setActiveProfileId]);
+  }, [profiles, setActiveProfileId, profilesEndpoint, scope, profilesKey, activeKey]);
 
   // Create new profile
   const createProfile = useCallback(async (data: Omit<UserProfile, 'id' | 'createdAt'>) => {
+    if (!hydrated) throw new Error('Đang nạp hồ sơ. Hãy thử lại sau.');
     const newId = `profile_${Date.now()}`;
     const code = data.code || generateCleanCode(data.name);
-    const newProfile: UserProfile = {
+    let newProfile: UserProfile = {
       ...data,
       id: newId,
       code,
       createdAt: new Date().toISOString().split('T')[0],
     };
 
+    const empty = defaultProgress();
+    if (scope !== 'guest') {
+      const response = await fetch(profilesEndpoint, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', profile: newProfile, progress: empty }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Chưa tạo được hồ sơ trên server.');
+      newProfile = result.profile;
+    }
     const nextProfiles = [...profiles, newProfile];
     setProfiles(nextProfiles);
 
-    const empty = defaultProgress();
     setProgress(empty);
     setActiveProfileIdState(newId);
 
     try {
-      localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(nextProfiles));
-      localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, newId);
+      localStorage.setItem(profilesKey, JSON.stringify(nextProfiles));
+      localStorage.setItem(activeKey, newId);
       localStorage.setItem(getProfileProgressKey(newId), JSON.stringify(empty));
     } catch (e) {
       console.error('Error creating profile locally:', e);
     }
 
-    // Sync to server in background
-    try {
-      fetch('/api/profiles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create', profile: newProfile, progress: empty }),
-      }).catch(() => {});
-    } catch {}
+    // Keep legacy named guest profiles compatible with code-based sync.
+    if (scope === 'guest') void fetch(profilesEndpoint, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'create', profile: newProfile, progress: empty }),
+    }).catch(() => {});
 
     return newProfile;
-  }, [profiles]);
+  }, [profiles, profilesKey, activeKey, scope, profilesEndpoint, hydrated]);
 
   // Update existing profile
   const updateProfile = useCallback((id: string, data: Partial<UserProfile>) => {
+    if (!hydrated || !profiles.some(p => p.id === id)) return;
     setProfiles((prev) => {
       const next = prev.map((p) => (p.id === id ? { ...p, ...data } : p));
       try {
-        localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(next));
+        localStorage.setItem(profilesKey, JSON.stringify(next));
       } catch (e) {
         console.error('Error updating profile:', e);
       }
@@ -471,23 +452,23 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     // Sync to server in background
     try {
-      fetch('/api/profiles', {
+      if (scope !== 'guest' || id !== 'default') fetch(profilesEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'update', profileId: id, data }),
       }).catch(() => {});
     } catch {}
-  }, []);
+  }, [profilesKey, scope, profilesEndpoint, hydrated, profiles]);
 
   // Delete profile
   const deleteProfile = useCallback((id: string): boolean => {
-    if (profiles.length <= 1) {
+    if (!hydrated || profiles.length <= 1 || !profiles.some(p => p.id === id)) {
       return false; // Cannot delete the only profile
     }
     const nextProfiles = profiles.filter((p) => p.id !== id);
     setProfiles(nextProfiles);
     try {
-      localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(nextProfiles));
+      localStorage.setItem(profilesKey, JSON.stringify(nextProfiles));
       localStorage.removeItem(getProfileProgressKey(id));
     } catch (e) {
       console.error('Error deleting profile:', e);
@@ -497,7 +478,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       const newActive = nextProfiles[0].id;
       setActiveProfileIdState(newActive);
       try {
-        localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, newActive);
+        localStorage.setItem(activeKey, newActive);
         const rawProg = localStorage.getItem(getProfileProgressKey(newActive));
         setProgress(rawProg ? readProgress(rawProg) : defaultProgress());
       } catch {}
@@ -505,7 +486,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     // Sync deletion to server
     try {
-      fetch('/api/profiles', {
+      if (scope !== 'guest' || id !== 'default') fetch(profilesEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', profileId: id }),
@@ -513,7 +494,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     } catch {}
 
     return true;
-  }, [profiles, activeProfileId]);
+  }, [profiles, activeProfileId, profilesKey, activeKey, scope, profilesEndpoint, hydrated]);
 
   // Read total stars for a profile
   const getProfileStars = useCallback((id: string): number => {
@@ -532,6 +513,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   // Reset progress for a specific profile
   const resetProfileProgress = useCallback((id: string) => {
+    if (!hydrated || !profiles.some(p => p.id === id)) return;
     const empty = {...defaultProgress(),progressResetAt:new Date().toISOString()};
     try {
       localStorage.setItem(getProfileProgressKey(id), JSON.stringify(empty));
@@ -540,20 +522,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setProgress(empty);
     }
     syncToServer(id, empty, activeProfile);
-  }, [activeProfileId, activeProfile, syncToServer]);
+  }, [activeProfileId, activeProfile, syncToServer, hydrated, profiles]);
 
   // Manual trigger to pull latest server data
   const syncWithServer = useCallback(async () => {
-    try {
-      const res = await fetch('/api/profiles');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && Array.isArray(data.profiles)) {
-          setProfiles(data.profiles);
-          localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(data.profiles));
-        }
-      }
-    } catch {}
+    setRefreshIndex(index => index + 1);
   }, []);
 
   // Update streak based on today's date
@@ -588,6 +561,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   // Record a word attempt with Consecutive Pass & Spaced Repetition logic
   const recordAttempt = useCallback(
     (catId: string, wordId: string, score: number | null, status: 'pass' | 'practice' | 'retry' | 'service_error', attemptId?: string) => {
+      if (!hydrated || !activeProfileId) return;
       if (status === 'retry' || status === 'service_error') {
         return;
       }
@@ -666,7 +640,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           totalStars:   prev.totalStars + (stars - existing.stars),
           wordProgress: { ...prev.wordProgress, [key]: updated },
           dailyStats,
-        }),activeProfileId);
+        }),activeProfileId,undefined,false,activeProfile.gradeId);
 
         try {
           const progKey = getProfileProgressKey(activeProfileId);
@@ -681,7 +655,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         return next;
       });
     },
-    [activeProfileId, updateStreak, syncToServer, activeProfile]
+    [activeProfileId, updateStreak, syncToServer, activeProfile, hydrated]
   );
 
   const getWordProgress = useCallback(
@@ -703,6 +677,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   );
 
   const demoteWord = useCallback((catId: string, wordId: string) => {
+    if (!hydrated || !activeProfileId) return;
     setProgress((prev) => {
       const key = `${catId}:${wordId}`;
       const existing = prev.wordProgress[key] || Object.values(prev.wordProgress).find((p) => p.wordId === wordId);
@@ -730,7 +705,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       syncToServer(activeProfileId, next, activeProfile);
       return next;
     });
-  }, [activeProfileId, syncToServer, activeProfile]);
+  }, [activeProfileId, syncToServer, activeProfile, hydrated]);
 
   const getDueReviewWords = useCallback((): { wordId: string; catId: string; progress: WordProgress }[] => {
     const today = new Date().toISOString().slice(0, 10);
@@ -759,11 +734,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     return progress.dailyStats.find((d) => d.date === today) ?? null;
   }, [progress.dailyStats]);
 
-  const openProfileModal = useCallback(() => { if (account?.role !== 'student') setIsProfileModalOpen(true); }, [account?.role]);
+  const openProfileModal = useCallback(() => { if (backendSession.authenticated || account?.role !== 'student') setIsProfileModalOpen(true); }, [backendSession.authenticated, account?.role]);
   const closeProfileModal = useCallback(() => setIsProfileModalOpen(false), []);
 
   // Record a Unit Test result + auto-award sticker
   const recordUnitTest = useCallback((result: Omit<UnitTestResult, 'completedAt'>) => {
+    if (!hydrated || !activeProfileId) return;
     setProgress((prev) => {
       const completedAt = new Date().toISOString();
       const existing = prev.unitTestResults?.[result.unitId];
@@ -779,20 +755,20 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         unitTestResults: { ...(prev.unitTestResults ?? {}), [result.unitId]: saved },
         totalPoints: (prev.totalPoints ?? 0) + bonusPoints,
         // Auto-award sticker on pass/good/excellent (handled by caller)
-      },activeProfileId,completedAt);
+      },activeProfileId,completedAt,false,activeProfile.gradeId);
 
       const progKey = getProfileProgressKey(activeProfileId);
       try { localStorage.setItem(progKey, JSON.stringify(next)); } catch {}
       syncToServer(activeProfileId, next, activeProfile);
       return next;
     });
-  }, [activeProfileId, activeProfile, syncToServer]);
+  }, [activeProfileId, activeProfile, syncToServer, hydrated]);
 
   // Award a sticker (deduplication by id)
   const reconcileStickerRewards = useCallback(() => {
-    if (!hydrated) return;
+    if (!hydrated || !activeProfileId) return;
     setProgress(prev => {
-      const next = applyStickerRewards(prev,activeProfileId);
+      const next = applyStickerRewards(prev,activeProfileId,undefined,false,activeProfile.gradeId);
       if (next === prev) return prev;
       try {localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));} catch {}
       syncToServer(activeProfileId,next,activeProfile);
@@ -801,6 +777,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   },[hydrated,activeProfileId,activeProfile,syncToServer]);
 
   const awardSticker = useCallback((stickerData: Omit<Sticker, 'earnedAt'>) => {
+    if (!hydrated || !activeProfileId) return;
     setProgress((prev) => {
       const existing = (prev.stickers ?? []);
       if (existing.some((s) => s.id === stickerData.id)) return prev; // already earned
@@ -811,10 +788,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       syncToServer(activeProfileId, next, activeProfile);
       return next;
     });
-  }, [activeProfileId, activeProfile, syncToServer]);
+  }, [activeProfileId, activeProfile, syncToServer, hydrated]);
 
   // Admin manually unlock a unit
   const adminUnlockUnit = useCallback((unitId: string) => {
+    if (!hydrated || !activeProfileId) return;
     setProgress((prev) => {
       const current = prev.unlockedUnits ?? [];
       if (current.includes(unitId)) return prev;
@@ -824,13 +802,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       syncToServer(activeProfileId, next, activeProfile);
       return next;
     });
-  }, [activeProfileId, activeProfile, syncToServer]);
+  }, [activeProfileId, activeProfile, syncToServer, hydrated]);
 
   const value = useMemo(
     () => ({
-      profiles,
+      profiles: hydrated ? profiles : [],
       activeProfile,
-      activeProfileId,
+      activeProfileId: hydrated ? activeProfileId : '',
       setActiveProfileId,
       createProfile,
       updateProfile,
@@ -842,7 +820,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       isProfileModalOpen,
       openProfileModal,
       closeProfileModal,
-      progress,
+      progress: hydrated ? progress : defaultProgress(),
       hydrated,
       recordAttempt,
       getWordProgress,

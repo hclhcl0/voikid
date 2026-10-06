@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useBackendSession } from '@/hooks/useBackendSession';
 import { useAuth } from '@/context/AuthContext';
+import { useProfileContext } from '@/context/ProfileContext';
 import type { AppProgress, UserProfile } from '@/types';
 import type { CustomCategory } from '@/hooks/useCustomCategories';
 import { CATEGORIES, GRADE_LEVELS } from '@/lib/vocabulary';
@@ -12,6 +13,7 @@ const field='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px
 export function FamilyDashboard() {
  const router = useRouter();
  const { account: familyAccount, openAuthModal, logout }=useAuth();
+ const { syncWithServer }=useProfileContext();
  const adminSession=useBackendSession();
  const account=adminSession.authenticated ? { id: 'backend_admin', displayName: 'Admin', role: 'admin' as const } : familyAccount;
  const endpoint=adminSession.authenticated ? '/api/admin/family' : '/api/family';
@@ -21,7 +23,7 @@ export function FamilyDashboard() {
  const [word,setWord]=useState(''); const [meaning,setMeaning]=useState(''); const [topic,setTopic]=useState('Từ mới của gia đình');
  const [edit,setEdit]=useState<UserProfile | null>(null);
  useEffect(()=>{ if(account?.role !== 'parent' && account?.role !== 'admin')return; const c=new AbortController();fetch(endpoint,{signal:c.signal,cache:'no-store'}).then(r=>r.json()).then(d=>{if(d.success)setData(d);else setMessage(d.message);}).catch(()=>setMessage('Không tải được dữ liệu.'));return()=>c.abort();},[account?.id,account?.role,endpoint]);
- async function submit(body: unknown) {setBusy(true);setMessage('');try{const r=await fetch('/api/family',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const result=await r.json();if(!r.ok)throw Error(result.message);setData(result);setMessage('Đã lưu trên server.');return true;}catch(e){setMessage(e instanceof Error?e.message:'Không lưu được.');return false;}finally{setBusy(false);}}
+ async function submit(body: unknown) {setBusy(true);setMessage('');try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const result=await r.json();if(!r.ok)throw Error(result.message);setData(result);await syncWithServer();setMessage('Đã lưu trên server.');return true;}catch(e){setMessage(e instanceof Error?e.message:'Không lưu được.');return false;}finally{setBusy(false);}}
  async function addWord(){if(!data||!word.trim()||!meaning.trim())return;const cats=structuredClone(data.categories);let cat=cats.find(c=>c.name_vi===topic.trim()&&c.gradeId===grade);if(!cat){cat={id:`custom_${crypto.randomUUID()}`,name_vi:topic.trim()||'Từ mới',name_en:'Family vocabulary',emoji:'📚',gradeId:grade,color:'from-orange-400 to-orange-500',gradient:'bg-orange-50',words:[],createdAt:new Date().toISOString(),sourceType:'manual'};cats.push(cat);}cat.words.push({id:`word_${crypto.randomUUID()}`,en:word.trim(),vi:meaning.trim(),phonetic:'',emoji:'📖',example_en:'',example_vi:''});if(await submit({action:'save_categories',categories:cats,revision:data.revision})){setWord('');setMeaning('');}}
  if(account?.role==='student')return <main className="p-8 text-center"><h1 className="text-xl font-bold">Khu vực dành cho phụ huynh</h1><p className="my-4">Học sinh học và xem tiến độ của mình tại trang học.</p><Link href="/" className="learning-button bg-orange-600 text-white">Về học bài</Link></main>;
  if(adminSession.loading)return <p role="status" className="p-8">Đang mở khu vực phụ huynh…</p>;

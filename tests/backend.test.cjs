@@ -49,6 +49,29 @@ test('admin sessions reject absent, forged and password-rotated tokens', () => {
   assert.equal(passwordMatches('wrong'),false); assert.equal(passwordMatches(process.env.VOCAKIDS_ADMIN_PASSWORD),true);
   const password=process.env.VOCAKIDS_ADMIN_PASSWORD; process.env.VOCAKIDS_ADMIN_PASSWORD='rotated'; assert.equal(isBackendAdmin(request(token)),false); process.env.VOCAKIDS_ADMIN_PASSWORD=password;
 });
+
+test('unconfigured admin is reported separately from a wrong password', async () => {
+  const { NextRequest } = require('next/server');
+  const { GET, POST } = load('src/app/api/admin/session/route.ts');
+  const password = process.env.VOCAKIDS_ADMIN_PASSWORD;
+  const request = value => new NextRequest('https://app.test/api/admin/session', { method: 'POST', headers: { host: 'app.test', origin: 'https://app.test', 'Content-Type': 'application/json' }, body: JSON.stringify({ password: value }) });
+  try {
+    delete process.env.VOCAKIDS_ADMIN_PASSWORD;
+    assert.deepEqual(await GET(new NextRequest('https://app.test/api/admin/session')).json(), { authenticated: false, configured: false });
+    const missing = await POST(request('test-only'));
+    assert.equal(missing.status, 503);
+    assert.match((await missing.json()).message, /VOCAKIDS_ADMIN_PASSWORD/);
+    process.env.VOCAKIDS_ADMIN_PASSWORD = password;
+    assert.equal((await POST(request('wrong-test-only'))).status, 401);
+    const valid = await POST(request(password));
+    assert.equal(valid.status, 200);
+    const cookie = valid.cookies.get('vocakids_backend_session');
+    assert.ok(cookie?.value);
+    assert.equal(cookie.path, '/api/admin');
+    assert.equal(cookie.httpOnly, true);
+    assert.deepEqual(await valid.json(), { authenticated: true });
+  } finally { process.env.VOCAKIDS_ADMIN_PASSWORD = password; }
+});
 test('rejects cross-origin writes', () => {
   const request=origin=>({headers:{get:key=>key==='host'?'localhost:3000':origin},nextUrl:{origin:'http://localhost:3000'}});
   assert.equal(sameOrigin(request('http://localhost:3000')),true); assert.equal(sameOrigin(request('https://evil.test')),false); assert.equal(sameOrigin(request(null)),false);

@@ -2,6 +2,8 @@
 
 Mở http://localhost:3000/admin. Mật khẩu nằm trong biến VOCAKIDS_ADMIN_PASSWORD của .env.local; thông tin truy cập được tạo cho máy phát triển tại .tmp-learning/backend-access.txt. Không dùng PIN phụ huynh 1234 cho backend.
 
+Khi deploy, mật khẩu trên máy dev không tự chuyển lên server. Với Coolify/Docker, đặt `VOCAKIDS_ADMIN_PASSWORD` và `JWT_SECRET` trong biến môi trường runtime; xem [hướng dẫn Coolify](DEPLOY_COOLIFY.vi.md). Không có mật khẩu admin mặc định cho bản deploy.
+
 ## Quản lý
 
 - Chọn chủ đề, sửa tên, lớp, biểu tượng; thêm chủ đề mới.

@@ -15,9 +15,17 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
+      # Secrets must be supplied as runtime variables in Coolify or the host .env.
+      - VOCAKIDS_ADMIN_PASSWORD=${VOCAKIDS_ADMIN_PASSWORD:?Set VOCAKIDS_ADMIN_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET}
+      - VOCAKIDS_DATA_DIR=/app/data
+      - VOCAKIDS_CONTENT_DIR=/app/data/backend
+      - VOCAKIDS_FAMILY_DIR=/app/data/families
       # Kết nối nội bộ qua mạng Docker tới service postgres
       - DATABASE_URL=postgresql://vocakids:vocakids_secret_password@postgres:5432/vocakids_db
       # - GEMINI_API_KEY=your_gemini_api_key_here
+    volumes:
+      - appdata:/app/data
 
   postgres:
     image: postgres:16-alpine
@@ -37,5 +45,7 @@ services:
       retries: 5
 
 volumes:
+  appdata:
+    driver: local
   pgdata:
     driver: local
