@@ -173,6 +173,7 @@ html, body { overscroll-behavior: none; }
 }
 body { background: var(--ui-page); color: var(--ui-ink); }
 button, input, textarea, select { font-family: inherit; }
+.lucide { flex-shrink: 0; }
 button:not(:disabled), summary, select { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 :where(button, a, input, textarea, select):focus-visible {

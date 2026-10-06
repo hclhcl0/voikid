@@ -44,12 +44,28 @@ test('slow audio uses provider pace, a separate cache, and preserves normal sett
   }finally{global.fetch=original;}
 });
 
+test('legacy low speeds cannot make normal and slow reuse the same audio',()=>{
+  const settingsFile=path.join(media.mediaDirectory,'settings.json');
+  const original=fs.readFileSync(settingsFile,'utf8');
+  try{
+    for(const speed of [0.7,0.75,0.8,0.85,1,1.2]){
+      fs.writeFileSync(settingsFile,JSON.stringify({...JSON.parse(original),speed}));
+      const normal=media.audioSettingsForPace('normal'),slow=media.audioSettingsForPace('slow');
+      assert.equal(normal.speed,Math.max(0.85,speed));
+      assert.equal(slow.speed,0.7);
+      assert.notEqual(media.audioId('Same sentence.',normal),media.audioId('Same sentence.',slow));
+      assert.equal(media.publicAudioSettings().speed,normal.speed);
+    }
+    assert.throws(()=>media.saveAudioSettings({enabled:true,voiceId:'test',model:'eleven_flash_v2_5',speed:0.7}));
+  }finally{fs.writeFileSync(settingsFile,original);}
+});
+
 test('provider failures and non-audio responses never save invalid media',async()=>{
   const original=global.fetch;
   try{
     const before=media.listAudio().length;
     global.fetch=async()=>new Response('bad',{status:500});await assert.rejects(media.generateAudio('Failure.'),/PROVIDER/);
-    global.fetch=async()=>new Response('{}',{headers:{'content-type':'application/json'}});await assert.rejects(media.generateAudio('Invalid response.'),/PROVIDER/);
+    global.fetch=async()=>new Response('{}',{headers:{'content-type':'application/json'}});await assert.rejects(media.generateAudio('Invalid response.'),/INVALID_AUDIO/);
     assert.equal(media.listAudio().length,before);
   }finally{global.fetch=original;}
 });

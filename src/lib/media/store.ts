@@ -2,6 +2,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {MediaError,providerAudioError} from './errors';
+import {normalAudioSpeed,MIN_NORMAL_SPEED,SLOW_AUDIO_SPEED,MAX_AUDIO_SPEED} from './pace';
 
 export const mediaDirectory=path.join(process.env.VOCAKIDS_CONTENT_DIR||path.join(process.cwd(),'data','backend'),'media');
 const configFile=path.join(mediaDirectory,'settings.json');
@@ -25,20 +26,25 @@ function envAudioSettings():Partial<AudioSettings> {
 // settings into the persistent volume, the UI values take precedence.
 export function audioSettings():AudioSettings {
   const saved = fs.existsSync(configFile) ? JSON.parse(fs.readFileSync(configFile,'utf8')) : {};
-  return {...defaults,...envAudioSettings(),...saved};
+  const settings={...defaults,...envAudioSettings(),...saved};
+  settings.apiKey=settings.apiKey.trim().replace(/[\u200B-\u200D\uFEFF]/g,'');
+  settings.speed=normalAudioSpeed(settings.speed);
+  return settings;
 }
-export function publicAudioSettings(){const s=audioSettings();return {enabled:s.enabled,voiceId:s.voiceId,model:s.model,speed:s.speed,configured:!!s.apiKey};}
+export function publicAudioSettings(){const s=audioSettings();return {enabled:s.enabled,voiceId:s.voiceId,model:s.model,speed:s.speed,configured:!!s.apiKey,keyFingerprint:s.apiKey?createHash('sha256').update(s.apiKey).digest('hex').slice(0,12):'',keySource:fs.existsSync(configFile)?'settings':'environment'};}
 export function saveAudioSettings(value:unknown) {
   const v=value as Partial<AudioSettings>;
   if(!v||typeof v.enabled!=='boolean'||typeof v.voiceId!=='string'||(v.voiceId!==''&&!/^[a-zA-Z0-9_-]{1,100}$/.test(v.voiceId))||!['eleven_flash_v2_5','eleven_multilingual_v2'].includes(v.model||'')||(v.apiKey!==undefined&&(typeof v.apiKey!=='string'||v.apiKey.length>300)))throw new Error('INVALID');
-  if(v.speed!==undefined&&(typeof v.speed!=='number'||!Number.isFinite(v.speed)||v.speed<0.7||v.speed>1.2))throw new Error('INVALID');
-  const current=audioSettings();write(configFile,JSON.stringify({...current,enabled:v.enabled,voiceId:v.voiceId,model:v.model,speed:v.speed??current.speed,apiKey:v.apiKey?.trim()||current.apiKey}));
+  if(v.speed!==undefined&&(typeof v.speed!=='number'||!Number.isFinite(v.speed)||v.speed<MIN_NORMAL_SPEED||v.speed>MAX_AUDIO_SPEED))throw new Error('INVALID');
+  const key=v.apiKey?.trim().replace(/[\u200B-\u200D\uFEFF]/g,'');
+  if(key && /[\s"'`]/.test(key))throw new Error('INVALID_KEY_FORMAT');
+  const current=audioSettings();write(configFile,JSON.stringify({...current,enabled:v.enabled,voiceId:v.voiceId,model:v.model,speed:v.speed??current.speed,apiKey:key||current.apiKey}));
   return publicAudioSettings();
 }
 export function audioId(text:string,s:AudioSettings){return createHash('sha256').update(JSON.stringify(['eleven-v2',text.trim().normalize('NFC'),s.voiceId,s.model,s.speed])).digest('hex');}
 export function audioSettingsForPace(pace:'normal'|'slow'='normal'):AudioSettings {
   const settings=audioSettings();
-  return pace==='slow'?{...settings,speed:0.7}:settings;
+  return pace==='slow'?{...settings,speed:SLOW_AUDIO_SPEED}:settings;
 }
 export function mediaFile(id:string){if(!/^[a-f0-9]{64}$/.test(id))throw new Error('INVALID');return path.join(mediaDirectory,`${id}.mp3`);}
 export function findAudio(id:string):MediaAudio|null {const file=mediaFile(id);const metadata=path.join(mediaDirectory,`${id}.json`);return fs.existsSync(file)&&fs.existsSync(metadata)?JSON.parse(fs.readFileSync(metadata,'utf8')):null;}

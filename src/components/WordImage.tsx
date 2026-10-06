@@ -14,7 +14,7 @@ import { getTwemojiPngUrl, isTwemojiSupported } from '@/lib/twemoji';
 import { getFluentEmojiUrl } from '@/lib/fluentEmoji';
 import { displayWordEmoji, wordNumber } from '@/lib/wordIllustration';
 
-type ImageSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+type ImageSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'study';
 
 interface WordImageProps {
   word: Word;
@@ -33,6 +33,7 @@ const SIZE_MAP: Record<ImageSize, { img: string; emoji: string }> = {
   lg:  { img: 'w-28 h-28',   emoji: 'text-7xl' },
   xl:  { img: 'w-36 h-36',   emoji: 'text-8xl' },
   '2xl': { img: 'w-44 h-44', emoji: 'text-9xl' },
+  study: { img: 'w-20 h-20 sm:w-28 sm:h-28', emoji: 'text-6xl sm:text-7xl' },
 };
 
 export function WordImage(props: WordImageProps) {

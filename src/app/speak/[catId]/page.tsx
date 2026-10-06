@@ -15,6 +15,7 @@ import { WordLearningNavigation } from '@/components/learning/WordLearningNaviga
 import { WordStudyCard } from '@/components/learning/WordStudyCard';
 import { WordCardSlider } from '@/components/learning/WordCardSlider';
 import { PronunciationResult, Word } from '@/types';
+import {ArrowRight,CircleCheck,Ear,Headphones,Keyboard,Lightbulb,LoaderCircle,Mic,PlugZap,RotateCcw,Settings,Square,Star,Target,Volume2} from 'lucide-react';
 
 // ── Mic button with wave animation ────────────────────────────────────────
 function MicButton({ status, onClick }: { status: string; onClick: () => void }) {
@@ -36,9 +37,7 @@ function MicButton({ status, onClick }: { status: string; onClick: () => void })
             : 'bg-gradient-to-br from-rose-400 to-pink-500 hover:shadow-rose-300 hover:shadow-xl'
         }`}
       >
-        <span className="text-4xl">
-          {isProcessing ? '⏳' : isRecording ? '⏹️' : '🎙️'}
-        </span>
+        {isProcessing||isRequesting?<LoaderCircle aria-hidden="true" className="h-9 w-9 animate-spin"/>:isRecording?<Square aria-hidden="true" className="h-8 w-8 fill-current"/>:<Mic aria-hidden="true" className="h-9 w-9"/>}
         <span className="text-xs">
           {isRequesting ? 'Đang mở mic...' : isProcessing ? 'Đang chấm...' : isRecording ? 'Dừng lại' : 'Nhấn để nói'}
         </span>
@@ -140,7 +139,7 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
       {/* 2-Streak Mastery Bar */}
       <div className="bg-white/90 backdrop-blur rounded-2xl px-3.5 py-2 mb-3.5 border border-amber-200/80 shadow-xs flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-base">🎯</span>
+          <Target aria-hidden="true" className="h-4 w-4 text-violet-500"/>
           <span className="text-xs font-bold text-gray-700">Lượt đọc rõ liên tiếp:</span>
         </div>
         <div>
@@ -152,9 +151,9 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
               : 'bg-gray-100 text-gray-500'
           }`}>
             {consecutivePasses >= 2
-              ? '⭐⭐ Đã đọc rõ 2 lượt'
+              ? 'Đã đọc rõ 2 lượt'
               : consecutivePasses === 1
-              ? '⭐ Đã đọc rõ 1 lượt'
+              ? 'Đã đọc rõ 1 lượt'
               : 'Chưa có lượt đọc rõ'}
           </span>
         </div>
@@ -172,7 +171,7 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
           <div className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl font-black shadow-inner ${
             isPassed ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
           }`}>
-            {isPassed ? '⭐' : '💪'}
+            {isPassed?<Star aria-hidden="true" className="h-9 w-9 fill-amber-200 text-amber-500"/>:<RotateCcw aria-hidden="true" className="h-9 w-9"/>}
           </div>
         )}
         <div className="flex-1">
@@ -181,18 +180,19 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
               {[1,2,3].map((s) => (
                 <motion.span key={s} initial={{ scale: 0 }} animate={{ scale: 1 }}
                   transition={{ delay: s * 0.1, type: 'spring' }}
-                  className={`text-2xl ${s <= stars ? 'opacity-100' : 'opacity-20'}`}>⭐</motion.span>
+                  ><Star aria-hidden="true" className={`h-6 w-6 ${s <= stars ? 'fill-amber-300 text-amber-500' : 'text-slate-200'}`}/></motion.span>
               ))}
             </div>
           )}
-          <p className="font-bold text-sm text-gray-600">
+          <p className="flex items-center gap-1.5 font-bold text-sm text-gray-600">
+            {isPassed?<CircleCheck aria-hidden="true" className="h-4 w-4 text-emerald-600"/>:result.status==='service_error'?<PlugZap aria-hidden="true" className="h-4 w-4"/>:result.status==='retry'?<Ear aria-hidden="true" className="h-4 w-4"/>:<RotateCcw aria-hidden="true" className="h-4 w-4"/>}
             {isPassed
-              ? '✅ Tuyệt lắm!'
+              ? 'Tuyệt lắm!'
               : result.status === 'service_error'
-              ? '🔌 Lỗi kết nối!'
+              ? 'Lỗi kết nối!'
               : result.status === 'retry'
-              ? '👂 Chưa rõ tiếng!'
-              : '💪 Cố lên, đọc lại nhé!'}
+              ? 'Chưa rõ tiếng!'
+              : 'Cố lên, đọc lại nhé!'}
           </p>
         </div>
       </div>
@@ -206,7 +206,7 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
       <div className="bg-white/90 backdrop-blur rounded-2xl p-3.5 mb-4 border border-rose-200/80 shadow-xs">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-black text-gray-700 flex items-center gap-1.5">
-            <span>🎧</span>
+            <Headphones aria-hidden="true" className="h-4 w-4 text-violet-500"/>
             <span>Nghe lại &amp; So sánh:</span>
           </p>
           {recordedBlob && (
@@ -229,7 +229,7 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
                 : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-rose-200 hover:shadow-md'
             }`}
           >
-            <span className="text-base">{isPlayingUserAudio ? '⏹️' : '👧'}</span>
+            {isPlayingUserAudio?<Square aria-hidden="true" className="h-4 w-4"/>:<Headphones aria-hidden="true" className="h-4 w-4"/>}
             <span>{isPlayingUserAudio ? 'Đang phát...' : 'Nghe giọng bé'}</span>
           </motion.button>
 
@@ -244,19 +244,19 @@ function ScoreCard({ result, word, recordedBlob, consecutivePasses = 0, onNext, 
                 : 'bg-white text-violet-700 border-2 border-violet-200 hover:bg-violet-50'
             }`}
           >
-            <span className="text-base">{isModelSpeaking ? '⏹️' : '🔊'}</span>
+            {isModelSpeaking?<Square aria-hidden="true" className="h-4 w-4"/>:<Volume2 aria-hidden="true" className="h-4 w-4"/>}
             <span>{isModelSpeaking ? 'Đang đọc...' : 'Nghe mẫu'}</span>
           </motion.button>
         </div>
       </div>
 
       <div className="flex gap-2">
-        <button onClick={onRetry} className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-white border-2 border-gray-200 text-gray-600 hover:border-violet-300 transition-colors">
-          🔄 Thử lại
+        <button onClick={onRetry} className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm bg-white border-2 border-gray-200 text-gray-600 hover:border-violet-300 transition-colors">
+          <RotateCcw aria-hidden="true" className="h-4 w-4"/>Thử lại
         </button>
         {isPassed && (
-          <button onClick={onNext} className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg">
-            Tiếp ▶
+          <button onClick={onNext} className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg">
+            Tiếp<ArrowRight aria-hidden="true" className="h-4 w-4"/>
           </button>
         )}
       </div>
@@ -382,7 +382,7 @@ export default function SpeakPage() {
       if (!res.ok) {
         const err = await res.json().catch(() => ({})) as { error?: string; message?: string };
         if (err.error === 'NO_API_KEY') {
-          setApiError('⚙️ Chưa cài API Key! Nhấn vào đây để cài đặt →');
+          setApiError('Chưa cài API Key! Nhấn vào đây để cài đặt →');
           return;
         }
         if (err.message) {
@@ -460,7 +460,7 @@ export default function SpeakPage() {
   // Keyboard navigation and spacebar mic control for PC users
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      if ((e.target as HTMLElement)?.closest('button, a, input, textarea, select, summary, [contenteditable="true"]')) return;
       if (e.code === 'Space') {
         e.preventDefault();
         handleMicClick();
@@ -519,7 +519,7 @@ export default function SpeakPage() {
 
             {/* Desktop keyboard helper */}
             <div className="hidden lg:flex items-center justify-center gap-3 text-xs font-semibold text-gray-400 bg-white/70 backdrop-blur py-2.5 px-4 rounded-2xl border border-rose-100 shadow-2xs">
-              <span>⌨️ Phím tắt:</span>
+              <span className="inline-flex items-center gap-1.5"><Keyboard aria-hidden="true" className="h-3.5 w-3.5"/>Phím tắt:</span>
               <span><kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">Space</kbd> Thu âm</span>
               <span><kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">←</kbd> / <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">→</kbd> Đổi từ</span>
             </div>
@@ -553,8 +553,8 @@ export default function SpeakPage() {
                         : 'bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100'
                     }`}
                   >
-                    <span>{isPlayingInMicArea ? '⏹️' : '👧'}</span>
-                    <span>{isPlayingInMicArea ? 'Đang phát giọng bé...' : '🎧 Nghe lại giọng bé vừa thu'}</span>
+                    {isPlayingInMicArea?<Square aria-hidden="true" className="h-4 w-4"/>:<Headphones aria-hidden="true" className="h-4 w-4"/>}
+                    <span>{isPlayingInMicArea ? 'Đang phát giọng bé...' : 'Nghe lại giọng bé vừa thu'}</span>
                   </motion.button>
                 )}
 
@@ -567,7 +567,7 @@ export default function SpeakPage() {
                       onClick={() => router.push('/settings')}
                       className="w-full bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 text-sm font-bold text-amber-700 text-center hover:bg-amber-100 transition-colors cursor-pointer"
                     >
-                      ⚙️ Chưa có API Key — Nhấn để cài đặt ngay →
+                      <Settings aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>Chưa có API Key — Nhấn để cài đặt ngay →
                     </button>
                   ) : (
                     <p className="text-sm text-rose-500 font-bold text-center">{apiError}</p>
@@ -580,12 +580,12 @@ export default function SpeakPage() {
                     onClick={() => router.push('/settings')}
                     className="w-full bg-violet-50 border border-violet-200 rounded-2xl p-3 text-xs font-bold text-violet-600 text-center hover:bg-violet-100 transition-colors cursor-pointer"
                   >
-                    ⚙️ Cài Gemini API Key để bật chấm điểm phát âm →
+                    <Settings aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>Cài Gemini API Key để bật chấm điểm phát âm →
                   </button>
                 )}
 
                 <p className="text-xs text-gray-400 font-semibold text-center">
-                  💡 Nói to rõ ràng · Máy sẽ tự dừng khi bé ngưng nói
+                  <Lightbulb aria-hidden="true" className="mr-1 inline h-3.5 w-3.5 text-amber-500"/>Nói to rõ ràng · Máy sẽ tự dừng khi bé ngưng nói
                 </p>
               </div>
             )}

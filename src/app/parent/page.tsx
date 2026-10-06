@@ -11,11 +11,12 @@ import { useAdminContext } from '@/context/AdminContext';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
 import { CATEGORIES } from '@/lib/vocabulary';
 import { LearningSummary } from '@/components/learning/LearningSummary';
+import {BookOpen,Flame,House,Star,type LucideIcon} from 'lucide-react';
 
-function StatCard({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) {
+function StatCard({ Icon, label, value, color }: { Icon: LucideIcon; label: string; value: string | number; color: string }) {
   return (
     <motion.div whileHover={{ y: -3 }} className={`rounded-2xl p-4 ${color} text-center shadow`}>
-      <div className="text-3xl mb-1">{icon}</div>
+      <Icon aria-hidden="true" className="mx-auto mb-2 h-7 w-7 text-orange-500"/>
       <div className="font-bold text-2xl text-gray-800">{value}</div>
       <div className="text-xs font-bold text-gray-500">{label}</div>
     </motion.div>
@@ -114,7 +115,7 @@ export default function ParentPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 w-full">
           <div className="flex items-center gap-2">
             <button onClick={() => router.back()} className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-orange-700 hover:bg-violet-100 transition-colors cursor-pointer" title="Quay lại">←</button>
-            <Link href="/" className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs cursor-pointer" title="Về trang chủ">🏠</Link>
+            <Link href="/" className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs cursor-pointer" title="Về trang chủ"><House aria-hidden="true" className="h-5 w-5"/></Link>
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="font-bold text-base md:text-lg text-gray-800 truncate flex items-center gap-2">
@@ -206,9 +207,9 @@ export default function ParentPage() {
 
         {/* Overview stats */}
         <div className="grid grid-cols-3 gap-3">
-          <StatCard icon="⭐" label="Tổng sao" value={progress.totalStars} color="bg-amber-50" />
-          <StatCard icon="🔥" label="Chuỗi ngày" value={`${progress.streak} ngày`} color="bg-orange-50" />
-          <StatCard icon="📚" label="Đã học" value={`${masteredWords}/${totalWords}`} color="bg-slate-50" />
+          <StatCard Icon={Star} label="Tổng sao" value={progress.totalStars} color="bg-amber-50" />
+          <StatCard Icon={Flame} label="Chuỗi ngày" value={`${progress.streak} ngày`} color="bg-orange-50" />
+          <StatCard Icon={BookOpen} label="Đã học" value={`${masteredWords}/${totalWords}`} color="bg-slate-50" />
         </div>
 
         {/* Vocabulary Management Quick Card */}

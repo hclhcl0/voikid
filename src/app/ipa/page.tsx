@@ -1,4 +1,5 @@
 'use client';
+import {ArrowLeft,BookOpen,Headphones,House,Search,Speech,Volume2} from 'lucide-react';
 
 // =============================================
 // VocaKids – 44 Standard IPA Phonemes Page
@@ -74,20 +75,20 @@ export default function IpaChartPage() {
               className="w-10 h-10 rounded-2xl bg-orange-50 hover:bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
               title="Quay lại"
             >
-              ←
+              <ArrowLeft aria-hidden="true" className="h-5 w-5"/>
             </button>
             <Link
               href="/"
               className="w-10 h-10 rounded-2xl bg-orange-500 text-white flex items-center justify-center font-bold text-lg shadow-sm hover:bg-orange-600 transition-colors"
               title="Về trang chủ"
             >
-              🏠
+              <House aria-hidden="true" className="h-5 w-5"/>
             </Link>
           </div>
 
           <div className="text-center flex-1 min-w-0">
             <h1 className="text-lg sm:text-xl font-black text-gray-800 truncate">
-              🔤 Luyện âm tiếng Anh
+              <Speech aria-hidden="true" className="mr-1.5 inline h-5 w-5 text-orange-500"/>Luyện âm tiếng Anh
             </h1>
             <p className="text-[11px] text-gray-500 font-semibold truncate">
               Nghe rõ · Đọc theo · Dùng trong từ và câu
@@ -112,7 +113,7 @@ export default function IpaChartPage() {
           </div>
           <div className="relative z-10 max-w-lg">
             <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur text-xs font-black mb-2">
-              ⭐ Bảng âm để tra cứu
+              <BookOpen aria-hidden="true" className="mr-1.5 inline h-3.5 w-3.5"/>Bảng âm để tra cứu
             </span>
             <h2 className="text-2xl font-black leading-snug drop-shadow-sm">
               Khám phá từng âm qua từ quen thuộc
@@ -128,7 +129,7 @@ export default function IpaChartPage() {
           {/* Ô tìm kiếm nhanh */}
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-base">
-              🔍
+              <Search aria-hidden="true" className="h-4 w-4"/>
             </span>
             <input
               type="text"
@@ -257,7 +258,7 @@ export default function IpaChartPage() {
                           className="w-7 h-7 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-700 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer"
                           title="Nghe âm trong từ mẫu (đọc chậm)"
                         >
-                          🔊
+                          <Volume2 aria-hidden="true" className="h-3.5 w-3.5"/>
                         </button>
                         <button
                           type="button"
@@ -265,7 +266,7 @@ export default function IpaChartPage() {
                           className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer"
                           title="Nghe từ mẫu"
                         >
-                          🎧
+                          <Headphones aria-hidden="true" className="h-3.5 w-3.5"/>
                         </button>
                       </div>
                     </div>

@@ -13,6 +13,7 @@ import { Word } from '@/types';
 import { decodeWordIpa, DecodedIpaToken, IpaSound, IPA_TYPE_METAS } from '@/data/ipaChart';
 import { useTTS } from '@/hooks/useTTS';
 import { IpaSoundDetailModal } from './IpaSoundDetailModal';
+import {BookOpen,Turtle,Volume2,X} from 'lucide-react';
 
 interface Props {
   word: Word;
@@ -66,7 +67,7 @@ export function IpaWordDecoderModal({ word, onClose }: Props) {
                 className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur flex items-center justify-center text-white font-bold text-lg transition-colors cursor-pointer"
                 title="Đóng"
               >
-                ✕
+                <X aria-hidden="true" className="h-5 w-5"/>
               </button>
 
               <div className="flex items-center gap-2 mb-1.5">
@@ -95,14 +96,14 @@ export function IpaWordDecoderModal({ word, onClose }: Props) {
                   onClick={() => handleListenWord(0.85)}
                   className="px-3.5 py-1.5 rounded-xl bg-white text-gray-800 font-bold text-xs shadow hover:bg-orange-50 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>🔊</span> Nghe chuẩn
+                  <Volume2 aria-hidden="true" className="h-4 w-4"/>Nghe chuẩn
                 </button>
                 <button
                   type="button"
                   onClick={() => handleListenWord(0.4)}
                   className="px-3.5 py-1.5 rounded-xl bg-black/20 hover:bg-black/30 text-white font-bold text-xs shadow backdrop-blur active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>🐢</span> Đọc chậm (0.4x)
+                  <Turtle aria-hidden="true" className="h-4 w-4"/>Đọc chậm (0.4x)
                 </button>
               </div>
             </div>
@@ -286,7 +287,7 @@ export function IpaWordDecoderModal({ word, onClose }: Props) {
                   className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                   onClick={onClose}
                 >
-                  <span>📖</span> Mở bài luyện âm và bảng IPA
+                  <BookOpen aria-hidden="true" className="h-4 w-4"/>Mở bài luyện âm và bảng IPA
                 </Link>
               </div>
             </div>

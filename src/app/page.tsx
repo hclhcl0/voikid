@@ -12,6 +12,8 @@ import { ChildBadge } from '@/components/ChildBadge';
 import { LearningEntry } from '@/components/learning/LearningSummary';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import type { Category } from '@/types';
+import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,Speech,Star,UsersRound} from 'lucide-react';
+import {EmojiImage} from '@/components/WordImage';
 
 type GradeCategory = Category & { gradeId?: string; isCustom?: boolean };
 
@@ -57,8 +59,8 @@ export default function HomePage() {
         <div><p className="text-sm text-slate-500">{settings.welcomeText}</p><h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">Hôm nay mình học gì?</h1></div>
         <div className="flex gap-4 text-sm text-slate-600" aria-label="Thành tích">
           <span className="hidden sm:inline">Mục tiêu: {settings.dailyGoal} từ/ngày</span>
-          <span>⭐ <strong>{hydrated ? progress.totalStars : 0}</strong> sao</span>
-          <span>🔥 <strong>{hydrated ? progress.streak : 0}</strong> ngày học</span>
+          <span className="inline-flex items-center gap-1.5"><Star aria-hidden="true" className="h-4 w-4 fill-amber-100 text-amber-500"/><strong>{hydrated ? progress.totalStars : 0}</strong> sao</span>
+          <span className="inline-flex items-center gap-1.5"><Flame aria-hidden="true" className="h-4 w-4 text-orange-500"/><strong>{hydrated ? progress.streak : 0}</strong> ngày học</span>
           <Link href="/stickers" className="underline decoration-slate-300 underline-offset-4">Sticker</Link>
         </div>
       </section>
@@ -66,12 +68,12 @@ export default function HomePage() {
       <LearningEntry />
       <nav aria-label="Công cụ học tập" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { href: '/review', icon: '↻', title: 'Ôn tập', detail: due ? `${due} từ đến lịch ôn` : 'Ôn lại từ đã học' },
-          { href: '/test', icon: '✓', title: 'Luyện tập', detail: 'Nghe, ghép và viết' },
-          { href: '/ipa', icon: 'Aa', title: 'Phát âm', detail: 'Khám phá 44 âm IPA' },
-          { href: `/wordsearch/${categories[0]?.id ?? 'animals'}`, icon: '⌕', title: 'Tìm từ', detail: 'Chơi cùng từ vựng' },
+          { href: '/review', Icon: RotateCcw, color:'bg-violet-50 text-violet-600', title: 'Ôn tập', detail: due ? `${due} từ đến lịch ôn` : 'Ôn lại từ đã học' },
+          { href: '/test', Icon: CircleCheck, color:'bg-emerald-50 text-emerald-600', title: 'Luyện tập', detail: 'Nghe, ghép và viết' },
+          { href: '/ipa', Icon: Speech, color:'bg-orange-50 text-orange-600', title: 'Phát âm', detail: 'Khám phá 44 âm IPA' },
+          { href: `/wordsearch/${categories[0]?.id ?? 'animals'}`, Icon: Search, color:'bg-sky-50 text-sky-600', title: 'Tìm từ', detail: 'Chơi cùng từ vựng' },
         ].filter(item => settings.showGames || item.title !== 'Tìm từ').map(item => <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-orange-300">
-          <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-bold text-slate-600">{item.icon}</span>
+          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.color}`}><item.Icon aria-hidden="true" className="h-5 w-5"/></span>
           <div><h2 className="text-sm font-bold">{item.title}</h2><p className="mt-1 text-xs text-slate-500">{item.detail}</p></div>
         </Link>)}
       </nav>
@@ -86,7 +88,7 @@ export default function HomePage() {
             const max = cat.words.length * 3;
             const pct = max ? Math.min(100, Math.round(stars / max * 100)) : 0;
             return <article key={cat.id} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5">
-              <div className="flex items-center justify-between"><span aria-hidden="true" className="text-3xl">{cat.emoji}</span><span className="text-xs text-slate-500">{cat.words.length} từ{pct === 100 ? ' · Hoàn thành' : ''}</span></div>
+              <div className="flex items-center justify-between"><EmojiImage emoji={cat.emoji} alt={cat.name_vi} size="sm"/><span className="text-xs text-slate-500">{cat.words.length} từ{pct === 100 ? ' · Hoàn thành' : ''}</span></div>
               <h3 className="mt-4 font-bold">{cat.name_vi}</h3><p className="mt-1 text-sm text-slate-500">{cat.name_en}</p>
               <div className="mt-auto pt-4"><div className="mb-2 flex justify-between text-xs text-slate-500"><span>Tiến độ</span><span>{pct}%</span></div><div role="progressbar" aria-label={`Tiến độ ${cat.name_vi}`} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} className="h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-orange-500" style={{ width: `${pct}%` }} /></div></div>
               <div className="mt-4 grid grid-cols-2 gap-2"><Link href={`/learn/${cat.id}`} className="learning-button bg-orange-50 text-sm text-orange-800 hover:bg-orange-100">Học từ</Link><Link href={`/test/${cat.id}`} className="learning-button border border-slate-200 text-sm hover:bg-slate-50">Luyện tập</Link></div>
@@ -100,8 +102,8 @@ export default function HomePage() {
     </main>
     <nav aria-label="Điều hướng chính" className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto grid max-w-lg grid-cols-4 py-2">{[
-        { href: '/', label: 'Trang chủ', icon: '⌂' }, { href: '/curriculum', label: adminSession.authenticated || account?.role === 'parent' ? 'Đoạn văn' : 'Bài luyện', icon: '▤' }, { href: '/review', label: 'Ôn tập', icon: '↻' }, { href: '/parent', label: 'Phụ huynh', icon: '☷' },
-      ].filter(item => account?.role !== 'student' || item.href !== '/parent').map(item => <Link key={item.href} href={item.href} aria-current={item.href === '/' ? 'page' : undefined} className={`flex min-h-12 flex-col items-center justify-center gap-1 text-xs font-bold ${item.href === '/' ? 'text-orange-700' : 'text-slate-500 hover:text-slate-800'}`}><span aria-hidden="true" className="text-xl">{item.icon}</span>{item.label}</Link>)}</div>
+        { href: '/', label: 'Trang chủ', Icon: House }, { href: '/curriculum', label: adminSession.authenticated || account?.role === 'parent' ? 'Đoạn văn' : 'Bài luyện', Icon: BookOpen }, { href: '/review', label: 'Ôn tập', Icon: RotateCcw }, { href: '/parent', label: 'Phụ huynh', Icon: UsersRound },
+      ].filter(item => account?.role !== 'student' || item.href !== '/parent').map(item => <Link key={item.href} href={item.href} aria-current={item.href === '/' ? 'page' : undefined} className={`flex min-h-12 flex-col items-center justify-center gap-1 text-xs font-bold ${item.href === '/' ? 'text-orange-700' : 'text-slate-500 hover:text-slate-800'}`}><item.Icon aria-hidden="true" className="h-5 w-5"/>{item.label}</Link>)}</div>
     </nav>
   </div>;
 }

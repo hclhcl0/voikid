@@ -19,6 +19,7 @@ import { useCustomCategories } from '@/hooks/useCustomCategories';
 import { WordProgress, Word, Category } from '@/types';
 import { ChildBadge } from '@/components/ChildBadge';
 import { WordImage } from '@/components/WordImage';
+import {ArrowLeft,BookOpen,CalendarDays,CircleCheck,Eye,House,Lightbulb,MessageCircle,PartyPopper,RotateCcw,Trophy,Turtle,Volume2} from 'lucide-react';
 
 interface ReviewItem {
   wordId: string;
@@ -119,7 +120,7 @@ function ReviewCard({
                   : 'bg-violet-100 text-violet-700 hover:bg-violet-200'
               }`}
             >
-              <span>🔊</span>
+              <Volume2 aria-hidden="true" className="h-4 w-4"/>
               <span>{speakMode === 'normal' ? 'Đang đọc...' : 'Nghe chuẩn'}</span>
             </motion.button>
             <motion.button
@@ -131,7 +132,7 @@ function ReviewCard({
                   : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
               }`}
             >
-              <span>🐢</span>
+              <Turtle aria-hidden="true" className="h-4 w-4"/>
               <span>{speakMode === 'slow' ? 'Đang đọc...' : 'Đọc chậm'}</span>
             </motion.button>
           </div>
@@ -143,7 +144,7 @@ function ReviewCard({
               onClick={() => setRevealed(true)}
               className="w-full mt-2 py-3.5 rounded-2xl font-black text-base bg-gradient-to-r from-violet-100 to-purple-100 text-violet-600 border-2 border-dashed border-violet-300 hover:border-violet-400 hover:bg-violet-50 transition-all cursor-pointer min-h-[52px]"
             >
-              👁️ Xem nghĩa
+              <Eye aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>Xem nghĩa
             </motion.button>
           ) : (
             <motion.div
@@ -156,7 +157,7 @@ function ReviewCard({
               </div>
               {word.example_en && (
                 <div className="mt-2 bg-violet-50 border-l-4 border-violet-400 rounded-xl p-3 text-left">
-                  <p className="text-xs font-bold text-violet-500 mb-1">💬 Ví dụ:</p>
+                  <p className="flex items-center gap-1.5 text-xs font-bold text-violet-500 mb-1"><MessageCircle aria-hidden="true" className="h-3.5 w-3.5"/>Ví dụ:</p>
                   <p
                     className="text-gray-800 font-bold text-sm"
                     style={{ fontFamily: 'var(--font-andika), "Andika", sans-serif' }}
@@ -175,13 +176,13 @@ function ReviewCard({
 
       {/* Spaced Repetition info */}
       <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 flex items-center gap-2">
-        <span className="text-xl">🗓️</span>
+        <CalendarDays aria-hidden="true" className="h-5 w-5 text-amber-600"/>
         <div>
           <p className="text-xs font-black text-amber-800">Đến hạn ôn hôm nay</p>
           <p className="text-[11px] text-amber-600 font-medium">
             {item.progress.mastered
-              ? `✅ Từ đã thành thạo • Chu kỳ ôn: ${item.progress.intervalDays ?? 1} ngày`
-              : `⏳ Chưa thành thạo • Đã học ${item.progress.consecutivePasses ?? 0}/2 lần liên tiếp`}
+              ? `Từ đã thành thạo • Chu kỳ ôn: ${item.progress.intervalDays ?? 1} ngày`
+              : `Chưa thành thạo • Đã học ${item.progress.consecutivePasses ?? 0}/2 lần liên tiếp`}
           </p>
         </div>
       </div>
@@ -199,7 +200,7 @@ function ReviewCard({
               onClick={onForgot}
               className="py-4 rounded-2xl font-black text-base bg-rose-100 text-rose-600 border-2 border-rose-200 hover:bg-rose-200 transition-colors cursor-pointer flex items-center justify-center gap-2 min-h-[56px]"
             >
-              <span>😅</span>
+              <RotateCcw aria-hidden="true" className="h-5 w-5"/>
               <span>Chưa nhớ</span>
             </motion.button>
             <motion.button
@@ -207,7 +208,7 @@ function ReviewCard({
               onClick={onRemember}
               className="py-4 rounded-2xl font-black text-base bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[56px]"
             >
-              <span>🌟</span>
+              <CircleCheck aria-hidden="true" className="h-5 w-5"/>
               <span>Nhớ rồi!</span>
             </motion.button>
           </motion.div>
@@ -288,7 +289,7 @@ export default function ReviewPage() {
   if (!mounted || !hydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 to-purple-50">
-        <div className="text-6xl animate-bounce">🔄</div>
+        <RotateCcw aria-hidden="true" className="h-12 w-12 animate-spin text-violet-400"/>
       </div>
     );
   }
@@ -300,18 +301,20 @@ export default function ReviewPage() {
         <div className="max-w-xl mx-auto flex items-center gap-3">
           <button
             onClick={() => router.back()}
+            aria-label="Quay lại"
             className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer"
           >
-            ←
+            <ArrowLeft aria-hidden="true" className="h-5 w-5"/>
           </button>
           <Link
             href="/"
+            aria-label="Về trang chủ"
             className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 flex items-center justify-center font-bold transition-colors shadow-xs"
           >
-            🏠
+            <House aria-hidden="true" className="h-5 w-5"/>
           </Link>
           <div className="flex-1">
-            <h1 className="font-black text-gray-800 text-base">🔄 Ôn Tập Hôm Nay</h1>
+            <h1 className="flex items-center gap-2 font-black text-gray-800 text-base"><RotateCcw aria-hidden="true" className="h-4 w-4 text-violet-500"/>Ôn Tập Hôm Nay</h1>
             <p className="text-xs text-gray-500 font-semibold">
               {activeProfile.name} {activeProfile.avatar}
             </p>
@@ -328,7 +331,7 @@ export default function ReviewPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-3xl p-8 text-center shadow-xl border-2 border-emerald-100 space-y-4 mt-8"
           >
-            <div className="text-6xl">🎉</div>
+            <PartyPopper aria-hidden="true" className="mx-auto h-14 w-14 text-orange-500"/>
             <h2 className="font-black text-2xl text-gray-800">Tuyệt vời!</h2>
             <p className="text-gray-500 font-semibold">
               Bé không có từ nào cần ôn hôm nay. Hãy học thêm từ mới nhé!
@@ -337,7 +340,7 @@ export default function ReviewPage() {
               href="/"
               className="inline-block w-full py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md"
             >
-              📚 Học Từ Mới
+              <BookOpen aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>Học Từ Mới
             </Link>
           </motion.div>
         )}
@@ -350,21 +353,21 @@ export default function ReviewPage() {
             transition={{ type: 'spring', stiffness: 280, damping: 22 }}
             className="bg-white rounded-3xl p-8 text-center shadow-xl border-2 border-violet-100 space-y-5 mt-4"
           >
-            <div className="text-6xl">🏆</div>
+            <Trophy aria-hidden="true" className="mx-auto h-14 w-14 fill-amber-50 text-amber-500"/>
             <h2 className="font-black text-3xl text-gray-800">Ôn Xong Rồi!</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-emerald-50 rounded-2xl p-4">
-                <div className="font-black text-3xl text-emerald-700">🌟 {rememberCount}</div>
+                <div className="flex items-center justify-center gap-2 font-black text-3xl text-emerald-700"><CircleCheck aria-hidden="true" className="h-6 w-6"/>{rememberCount}</div>
                 <div className="text-xs font-bold text-emerald-600 mt-1">Nhớ rồi</div>
               </div>
               <div className="bg-rose-50 rounded-2xl p-4">
-                <div className="font-black text-3xl text-rose-600">😅 {forgotCount}</div>
+                <div className="flex items-center justify-center gap-2 font-black text-3xl text-rose-600"><RotateCcw aria-hidden="true" className="h-6 w-6"/>{forgotCount}</div>
                 <div className="text-xs font-bold text-rose-500 mt-1">Cần ôn thêm</div>
               </div>
             </div>
             {forgotCount > 0 && (
               <p className="text-xs text-amber-600 font-semibold bg-amber-50 rounded-xl px-4 py-2">
-                💡 {forgotCount} từ sẽ xuất hiện lại trong buổi ôn tiếp theo nhé!
+                <Lightbulb aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>{forgotCount} từ sẽ xuất hiện lại trong buổi ôn tiếp theo nhé!
               </p>
             )}
             <div className="flex gap-3">
@@ -377,13 +380,13 @@ export default function ReviewPage() {
                 }}
                 className="flex-1 py-3 rounded-2xl font-black text-sm border-2 border-violet-300 text-violet-700 bg-white hover:bg-violet-50 transition-colors cursor-pointer"
               >
-                🔄 Ôn Lại
+                <RotateCcw aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>Ôn Lại
               </button>
               <Link
                 href="/"
                 className="flex-1 py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md flex items-center justify-center"
               >
-                🏠 Về Nhà
+                <House aria-hidden="true" className="mr-1.5 h-4 w-4"/>Về Nhà
               </Link>
             </div>
           </motion.div>

@@ -1,4 +1,5 @@
 'use client';
+import {ArrowLeft,House,Settings} from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -173,16 +174,16 @@ export default function SettingsPanel({ embedded = false }: { embedded?: boolean
               onClick={() => router.back()}
               className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-orange-700 hover:bg-violet-100 transition-colors cursor-pointer"
               title="Quay lại"
-            >←</button>
+            ><ArrowLeft aria-hidden="true" className="h-5 w-5"/></button>
             <Link
               href="/"
               className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs cursor-pointer"
               title="Về trang chủ"
-            >🏠</Link>
+            ><House aria-hidden="true" className="h-5 w-5"/></Link>
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="font-bold text-xl text-gray-800 flex items-center gap-2">
-              <span>⚙️ Cài Đặt</span>
+              <span className="inline-flex items-center gap-2"><Settings aria-hidden="true" className="h-5 w-5 text-orange-500"/>Cài Đặt</span>
               <Link href="/admin" className="learning-button text-sm bg-orange-50 text-orange-800">Quản trị server →</Link>
               <span className="text-[11px] font-bold bg-violet-100 text-orange-700 px-2 py-0.5 rounded-full">
                 👑 Admin
@@ -608,7 +609,7 @@ export default function SettingsPanel({ embedded = false }: { embedded?: boolean
           onClick={() => router.push('/')}
           className="w-full py-4 rounded-2xl font-bold text-gray-600 border-2 border-gray-200 bg-white hover:border-violet-300 hover:text-orange-700 transition-colors"
         >
-          🏠 Về trang chủ
+          <House aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>Về trang chủ
         </motion.button>
 
       </div>

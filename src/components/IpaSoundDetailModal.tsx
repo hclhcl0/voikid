@@ -10,6 +10,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { IpaSound, IPA_TYPE_METAS } from '@/data/ipaChart';
 import { useTTS } from '@/hooks/useTTS';
+import {Headphones,Volume2,X} from 'lucide-react';
 
 interface Props {
   sound: IpaSound | null;
@@ -59,7 +60,7 @@ export function IpaSoundDetailModal({ sound, onClose, onPractice }: Props) {
               className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur flex items-center justify-center text-white font-bold text-lg transition-colors cursor-pointer"
               title="Đóng"
             >
-              ✕
+              <X aria-hidden="true" className="h-5 w-5"/>
             </button>
 
             <span className="inline-block px-3 py-1 rounded-full text-xs font-black bg-white/25 backdrop-blur mb-2">
@@ -81,14 +82,14 @@ export function IpaSoundDetailModal({ sound, onClose, onPractice }: Props) {
                 onClick={handlePlaySound}
                 className="px-4 py-2 rounded-2xl bg-white text-gray-800 font-black text-sm shadow hover:bg-orange-50 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
               >
-                <span>🔊</span> Nghe âm trong từ
+                <Volume2 aria-hidden="true" className="h-4 w-4"/>Nghe âm trong từ
               </button>
               <button
                 type="button"
                 onClick={handlePlayWord}
                 className="px-4 py-2 rounded-2xl bg-black/20 hover:bg-black/30 text-white font-black text-sm shadow backdrop-blur active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
               >
-                <span>🎧</span> Nghe từ: <strong className="underline underline-offset-2">{sound.sample_word}</strong> {sound.emoji}
+                <Headphones aria-hidden="true" className="h-4 w-4"/>Nghe từ: <strong className="underline underline-offset-2">{sound.sample_word}</strong> {sound.emoji}
               </button>
             </div>
           </div>
@@ -179,7 +180,7 @@ export function IpaSoundDetailModal({ sound, onClose, onPractice }: Props) {
                   className="w-10 h-10 rounded-2xl bg-violet-600 text-white flex items-center justify-center font-bold text-lg shadow-md hover:bg-violet-700 active:scale-95 transition-all cursor-pointer"
                   title="Nghe từ mẫu"
                 >
-                  🔊
+                  <Volume2 aria-hidden="true" className="h-4 w-4"/>
                 </button>
               </div>
             </div>

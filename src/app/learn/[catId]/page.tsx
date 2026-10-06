@@ -1,7 +1,6 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
@@ -16,6 +15,7 @@ import { WordStudyCard } from '@/components/learning/WordStudyCard';
 import { WordCardSlider } from '@/components/learning/WordCardSlider';
 import { AudioSourceBadge } from '@/components/AudioSourceBadge';
 import { Word } from '@/types';
+import {CircleCheck,Keyboard,MessageCircle,Mic,MoveHorizontal,PartyPopper,RotateCcw,Search,Target,Turtle,Volume2} from 'lucide-react';
 
 
 // ── Example sentence ───────────────────────────────────────────────────────
@@ -32,7 +32,7 @@ function ExampleBox({ word, onBeforeListen }: { word: Word; onBeforeListen: () =
       <div className="bg-violet-50/70 border-2 border-dashed border-violet-200 rounded-2xl p-4 flex items-center justify-center gap-2 text-center">
         <span className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin shrink-0" />
         <span className="text-xs font-bold text-violet-700">
-          🤖 Gemini đang tạo câu ví dụ cho &ldquo;{word.en}&rdquo;...
+          Gemini đang tạo câu ví dụ cho &ldquo;{word.en}&rdquo;...
         </span>
       </div>
     );
@@ -43,12 +43,12 @@ function ExampleBox({ word, onBeforeListen }: { word: Word; onBeforeListen: () =
       key={word.id}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-violet-50 border-l-4 border-violet-400 rounded-2xl p-4 shadow-sm"
+      className="bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm"
     >
       <AudioSourceBadge source={audioSource} text={word.example_en} />
-      <div className="flex items-center justify-between mb-1.5">
+      <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-bold text-violet-600 flex items-center gap-1">
-          <span>💬</span> Ví dụ
+          <MessageCircle aria-hidden="true" className="h-4 w-4"/> Ví dụ
         </p>
         <div className="flex items-center gap-1.5">
           <button
@@ -59,13 +59,13 @@ function ExampleBox({ word, onBeforeListen }: { word: Word; onBeforeListen: () =
               speak(word.example_en, 'en-US', 0.85);
             }}
             title="Nghe câu ví dụ tốc độ chuẩn"
-            className={`text-[11px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1 transition-all ${
+            className={`min-h-11 text-xs font-bold px-2 py-1 rounded-xl flex items-center gap-1 transition-all ${
               exSpeaking === 'normal'
                 ? 'bg-violet-600 text-white shadow-xs'
                 : 'bg-white text-violet-700 border border-violet-200 hover:bg-violet-100'
             }`}
           >
-            <span>🔊</span> Chuẩn
+            <Volume2 aria-hidden="true" className="h-4 w-4"/> Chuẩn
           </button>
           <button
             type="button"
@@ -75,13 +75,13 @@ function ExampleBox({ word, onBeforeListen }: { word: Word; onBeforeListen: () =
               speak(word.example_en, 'en-US', 0.7);
             }}
             title="Nghe câu ví dụ đọc chậm từng từ"
-            className={`text-[11px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1 transition-all ${
+            className={`min-h-11 text-xs font-bold px-2 py-1 rounded-xl flex items-center gap-1 transition-all ${
               exSpeaking === 'slow'
                 ? 'bg-amber-500 text-white shadow-xs'
                 : 'bg-amber-100/70 text-amber-800 border border-amber-300 hover:bg-amber-200/70'
             }`}
           >
-            <span>🐢</span> Đọc chậm
+            <Turtle aria-hidden="true" className="h-4 w-4"/> Đọc chậm
           </button>
         </div>
       </div>
@@ -90,11 +90,10 @@ function ExampleBox({ word, onBeforeListen }: { word: Word; onBeforeListen: () =
         className="text-gray-800 font-bold text-base text-left flex items-start gap-1.5 mt-1"
         style={{ fontFamily: 'var(--font-andika), "Andika", sans-serif' }}
       >
-        <span className="shrink-0 text-base">🇬🇧</span>
         <span className="leading-snug">{word.example_en}</span>
       </div>
       {word.example_vi && (
-        <p className="text-gray-500 text-xs mt-1.5 pl-6">🇻🇳 {word.example_vi}</p>
+        <p className="text-slate-500 text-sm leading-snug mt-1">{word.example_vi}</p>
       )}
     </motion.div>
   );
@@ -113,7 +112,7 @@ export default function LearnPage() {
       return customCats.find((c) => c.id === params.catId) || serverCategories.find(c => c.id === params.catId);
     }
     return serverCategories.find(c => c.id === params.catId);
-  }, [params.catId, customCats, mounted, serverCategories]);
+  }, [params.catId, customCats, serverCategories]);
 
   const { speak, isSpeaking, audioSource, cancel } = useTTS();
   const { getWordProgress } = useProgress();
@@ -122,7 +121,6 @@ export default function LearnPage() {
   const [forgotIds, setForgotIds] = useState<Set<string>>(new Set());
 
   const [index, setIndex]   = useState(0);
-  const [dir, setDir]       = useState(1);
   const touchX = useRef<number | null>(null);
   const autoSpeakTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearAutoSpeak = useCallback(() => {
@@ -182,7 +180,6 @@ export default function LearnPage() {
     clearAutoSpeak();
     cancel();
     setSpeakingMode(null);
-    setDir(delta);
     setIndex(next);
     const nextWord = cat.words[next];
     if (nextWord?.en) {
@@ -199,7 +196,7 @@ export default function LearnPage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!cat || !word) return;
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      if ((e.target as HTMLElement)?.closest('button, a, input, textarea, select, summary, [contenteditable="true"]')) return;
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         go(-1);
@@ -247,40 +244,10 @@ export default function LearnPage() {
 
       {/* Content */}
       <div
-        className="px-4 pt-4 pb-24 max-w-2xl mx-auto"
+        className="px-4 pt-3 pb-4 max-w-2xl mx-auto space-y-3"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {/* Speed preference selector */}
-        <div className="flex items-center justify-between bg-white/80 backdrop-blur rounded-2xl px-3.5 py-2 border border-violet-100 shadow-xs mb-3">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600 shrink-0">
-            <span>⚡</span>
-            <span>Tốc độ:</span>
-          </div>
-          <div className="flex items-center bg-gray-100/90 p-0.5 rounded-xl text-xs font-bold gap-0.5">
-            <button
-              onClick={() => handleToggleAutoSpeed('normal')}
-              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                autoSpeed === 'normal'
-                  ? 'bg-white text-violet-700 shadow-xs font-black'
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              <span>🐰</span> Chuẩn
-            </button>
-            <button
-              onClick={() => handleToggleAutoSpeed('slow')}
-              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                autoSpeed === 'slow'
-                  ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-xs font-black'
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              <span>🐢</span> Chậm
-            </button>
-          </div>
-        </div>
-
         <WordCardSlider onPrevious={()=>go(-1)} onNext={()=>go(1)} previousDisabled={index===0} nextDisabled={index===total-1}>
         <AnimatePresence mode="wait">
           <WordStudyCard
@@ -290,18 +257,18 @@ export default function LearnPage() {
             speakingMode={speakingMode}
             audioSource={audioSource}
             prevStars={prevProg?.stars ?? 0}
+            playbackControls={<div role="group" aria-label="Tốc độ nghe" className="flex shrink-0 items-center gap-0.5 rounded-xl bg-slate-100 p-0.5 text-xs font-bold">
+              {(['normal','slow'] as const).map(speed=><button key={speed} type="button" aria-pressed={autoSpeed===speed} onClick={()=>handleToggleAutoSpeed(speed)} className={`flex min-h-11 items-center justify-center gap-1 rounded-lg px-2.5 transition-colors ${autoSpeed===speed?'bg-white text-violet-700 shadow-sm':'text-slate-500 hover:text-violet-700'}`}>{speed==='normal'?'Chuẩn':<><Turtle aria-hidden="true" className="h-3.5 w-3.5"/>Chậm</>}</button>)}
+            </div>}
           />
         </AnimatePresence>
         </WordCardSlider>
 
-        <div className="mt-4">
-          <ExampleBox word={word} onBeforeListen={clearAutoSpeak} />
-        </div>
+        <ExampleBox word={word} onBeforeListen={clearAutoSpeak} />
 
         {/* ── Nhớ rồi / Chưa nhớ (Spaced Repetition self-assessment) ── */}
-        <div className="mt-4 space-y-2">
-          <p className="text-center text-xs font-bold text-gray-400">💭 Bé tự đánh giá:</p>
-          <div className="grid grid-cols-2 gap-3">
+        <div role="group" aria-label="Bé tự đánh giá mức độ ghi nhớ" className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => {
@@ -310,13 +277,14 @@ export default function LearnPage() {
                 setForgotIds((prev) => new Set([...prev, word.id]));
                 setRememberedIds((prev) => { const s = new Set(prev); s.delete(word.id); return s; });
               }}
-              className={`py-3.5 rounded-2xl font-black text-sm border-2 flex items-center justify-center gap-2 cursor-pointer min-h-[52px] transition-all ${
+              aria-pressed={forgotIds.has(word.id)}
+              className={`py-2 rounded-xl font-bold text-sm border flex items-center justify-center gap-2 cursor-pointer min-h-11 transition-all ${
                 forgotIds.has(word.id)
                   ? 'bg-rose-100 border-rose-400 text-rose-700 ring-2 ring-rose-200'
                   : 'bg-white border-rose-200 text-rose-500 hover:bg-rose-50 hover:border-rose-400'
               }`}
             >
-              <span className="text-lg">😅</span>
+              <RotateCcw aria-hidden="true" className="h-4 w-4"/>
               <span>Chưa nhớ</span>
             </motion.button>
             <motion.button
@@ -328,29 +296,30 @@ export default function LearnPage() {
                 setForgotIds((prev) => { const s = new Set(prev); s.delete(word.id); return s; });
                 confetti({ particleCount: 50, spread: 50, origin: { y: 0.75 }, colors: ['#10b981', '#fbbf24', '#6c63ff'] });
               }}
-              className={`py-3.5 rounded-2xl font-black text-sm border-2 flex items-center justify-center gap-2 cursor-pointer min-h-[52px] transition-all ${
+              aria-pressed={rememberedIds.has(word.id)}
+              className={`py-2 rounded-xl font-bold text-sm border flex items-center justify-center gap-2 cursor-pointer min-h-11 transition-all ${
                 rememberedIds.has(word.id)
                   ? 'bg-emerald-500 border-emerald-500 text-white ring-2 ring-emerald-200 shadow-md'
                   : 'bg-white border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-400'
               }`}
             >
-              <span className="text-lg">🌟</span>
+              <CircleCheck aria-hidden="true" className="h-4 w-4"/>
               <span>Nhớ rồi!</span>
             </motion.button>
           </div>
           {(rememberedIds.size > 0 || forgotIds.size > 0) && (
             <p className="text-center text-[11px] text-gray-400 font-medium">
-              ✅ {rememberedIds.size} nhớ · ⏳ {forgotIds.size} cần ôn · sẽ nhắc theo lịch Spaced Repetition
+              {rememberedIds.size} nhớ · {forgotIds.size} cần ôn
             </p>
           )}
         </div>
 
         {/* Tip & Keyboard helper */}
-        <p className="text-center text-xs text-gray-400 mt-3 font-semibold md:hidden">
-          👆 Vuốt trái/phải để chuyển từ
+        <p className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-400 font-medium md:hidden">
+          <MoveHorizontal aria-hidden="true" className="h-3.5 w-3.5"/> Vuốt trái/phải để chuyển từ
         </p>
-        <div className="hidden md:flex items-center justify-center gap-3 text-xs font-semibold text-gray-400 mt-4 bg-white/70 backdrop-blur py-2 px-4 rounded-2xl border border-violet-100 shadow-2xs">
-          <span>⌨️ Phím tắt:</span>
+        <div className="hidden md:flex items-center justify-center gap-3 text-xs font-medium text-slate-400">
+          <span className="inline-flex items-center gap-1.5"><Keyboard aria-hidden="true" className="h-3.5 w-3.5"/>Phím tắt:</span>
           <span><kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">←</kbd> / <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">→</kbd> chuyển từ</span>
           <span><kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded font-mono text-[11px] text-gray-700 shadow-2xs">Space</kbd> nghe</span>
         </div>
@@ -358,24 +327,23 @@ export default function LearnPage() {
 
         {/* Quick jump to quiz/speak/wordsearch */}
         {index === total - 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 grid grid-cols-2 gap-3"
-          >
+          <details className="rounded-xl border border-slate-200 bg-white px-3">
+            <summary className="min-h-11 cursor-pointer content-center text-center text-sm font-bold text-violet-700"><PartyPopper aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>Học hết rồi! Chọn bài luyện tập</summary>
+            <div className="grid grid-cols-2 gap-2 pb-3">
             <button
               onClick={() => router.push(`/test/${cat.id}`)}
               className="py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-            >🎯 8 Dạng Bài Tập & Thi</button>
+            ><Target aria-hidden="true" className="h-4 w-4"/>8 Dạng Bài Tập & Thi</button>
             <button
               onClick={() => router.push(`/wordsearch/${cat.id}`)}
               className="py-3 rounded-2xl font-bold text-sm bg-emerald-500 text-white shadow cursor-pointer flex items-center justify-center gap-1.5"
-            >🔍 Trò Chơi Tìm Từ</button>
+            ><Search aria-hidden="true" className="h-4 w-4"/>Trò Chơi Tìm Từ</button>
             <button
               onClick={() => router.push(`/speak/${cat.id}`)}
               className="py-3 rounded-2xl font-bold text-sm bg-rose-400 text-white shadow cursor-pointer col-span-2 flex items-center justify-center gap-1.5"
-            >🎤 Luyện Nói</button>
-          </motion.div>
+            ><Mic aria-hidden="true" className="h-4 w-4"/>Luyện Nói</button>
+            </div>
+          </details>
         )}
       </div>
     </div>

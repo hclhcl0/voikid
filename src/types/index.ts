@@ -36,6 +36,10 @@ export interface KidsPhonics {
   text: string;
   /** Array of individual syllables for animated syllable-by-syllable display */
   syllables: string[];
+  /** Zero-based index of the primary stressed syllable, when verified. */
+  stressIndex?: number;
+  /** Primary stress positions, including one per word in multiword phrases. */
+  stressIndices?: number[];
   /** Ultra-short mouth-tip for children, humorous & memorable */
   mouth_tip: string;
   /** Slow-reading text optimised for TTS (spaces between syllables) */

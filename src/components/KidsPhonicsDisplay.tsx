@@ -12,50 +12,35 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { KidsPhonics } from '@/types';
+import {phonicsParts,type PhonicsPart} from '@/lib/kidsPhonics';
 
 // ── Parse a syllable string into parts ───────────────────────────────────────
 // e.g. "É" → { main: "É", stressed: true, ending: null }
 //      "phần-(t)" → { main: "phần", stressed: false, ending: "(t)" }
 //      "PHÍT-(s*)" → { main: "PHÍT", stressed: true, ending: "(s*)" }
-interface SyllablePart {
-  main: string;
-  stressed: boolean;
-  ending: string | null;
-}
-
-function parseSyllable(syl: string): SyllablePart {
-  const endingMatch = syl.match(/(\([^)]+\))$/);
-  const ending = endingMatch ? endingMatch[1] : null;
-  const main = ending ? syl.slice(0, -ending.length) : syl;
-  const stressed = main === main.toUpperCase() && /[A-ZÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴ]/i.test(main);
-  return { main, stressed, ending };
-}
-
 // ── Single syllable pill ──────────────────────────────────────────────────────
-function SyllablePill({ part, index, active }: { part: SyllablePart; index: number; active: boolean }) {
+function SyllablePill({ part, index, active,showRhythm }: { part: PhonicsPart; index: number; active: boolean;showRhythm:boolean }) {
   return (
     <motion.span
       initial={{ opacity: 0, y: 8, scale: 0.8 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.08, type: 'spring', stiffness: 400, damping: 22 }}
-      className={`inline-flex items-baseline gap-0.5 px-2 py-0.5 rounded-xl transition-all duration-200 ${
-        active ? 'ring-2 ring-orange-400 bg-orange-50' : ''
+      className={`inline-flex min-w-11 flex-col items-center gap-2 px-2 py-2 rounded-xl transition-all duration-200 ${
+        active ? 'ring-2 ring-orange-400 bg-orange-50' : part.stressed ? 'bg-orange-50' : ''
       }`}
     >
+      <span className="inline-flex h-7 items-baseline gap-0.5">
       {/* Main syllable */}
-      <span className={`font-black leading-none ${
+      <span className={`leading-7 ${
         part.stressed
-          ? 'text-orange-500 text-xl drop-shadow-sm'   // stressed → orange, large
-          : 'text-violet-600 text-base'                 // unstressed → violet, normal
+          ? 'font-black text-orange-600 text-2xl'
+          : 'font-medium text-slate-600 text-lg'
       }`}>
         {part.main}
       </span>
       {/* Ending sound badge */}
-      {part.ending && (
-        <span className="text-emerald-500 text-xs font-black leading-none self-end mb-0.5">
-          {part.ending}
-        </span>
-      )}
+      </span>
+      {showRhythm && <span className={`text-[11px] leading-4 ${part.stressed ? 'font-black text-orange-700' : 'font-medium text-slate-500'}`}>{part.stressed?'MẠNH':'nhẹ'}</span>}
     </motion.span>
   );
 }
@@ -114,11 +99,12 @@ interface Props {
   activeSyllable?: number;
   /** Show a compact single-line version (for word tables) */
   compact?: boolean;
+  showMouthTip?: boolean;
 }
 
-export function KidsPhonicsDisplay({ phonics, playing = false, activeSyllable = -1, compact = false }: Props) {
+export function KidsPhonicsDisplay({ phonics, playing = false, activeSyllable = -1, compact = false, showMouthTip = true }: Props) {
   const [showTip, setShowTip] = useState(false);
-  const parts = phonics.syllables.map(parseSyllable);
+  const {parts,hasRhythm} = phonicsParts(phonics);
 
   if (compact) {
     return (
@@ -129,7 +115,7 @@ export function KidsPhonicsDisplay({ phonics, playing = false, activeSyllable = 
               {part.main}
             </span>
             {part.ending && <span className="text-emerald-500 text-xs font-black">{part.ending}</span>}
-            {i < parts.length - 1 && <span className="text-gray-300 text-xs">-</span>}
+            {i < parts.length - 1 && <span aria-hidden="true" className="text-gray-300 text-xs">·</span>}
           </span>
         ))}
       </span>
@@ -139,31 +125,28 @@ export function KidsPhonicsDisplay({ phonics, playing = false, activeSyllable = 
   return (
     <>
       <div className="flex flex-col items-center gap-2">
-        {/* Legend row */}
-        <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400">
-          <span><span className="text-orange-400 font-black">HOA</span> = nhấn giọng</span>
-          <span className="text-gray-200">│</span>
-          <span><span className="text-emerald-500 font-black">(t)(s)</span> = bật hơi</span>
-        </div>
+        <p className="text-xs font-semibold text-slate-500">{hasRhythm?'Đọc theo nhịp':'Nghe mẫu rồi đọc theo'}</p>
 
         {/* Syllable pills row */}
-        <div className="flex items-center justify-center flex-wrap gap-1">
+        <div aria-label={hasRhythm?`Nhịp đọc: ${parts.map(part=>part.stressed?'MẠNH':'nhẹ').join(' – ')}`:'Gợi ý đọc gần âm'} className="flex items-start justify-center flex-wrap gap-1">
           {parts.map((part, i) => (
-            <div key={i} className="flex items-center gap-0.5">
+            <div key={i} className="flex items-start gap-0.5">
               <SyllablePill
                 part={part}
                 index={i}
                 active={playing && activeSyllable === i}
+                showRhythm={hasRhythm}
               />
               {i < parts.length - 1 && (
-                <span className="text-gray-300 text-sm font-bold select-none">-</span>
+                <span aria-hidden="true" className="mt-2 leading-7 text-gray-300 text-sm font-bold select-none">·</span>
               )}
             </div>
           ))}
         </div>
+        <p className="max-w-xs text-center text-[11px] leading-4 text-slate-500">{hasRhythm?'Nhấn phần màu cam, lướt nhẹ các phần còn lại. ':''}Nghe mẫu rồi nối cả từ nhé!</p>
 
         {/* Mouth tip button */}
-        {phonics.mouth_tip && (
+        {showMouthTip && phonics.mouth_tip && (
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => setShowTip(true)}

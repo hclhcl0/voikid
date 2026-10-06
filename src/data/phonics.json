@@ -931,15 +931,16 @@
     "audio_slow_text": "VI ... ợt ... NAM"
   },
   "america": {
-    "text": "Ơ-ME-RI-KƠ",
+    "text": "ờ-ME-ri-kờ",
     "syllables": [
-      "Ơ",
+      "ờ",
       "ME",
-      "RI",
-      "KƠ"
+      "ri",
+      "kờ"
     ],
-    "mouth_tip": "Mở miệng 'ơ' rồi nhanh chóng đọc 'Me-ri-kơ' như gọi tên bạn! 🇺🇸",
-    "audio_slow_text": "Ơ ... ME ... RI ... KƠ"
+    "stressIndex": 1,
+    "mouth_tip": "Thả lỏng miệng, đọc 'ờ' và 'kờ' thật nhẹ, ngắn. Nhấn vào 'ME', đọc 'ri' nhẹ rồi nối cả từ theo giọng mẫu nhé!",
+    "audio_slow_text": "ờ ... ME ... ri ... kờ"
   },
   "britain": {
     "text": "BỜ-RÍT-TẦN",
