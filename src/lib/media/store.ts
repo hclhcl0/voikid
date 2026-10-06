@@ -1,6 +1,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import {MediaError,providerAudioError} from './errors';
 
 export const mediaDirectory=path.join(process.env.VOCAKIDS_CONTENT_DIR||path.join(process.cwd(),'data','backend'),'media');
 const configFile=path.join(mediaDirectory,'settings.json');
@@ -54,10 +55,9 @@ export async function generateAudio(text:string,pace:'normal'|'slow'='normal'):P
     if(!response.ok){
       if([401,402,403,429].includes(response.status))cooldown=Date.now()+60000;
       const detail=await response.json().catch(()=>null);
-      const code=detail?.detail?.code||detail?.detail?.status;
-      throw new Error(response.status===402||code==='paid_plan_required'?'PAID_VOICE':response.status===401?'INVALID_KEY':response.status===403?'PERMISSION':response.status===404?'VOICE_NOT_FOUND':response.status===429?'QUOTA':'PROVIDER');
+      throw providerAudioError(response.status,detail);
     }
-    if(!response.headers.get('content-type')?.includes('audio/'))throw new Error('PROVIDER');
+    if(!response.headers.get('content-type')?.includes('audio/'))throw new MediaError('INVALID_AUDIO',response.status);
     const buffer=Buffer.from(await response.arrayBuffer());if(!buffer.length||buffer.length>15_000_000)throw new Error('PROVIDER');
     const item:MediaAudio={id,text:text.trim(),voiceId:s.voiceId,model:s.model,speed:s.speed,createdAt:new Date().toISOString(),bytes:buffer.length,url:`/api/media/audio/${id}`};
     write(mediaFile(id),buffer);write(path.join(mediaDirectory,`${id}.json`),JSON.stringify(item));return item;
