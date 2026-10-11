@@ -46,3 +46,4 @@ yarn-error.log*
 next-env.d.ts
 /data/backend/
 /data/families/
+/data/profiles_store.json

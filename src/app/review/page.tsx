@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { useProgress } from '@/hooks/useProgress';
+import { ArenaInvite } from '@/components/arena/ArenaInvite';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useTTS } from '@/hooks/useTTS';
 import { getCategoryById, CATEGORIES } from '@/lib/vocabulary';
@@ -227,6 +228,7 @@ export default function ReviewPage() {
   const [mounted, setMounted] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [sessionDone, setSessionDone] = useState(false);
+  const [reviewed, setReviewed] = useState<{ catId: string; wordId: string }[]>([]);
   const [rememberCount, setRememberCount] = useState(0);
   const [forgotCount, setForgotCount] = useState(0);
 
@@ -264,6 +266,7 @@ export default function ReviewPage() {
     if (!currentItem) return;
     // Record as 'pass' to advance spaced repetition interval
     recordAttempt(currentItem.catId, currentItem.wordId, 100, 'pass');
+    setReviewed(items => [...items, { catId: currentItem.catId, wordId: currentItem.wordId }]);
     setRememberCount((n) => n + 1);
     confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 }, colors: ['#10b981', '#fbbf24'] });
     advance();
@@ -273,6 +276,7 @@ export default function ReviewPage() {
     if (!currentItem) return;
     // Demote: mark as needing practice again today
     demoteWord(currentItem.catId, currentItem.wordId);
+    setReviewed(items => [...items, { catId: currentItem.catId, wordId: currentItem.wordId }]);
     setForgotCount((n) => n + 1);
     advance();
   }, [currentItem, demoteWord]);
@@ -355,6 +359,7 @@ export default function ReviewPage() {
           >
             <Trophy aria-hidden="true" className="mx-auto h-14 w-14 fill-amber-50 text-amber-500"/>
             <h2 className="font-black text-3xl text-gray-800">Ôn Xong Rồi!</h2>
+            <ArenaInvite words={reviewed} />
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-emerald-50 rounded-2xl p-4">
                 <div className="flex items-center justify-center gap-2 font-black text-3xl text-emerald-700"><CircleCheck aria-hidden="true" className="h-6 w-6"/>{rememberCount}</div>
@@ -375,6 +380,7 @@ export default function ReviewPage() {
                 onClick={() => {
                   setCurrentIdx(0);
                   setSessionDone(false);
+                  setReviewed([]);
                   setRememberCount(0);
                   setForgotCount(0);
                 }}

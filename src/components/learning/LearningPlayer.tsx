@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ArenaInvite } from '@/components/arena/ArenaInvite';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useTTS } from '@/hooks/useTTS';
@@ -225,6 +226,7 @@ function Player({ unit }: { unit: CurriculumUnit }) {
           <div className="flex flex-wrap gap-2"><button className={primary} onClick={() => move({ ...session, applicationCompleted: true, completed: true, rewardGranted: true, stage: 'result' })}>Tôi đã thực hành → Kết quả</button><button className={secondary} onClick={finish}>Để luyện sau</button></div>
         </>}
         {session.stage === 'result' && <>
+          <ArenaInvite categoryId={unit.id} />
           <h2 className="text-3xl font-bold">🌱 Con đã hoàn thành lượt luyện!</h2><p>Thưởng nỗ lực: 1 sao và sticker cho lần hoàn thành đầu tiên của bài/phiên bản. Học lại vẫn lưu kết quả, không cộng thưởng lặp.</p>
           <div className="grid gap-3 sm:grid-cols-2">{summaries.filter(s => s.practiced > 0).map(s => <div key={s.skill} className="rounded-2xl bg-slate-50 p-4"><h3 className="font-bold">{s.label}</h3><p>{s.independent} mục tự làm được · {s.supported} mục có hỗ trợ</p><p>{s.needsReview} mục cần ôn</p></div>)}</div>
           <p>Vận dụng: {session.applicationCompleted ? 'đã thực hành, chưa chấm' : 'chưa thực hành'}. Nói: {session.speakingPracticed ? 'đã thử, chưa chấm' : 'chưa ghi nhận'}.</p>

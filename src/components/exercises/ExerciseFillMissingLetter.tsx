@@ -10,15 +10,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
-import { WordImage } from '@/components/WordImage';
+import { ExerciseIllustration } from './ExerciseIllustration';
 
 interface Props {
   targetWord: Word;
   onAnswer: (correct: boolean, isFast: boolean) => void;
+  assessment?: boolean;
 }
 
-export function ExerciseFillMissingLetter({ targetWord, onAnswer }: Props) {
+export function ExerciseFillMissingLetter({ targetWord, onAnswer, assessment = false }: Props) {
   const { speak } = useTTS();
+  const submitted = useRef(false);
   const wordClean = targetWord.en.trim().toLowerCase();
   
   // Pick which index to mask (prefer a vowel or 1st/2nd letter)
@@ -63,6 +65,7 @@ export function ExerciseFillMissingLetter({ targetWord, onAnswer }: Props) {
 
   const handlePickLetter = (char: string) => {
     if (isCorrectState) return;
+    if (submitted.current) return;
 
     if (char === targetChar) {
       // Correct!
@@ -74,12 +77,14 @@ export function ExerciseFillMissingLetter({ targetWord, onAnswer }: Props) {
       // Pronounce full word
       speak(targetWord.en, 'en-US', 0.85);
 
+      submitted.current = true;
       setTimeout(() => {
         onAnswer(true, elapsed < 4);
       }, 1400);
     } else {
       // Wrong letter
       setWrongChar(char);
+      if (assessment) { submitted.current = true; onAnswer(false, false); }
       setTimeout(() => {
         setWrongChar(null);
       }, 600);
@@ -101,7 +106,7 @@ export function ExerciseFillMissingLetter({ targetWord, onAnswer }: Props) {
       {/* Word and missing letter box */}
       <div className="bg-white rounded-3xl p-6 shadow-md border-2 border-amber-100 text-center flex flex-col items-center">
         <div className="mb-2 flex items-center justify-center">
-          <WordImage word={targetWord} size="lg" />
+          <ExerciseIllustration word={targetWord} />
         </div>
         <p className="text-xs text-gray-400 font-bold mb-4">
           🇻🇳 Nghĩa: <span className="text-amber-600 font-extrabold">{targetWord.vi}</span>

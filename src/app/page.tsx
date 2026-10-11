@@ -12,7 +12,7 @@ import { ChildBadge } from '@/components/ChildBadge';
 import { LearningEntry } from '@/components/learning/LearningSummary';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import type { Category } from '@/types';
-import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,Speech,Star,UsersRound} from 'lucide-react';
+import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,Speech,Star,Swords,UsersRound} from 'lucide-react';
 import {EmojiImage} from '@/components/WordImage';
 
 type GradeCategory = Category & { gradeId?: string; isCustom?: boolean };
@@ -25,6 +25,7 @@ export default function HomePage() {
   const { isAuthenticated, isLoading: authLoading, openAuthModal, account } = useAuth();
   const adminSession = useBackendSession();
   const [query, setQuery] = useState('');
+  const [topicPagination, setTopicPagination] = useState({ scope: '', page: 1 });
   const selectedGrade = activeProfile?.gradeId ?? 'maugiao';
   const gradeMeta = GRADE_METAS[selectedGrade] ?? GRADE_METAS.lop1;
   const due = hydrated ? getDueReviewWords().length : 0;
@@ -34,6 +35,11 @@ export default function HomePage() {
   ];
   const search = query.trim().toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
   const visible = categories.filter(c => `${c.name_vi} ${c.name_en}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').includes(search));
+  const pageSize = 6;
+  const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
+  const topicScope = `${activeProfile.id}:${selectedGrade}:${search}`;
+  const topicPage = topicPagination.scope === topicScope ? Math.min(topicPagination.page, pageCount) : 1;
+  const pagedTopics = visible.slice((topicPage - 1) * pageSize, topicPage * pageSize);
   const starsFor = (cat: Category) => hydrated ? cat.words.reduce((sum, word) => sum + (progress.wordProgress[`${cat.id}:${word.id}`]?.stars ?? 0), 0) : 0;
 
   return <div className="clean-home min-h-screen bg-slate-50 text-slate-800">
@@ -66,13 +72,14 @@ export default function HomePage() {
       </section>
       {!hydrated ? <p role="status" className="text-sm text-slate-500">Đang nạp hồ sơ học sinh…</p> : !activeProfile.id ? <section className="space-y-3 rounded-2xl border border-orange-200 bg-orange-50 p-5"><h2 className="font-bold">Chưa có hồ sơ học sinh</h2><p className="text-sm text-slate-600">Thêm học sinh và chọn lớp để mở bài học phù hợp.</p><Link href="/parent" className="learning-button bg-orange-600 text-white">Thêm học sinh</Link></section> : <>
       <LearningEntry />
-      <nav aria-label="Công cụ học tập" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <nav aria-label="Công cụ học tập" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {[
           { href: '/review', Icon: RotateCcw, color:'bg-violet-50 text-violet-600', title: 'Ôn tập', detail: due ? `${due} từ đến lịch ôn` : 'Ôn lại từ đã học' },
           { href: '/test', Icon: CircleCheck, color:'bg-emerald-50 text-emerald-600', title: 'Luyện tập', detail: 'Nghe, ghép và viết' },
           { href: '/ipa', Icon: Speech, color:'bg-orange-50 text-orange-600', title: 'Phát âm', detail: 'Khám phá 44 âm IPA' },
           { href: `/wordsearch/${categories[0]?.id ?? 'animals'}`, Icon: Search, color:'bg-sky-50 text-sky-600', title: 'Tìm từ', detail: 'Chơi cùng từ vựng' },
-        ].filter(item => settings.showGames || item.title !== 'Tìm từ').map(item => <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-orange-300">
+          { href: '/arena', Icon: Swords, color:'bg-violet-50 text-violet-600', title: 'Đấu trường', detail: 'Dùng từ vừa học để tung chiêu' },
+        ].filter(item => settings.showGames || !['Tìm từ', 'Đấu trường'].includes(item.title)).map(item => <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-orange-300">
           <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.color}`}><item.Icon aria-hidden="true" className="h-5 w-5"/></span>
           <div><h2 className="text-sm font-bold">{item.title}</h2><p className="mt-1 text-xs text-slate-500">{item.detail}</p></div>
         </Link>)}
@@ -83,7 +90,7 @@ export default function HomePage() {
           <label className="w-full sm:w-72"><span className="sr-only">Tìm chủ đề</span><input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Tìm chủ đề…" className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm" /></label>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map(cat => {
+          {pagedTopics.map(cat => {
             const stars = starsFor(cat);
             const max = cat.words.length * 3;
             const pct = max ? Math.min(100, Math.round(stars / max * 100)) : 0;
@@ -96,6 +103,14 @@ export default function HomePage() {
           })}
         </div>
         {!visible.length && <p role="status" className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">{search ? 'Chưa tìm thấy chủ đề. Thử tên khác nhé.' : 'Chưa có chủ đề cho lớp này.'}</p>}
+        {pageCount > 1 && <nav aria-label="Phân trang chủ đề" className="flex flex-wrap items-center justify-between gap-3">
+          <p role="status" className="text-xs text-slate-500">{(topicPage - 1) * pageSize + 1}–{Math.min(topicPage * pageSize, visible.length)} / {visible.length} chủ đề</p>
+          <div className="flex items-center gap-2">
+            <button disabled={topicPage === 1} onClick={() => setTopicPagination({ scope: topicScope, page: topicPage - 1 })} className="learning-button border border-slate-200 bg-white text-sm disabled:opacity-40">← Trước</button>
+            <span className="text-sm text-slate-600">{topicPage} / {pageCount}</span>
+            <button disabled={topicPage === pageCount} onClick={() => setTopicPagination({ scope: topicScope, page: topicPage + 1 })} className="learning-button border border-slate-200 bg-white text-sm disabled:opacity-40">Sau →</button>
+          </div>
+        </nav>}
         {isAdmin && <Link href={`/import?targetGrade=${selectedGrade}`} className="learning-button border border-dashed border-slate-300 bg-white text-sm">+ Thêm bài học</Link>}
       </section>
       </>}

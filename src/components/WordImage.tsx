@@ -17,6 +17,7 @@ import { displayWordEmoji, wordNumber } from '@/lib/wordIllustration';
 type ImageSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'study';
 
 interface WordImageProps {
+  allowAutomatic?: boolean;
   word: Word;
   size?: ImageSize;
   className?: string;
@@ -41,6 +42,7 @@ export function WordImage(props: WordImageProps) {
 }
 
 function WordImageContent({
+  allowAutomatic = true,
   word,
   size = 'md',
   className = '',
@@ -54,12 +56,12 @@ function WordImageContent({
   const [automatic,setAutomatic]=useState<{key:string;emoji:string}|null>(null);
   const illustrationIdentity=JSON.stringify([word.id,word.en,word.vi,word.emoji]);
   useEffect(()=>{
-    if(word.image_url)return;
+    if(word.image_url || !allowAutomatic)return;
     const controller=new AbortController();
     const options={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:word.id,en:word.en,vi:word.vi}),signal:controller.signal};
     void fetch('/api/word/illustration',options).then(async r=>{const value=await r.json();if(!value.emoji&&r.ok){const admin=await fetch('/api/admin/word/illustration',options);return admin.ok?admin.json():value;}return value;}).then(value=>{if(!controller.signal.aborted&&typeof value.emoji==='string')setAutomatic({key:illustrationIdentity,emoji:value.emoji});}).catch(()=>{});
     return ()=>controller.abort();
-  },[illustrationIdentity,word.id,word.en,word.vi,word.image_url]);
+  },[illustrationIdentity,word.id,word.en,word.vi,word.image_url,allowAutomatic]);
 
   const { img: imgClass, emoji: emojiClass } = SIZE_MAP[size];
   const emoji=automatic?.key===illustrationIdentity?automatic.emoji:displayWordEmoji(word.en,word.emoji);

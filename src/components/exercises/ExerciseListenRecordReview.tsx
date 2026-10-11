@@ -13,7 +13,7 @@ import { useTTS } from '@/hooks/useTTS';
 import { useSettings } from '@/hooks/useSettings';
 import { useProfileContext } from '@/context/ProfileContext';
 import confetti from 'canvas-confetti';
-import { WordImage } from '@/components/WordImage';
+import { ExerciseIllustration } from './ExerciseIllustration';
 
 interface Props {
   targetWord: Word;
@@ -231,7 +231,7 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
       {/* Target Word Card */}
       <div className="bg-white rounded-3xl p-5 shadow-md border-2 border-rose-100 text-center flex flex-col items-center">
         <div className="mb-2 flex items-center justify-center">
-          <WordImage word={targetWord} size="xl" />
+          <ExerciseIllustration word={targetWord} />
         </div>
         <h2 className="font-andika font-black text-3xl text-rose-600 mb-1">
           {targetWord.en}

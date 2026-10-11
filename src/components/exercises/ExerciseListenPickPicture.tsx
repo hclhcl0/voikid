@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
 import { WordImage } from '@/components/WordImage';
+import { wordIllustrationEmoji, wordNumber } from '@/lib/wordIllustration';
 
 interface Props {
   targetWord: Word;
@@ -71,10 +72,10 @@ export function ExerciseListenPickPicture({
       {/* Header prompt */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-100 text-violet-700 text-xs font-black mb-2">
-          <span>🎧</span> Dạng 1: Nghe và chọn hình
+          <span>🎧</span> Dạng 1: Nghe và chọn nghĩa
         </span>
         <h3 className="text-base font-black text-gray-800">
-          Bé bấm loa nghe từ, rồi chọn đúng hình nhé!
+          Bé nghe từ tiếng Anh, rồi chọn nghĩa tiếng Việt phù hợp nhé!
         </h3>
       </div>
 
@@ -122,8 +123,11 @@ export function ExerciseListenPickPicture({
               className={`flex flex-col items-center justify-center p-4 rounded-3xl transition-all min-h-[130px] ${cardStyle}`}
             >
               <div className="mb-2 flex items-center justify-center min-h-[72px]">
-                <WordImage word={opt} size="md" />
+                {wordIllustrationEmoji(opt.en) || wordNumber(opt.en) !== null || opt.image_url || (opt.emoji && !['🌊', '📖', '📝', '🔤', '🔮'].includes(opt.emoji))
+                  ? <WordImage word={{...opt, image_url: wordIllustrationEmoji(opt.en) ? undefined : opt.image_url, emoji: wordIllustrationEmoji(opt.en) ?? opt.emoji}} size="md" allowAutomatic={false} />
+                  : <span aria-hidden="true" className="text-3xl">💬</span>}
               </div>
+              <span className="text-sm font-bold text-slate-700 text-center">{opt.vi}</span>
 
               {/* Show text hint after answering */}
               <AnimatePresence>
@@ -135,9 +139,6 @@ export function ExerciseListenPickPicture({
                   >
                     <span className="text-xs font-black text-emerald-700 block">
                       {opt.en}
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-600 block">
-                      {opt.vi}
                     </span>
                   </motion.div>
                 )}

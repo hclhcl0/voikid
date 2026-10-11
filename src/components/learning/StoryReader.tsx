@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { ArenaInvite } from '@/components/arena/ArenaInvite';
 import {ArrowLeft,Play,Square,Volume2} from 'lucide-react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
@@ -134,6 +135,7 @@ function Reader({unit,source,canManage}:{unit:CurriculumUnit;source:StorySource;
         {canManage&&tab!=='activities'&&<aside className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-bold">Từ vựng & Cụm từ</h2><p className="text-xs text-slate-500">Chưa có trong kho từ lớp 1–{grade}.</p><button className={`${button} my-2 w-full`} disabled={busy||scanning} onClick={()=>void scanVocabulary()}>{scanning?'AI đang rà soát…':'AI rà soát toàn bộ đoạn văn'}</button><label className="block"><span className="sr-only">Tìm từ hoặc nghĩa</span><input className="min-h-11 w-full rounded-xl border px-3 text-sm" placeholder="Tìm từ, nghĩa…" value={search} onChange={e=>setSearch(e.target.value)}/></label>{newVocabulary.filter(v=>`${v.en} ${v.vi}`.toLowerCase().includes(search.toLowerCase())).map(v=><button key={v.id} className="block w-full border-b border-slate-100 pb-3 text-left" onClick={()=>setSelectedTerm(v)}><strong className="text-sm text-orange-800">{v.en}</strong><span className="mt-1 block text-xs text-slate-500">{v.vi}</span></button>)}<Link className={`${button} inline-flex`} href={`/learn/${unit.id}`}>Ôn thẻ từ unit</Link></aside>}
       </div>
       {session&&<section className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5"><button className={button} onClick={()=>save({...session,read:true})}>{session.read?'✓ Đã đọc bài':'Con đã đọc xong'}</button><button className={button} disabled={!session.read||!lesson.questions.every(q=>session.answers[`quiz:${q.id}`])} onClick={()=>save({...session,completed:true})}>{session.completed?'✓ Đã hoàn thành':'Hoàn thành bài đọc'}</button><span className="text-xs text-slate-500">Hoàn thành sau khi đọc và trả lời các câu hỏi hiểu bài. Tiến độ lưu theo hồ sơ.</span>{canManage&&<button className={`${button} ml-auto`} disabled={busy||scanning||!matchingGrade} onClick={()=>void generate((variant+1)%5)}>{busy?'Đang tạo…':'Tạo đoạn văn khác'}</button>}</section>}
+      {session?.completed && <ArenaInvite categoryId={unit.id} />}
     </>}
     {canManage&&<details className="rounded-2xl border border-slate-200 bg-white p-5"><summary className="cursor-pointer font-bold">Mẫu câu của Unit {source.number}</summary><ul className="mt-3 space-y-2 text-sm text-slate-600">{source.patterns.map(p=><li key={p}>{p}</li>)}</ul><p className="mt-4 text-xs text-slate-500">Nguồn: file tổng hợp SGK lớp 1–5 được cung cấp. {lesson?.origin==='manual'?'Bài tự viết do bạn cung cấp, chưa được đối chiếu với mẫu câu SGK.':'Bài đọc do AI tạo mới, chưa được giáo viên duyệt.'}</p></details>}
   </div></main>;

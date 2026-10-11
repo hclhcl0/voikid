@@ -1,7 +1,7 @@
 'use client';
 
 // =============================================
-// Dạng 8: Nghe và sắp xếp tranh (Listen & Order Sequence)
+// Dạng 8: Nghe và sắp xếp nghĩa (Listen & Order Sequence)
 // Nghe lần lượt 3 từ rồi kéo/chạm tranh vào đúng thứ tự.
 // Mục tiêu: Luyện nghe và ghi nhớ
 // =============================================
@@ -11,15 +11,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
 import confetti from 'canvas-confetti';
-import { WordImage } from '@/components/WordImage';
+import { ExerciseIllustration } from './ExerciseIllustration';
 
 interface Props {
   words: Word[]; // 3 words in sequence
   onAnswer: (correct: boolean, isFast: boolean) => void;
+  assessment?: boolean;
 }
 
-export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
+export function ExerciseListenOrderSequence({ words, onAnswer, assessment = false }: Props) {
   const { speak } = useTTS();
+  const submitted = useRef(false);
   const sequence = words.slice(0, 3); // correct sequence [0, 1, 2]
 
   const [slots, setSlots] = useState<(Word | null)[]>([null, null, null]);
@@ -94,6 +96,7 @@ export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
   };
 
   const handleCheckOrder = () => {
+    if (submitted.current) return;
     const isComplete = slots.every((s) => s !== null);
     if (!isComplete) return;
 
@@ -110,11 +113,13 @@ export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
         colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
       });
       const elapsed = (Date.now() - startTimeRef.current) / 1000;
+      submitted.current = true;
       setTimeout(() => {
         onAnswer(true, elapsed < 12);
       }, 1400);
     } else {
       setCheckedState('wrong');
+      if (assessment) { submitted.current = true; onAnswer(false, false); }
       speak('Hãy nghe lại thứ tự nhé!', 'vi-VN', 0.9);
     }
   };
@@ -124,10 +129,10 @@ export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
       {/* Header prompt */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-black mb-2">
-          <span>🔢</span> Dạng 8: Nghe và sắp xếp tranh
+          <span>🔢</span> Dạng 8: Nghe và sắp xếp nghĩa
         </span>
         <h3 className="text-base font-black text-gray-800">
-          Nghe lần lượt 3 từ và xếp tranh vào ô 1 - 2 - 3!
+          Nghe lần lượt các từ tiếng Anh rồi xếp nghĩa vào đúng thứ tự!
         </h3>
       </div>
 
@@ -193,10 +198,10 @@ export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
               {slotWord ? (
                 <>
                   <div className="flex items-center justify-center min-h-[50px]">
-                    <WordImage word={slotWord} size="sm" />
+                    <ExerciseIllustration word={slotWord} />
                   </div>
-                  <span className="text-[11px] font-bold text-gray-700 mt-1 truncate max-w-full">
-                    {slotWord.en}
+                  <span className="text-[11px] font-bold text-gray-700 mt-1 max-w-full text-center">
+                    {slotWord.vi}
                   </span>
                   <span className="text-[9px] text-gray-400 font-semibold -mt-0.5">
                     (Chạm để gỡ)
@@ -217,8 +222,8 @@ export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
       <div>
         <p className="text-xs text-gray-500 font-bold text-center mb-2">
           {availablePics.length > 0
-            ? 'Chạm tranh bên dưới để xếp vào ô:'
-            : 'Đã xếp đủ 3 tranh! Hãy bấm Kiểm tra:'}
+            ? 'Chọn nghĩa bên dưới để xếp vào ô:'
+            : 'Đã xếp đủ! Hãy bấm Kiểm tra:'}
         </p>
 
         <div className="grid grid-cols-3 gap-3 min-h-[90px]">
@@ -230,10 +235,10 @@ export function ExerciseListenOrderSequence({ words, onAnswer }: Props) {
               className="py-3 px-2 bg-white rounded-2xl border-2 border-gray-200 hover:border-blue-400 shadow-sm flex flex-col items-center justify-center transition-all"
             >
               <div className="flex items-center justify-center min-h-[44px]">
-                <WordImage word={pic} size="sm" />
+                <ExerciseIllustration word={pic} />
               </div>
               <span className="text-[11px] font-bold text-gray-700 mt-1">
-                {pic.en}
+                {pic.vi}
               </span>
             </motion.button>
           ))}

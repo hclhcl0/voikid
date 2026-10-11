@@ -13,13 +13,13 @@ export { ExerciseListenOrderSequence } from './ExerciseListenOrderSequence';
 
 export type ExerciseType =
   | 'listen_pick_pic'     // 1. Nghe và chọn hình
-  | 'look_pick_word'      // 2. Nhìn hình và chọn từ
-  | 'match_word_pic'      // 3. Ghép từ với hình
+  | 'look_pick_word'      // 2. Nhìn nghĩa và chọn từ
+  | 'match_word_pic'      // 3. Ghép từ với nghĩa
   | 'listen_pick_letter'  // 4. Nghe và chọn chữ cái
   | 'fill_missing_letter' // 5. Điền chữ còn thiếu
   | 'memory_match'        // 6. Lật thẻ tìm cặp
   | 'record_review'       // 7. Nghe, nói và nghe lại giọng mình
-  | 'order_sequence';     // 8. Nghe và sắp xếp tranh
+  | 'order_sequence';     // 8. Nghe và sắp xếp nghĩa
 
 export interface ExerciseMeta {
   id: ExerciseType;
@@ -37,8 +37,8 @@ export const EXERCISE_METAS: ExerciseMeta[] = [
   {
     id: 'listen_pick_pic',
     num: 1,
-    title: 'Nghe và chọn hình',
-    tagline: 'Bấm loa nghe từ, chọn đúng trong 2–3 hình.',
+    title: 'Nghe và chọn nghĩa',
+    tagline: 'Nghe từ tiếng Anh, chọn nghĩa tiếng Việt. Hình giúp ghi nhớ.',
     goal: 'Nghe hiểu từ vựng',
     icon: '👂',
     color: 'from-violet-500 to-indigo-600',
@@ -48,8 +48,8 @@ export const EXERCISE_METAS: ExerciseMeta[] = [
   {
     id: 'look_pick_word',
     num: 2,
-    title: 'Nhìn hình và chọn từ',
-    tagline: 'Hiện một hình, chọn một trong 2–3 từ. Có nút nghe lại.',
+    title: 'Nhìn nghĩa và chọn từ',
+    tagline: 'Đọc nghĩa tiếng Việt, chọn từ tiếng Anh đúng.',
     goal: 'Nhận diện mặt chữ',
     icon: '👀',
     color: 'from-pink-500 to-rose-600',
@@ -59,8 +59,8 @@ export const EXERCISE_METAS: ExerciseMeta[] = [
   {
     id: 'match_word_pic',
     num: 3,
-    title: 'Ghép từ với hình',
-    tagline: 'Kéo từ vào hình tương ứng hoặc chạm lần lượt để ghép.',
+    title: 'Ghép từ với nghĩa',
+    tagline: 'Chọn từ tiếng Anh rồi chọn nghĩa tiếng Việt tương ứng.',
     goal: 'Ghi nhớ nghĩa của từ',
     icon: '🧩',
     color: 'from-emerald-500 to-teal-600',
@@ -70,7 +70,7 @@ export const EXERCISE_METAS: ExerciseMeta[] = [
   {
     id: 'listen_pick_letter',
     num: 4,
-    title: 'Nghe và chọn chữ cái',
+    title: 'Luyện chữ và âm',
     tagline: 'Nghe tên chữ hoặc âm đang luyện, chọn chữ đúng (2 chế độ).',
     goal: 'Nhận biết chữ và âm',
     icon: '🔤',
@@ -82,7 +82,7 @@ export const EXERCISE_METAS: ExerciseMeta[] = [
     id: 'fill_missing_letter',
     num: 5,
     title: 'Điền chữ còn thiếu',
-    tagline: 'Có hình và từ khuyết một chữ; trẻ kéo chữ vào ô trống.',
+    tagline: 'Đọc nghĩa, chọn chữ còn thiếu để hoàn thành từ.',
     goal: 'Làm quen cách viết từ',
     icon: '✍️',
     color: 'from-amber-500 to-orange-600',
@@ -93,7 +93,7 @@ export const EXERCISE_METAS: ExerciseMeta[] = [
     id: 'memory_match',
     num: 6,
     title: 'Lật thẻ tìm cặp',
-    tagline: 'Lật tìm cặp tranh–tranh hoặc tranh–từ; phát âm khi đúng.',
+    tagline: 'Lật tìm cặp tiếng Anh và nghĩa tiếng Việt.',
     goal: 'Ôn tập qua trò chơi',
     icon: '🃏',
     color: 'from-purple-500 to-fuchsia-600',
@@ -114,8 +114,8 @@ export const EXERCISE_METAS: ExerciseMeta[] = [
   {
     id: 'order_sequence',
     num: 8,
-    title: 'Nghe và sắp xếp tranh',
-    tagline: 'Nghe lần lượt 3 từ rồi xếp tranh vào đúng thứ tự 1-2-3.',
+    title: 'Nghe và sắp xếp nghĩa',
+    tagline: 'Nghe chuỗi từ tiếng Anh, xếp nghĩa tiếng Việt theo thứ tự.',
     goal: 'Luyện nghe và ghi nhớ',
     icon: '🔢',
     color: 'from-blue-500 to-sky-600',

@@ -89,6 +89,7 @@ export function readProgress(raw: string): AppProgress {
     next.unlockedUnits = Array.isArray(next.unlockedUnits) ? next.unlockedUnits.filter(id => typeof id === 'string') : [];
     next.unitTestResults = next.unitTestResults && typeof next.unitTestResults === 'object' ? next.unitTestResults : {};
     next.learningRewardKeys = Array.isArray(next.learningRewardKeys) ? next.learningRewardKeys.filter(id => typeof id === 'string') : [];
+    next.arenaRewardKeys = Array.isArray(next.arenaRewardKeys) ? next.arenaRewardKeys.filter(id => typeof id === 'string') : [];
     return next;
   } catch { return defaultProgress(); }
 }
@@ -743,17 +744,21 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setProgress((prev) => {
       const completedAt = new Date().toISOString();
       const existing = prev.unitTestResults?.[result.unitId];
+      const reward = result.unitId.startsWith('arena:') ? result.arenaReward : result.unitId.startsWith('wordsearch:') ? result.gameReward : undefined;
+      if (reward && prev.arenaRewardKeys?.includes(reward.id)) return prev;
       const attempts = (existing?.attempts ?? 0) + 1;
       const saved: UnitTestResult = { ...result, completedAt, attempts };
 
       // Award points based on grade
       const pointsMap: Record<string, number> = { excellent: 50, good: 20, pass: 10, fail: 0 };
-      const bonusPoints = pointsMap[result.grade] ?? 0;
+      const bonusPoints = reward ? reward.points : pointsMap[result.grade] ?? 0;
 
       const next: AppProgress = applyStickerRewards({
         ...prev,
         unitTestResults: { ...(prev.unitTestResults ?? {}), [result.unitId]: saved },
         totalPoints: (prev.totalPoints ?? 0) + bonusPoints,
+        totalStars: prev.totalStars + (reward?.stars ?? 0),
+        arenaRewardKeys: reward ? [...(prev.arenaRewardKeys ?? []), reward.id] : prev.arenaRewardKeys,
         // Auto-award sticker on pass/good/excellent (handled by caller)
       },activeProfileId,completedAt,false,activeProfile.gradeId);
 

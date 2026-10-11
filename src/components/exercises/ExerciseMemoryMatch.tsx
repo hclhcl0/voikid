@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
 import confetti from 'canvas-confetti';
-import { WordImage } from '@/components/WordImage';
+import { ExerciseIllustration } from './ExerciseIllustration';
 
 type MatchLevel = 'pic_pic' | 'pic_word';
 
@@ -33,10 +33,8 @@ interface Props {
 export function ExerciseMemoryMatch({
   words,
   onAnswer,
-  defaultLevel = 'pic_word',
 }: Props) {
   const { speak } = useTTS();
-  const [level, setLevel] = useState<MatchLevel>(defaultLevel);
   const [cards, setCards] = useState<MemoryCard[]>([]);
   const [flippedUids, setFlippedUids] = useState<string[]>([]);
   const [matchedWordIds, setMatchedWordIds] = useState<Set<string>>(new Set());
@@ -62,8 +60,8 @@ export function ExerciseMemoryMatch({
       deck.push({
         uid: `${w.id}_match_${index}`,
         wordId: w.id,
-        type: level === 'pic_pic' ? 'pic' : 'word',
-        label: level === 'pic_pic' ? w.emoji : w.en,
+        type: 'word',
+        label: w.en,
         word: w,
       });
     });
@@ -73,7 +71,7 @@ export function ExerciseMemoryMatch({
     setFlippedUids([]);
     setMatchedWordIds(new Set());
     setIsProcessing(false);
-  }, [words, level]);
+  }, [words]);
 
   const handleCardClick = (card: MemoryCard) => {
     if (isProcessing) return;
@@ -82,9 +80,6 @@ export function ExerciseMemoryMatch({
 
     if (flippedUids.length === 0) {
       setFlippedUids([card.uid]);
-      if (card.type === 'word') {
-        speak(card.word.en, 'en-US', 0.85);
-      }
     } else if (flippedUids.length === 1) {
       const firstUid = flippedUids[0];
       const firstCard = cards.find((c) => c.uid === firstUid);
@@ -134,34 +129,8 @@ export function ExerciseMemoryMatch({
           <span>🃏</span> Dạng 6: Lật thẻ tìm cặp
         </span>
         <h3 className="text-base font-black text-gray-800">
-          Lật các thẻ bài úp để tìm cặp tương ứng!
+          Lật thẻ để ghép từ tiếng Anh với nghĩa tiếng Việt!
         </h3>
-      </div>
-
-      {/* Level selector: Tranh - Tranh vs Tranh - Từ */}
-      <div className="flex bg-gray-100 p-1 rounded-2xl max-w-xs mx-auto">
-        <button
-          type="button"
-          onClick={() => setLevel('pic_pic')}
-          className={`flex-1 py-1.5 text-xs font-black rounded-xl transition-all ${
-            level === 'pic_pic'
-              ? 'bg-white text-purple-700 shadow-sm'
-              : 'text-gray-500 hover:text-gray-800'
-          }`}
-        >
-          🖼️ Tranh – Tranh (Dễ)
-        </button>
-        <button
-          type="button"
-          onClick={() => setLevel('pic_word')}
-          className={`flex-1 py-1.5 text-xs font-black rounded-xl transition-all ${
-            level === 'pic_word'
-              ? 'bg-white text-purple-700 shadow-sm'
-              : 'text-gray-500 hover:text-gray-800'
-          }`}
-        >
-          🔤 Tranh – Từ (Chuẩn)
-        </button>
       </div>
 
       {/* Progress pill */}
@@ -191,17 +160,15 @@ export function ExerciseMemoryMatch({
             >
               {isFlipped ? (
                 card.type === 'pic' ? (
-                  <div className="flex items-center justify-center">
-                    <WordImage word={card.word} size="sm" />
+                  <div className="flex flex-col items-center justify-center gap-1 text-center">
+                    <ExerciseIllustration word={card.word} /><span className="text-sm font-bold">{card.word.vi}</span>
                   </div>
                 ) : (
                   <div className="text-center">
                     <span className="font-andika font-black text-sm text-purple-800 block">
                       {card.label}
                     </span>
-                    <span className="text-[10px] text-gray-400 font-bold block mt-0.5">
-                      {card.word.vi}
-                    </span>
+
                   </div>
                 )
               ) : (

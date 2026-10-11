@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
+import { ArenaInvite } from '@/components/arena/ArenaInvite';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useTTS } from '@/hooks/useTTS';
 import { useProgress } from '@/hooks/useProgress';
@@ -327,6 +328,7 @@ export default function LearnPage() {
 
         {/* Quick jump to quiz/speak/wordsearch */}
         {index === total - 1 && (
+<><ArenaInvite categoryId={cat.id} />
           <details className="rounded-xl border border-slate-200 bg-white px-3">
             <summary className="min-h-11 cursor-pointer content-center text-center text-sm font-bold text-violet-700"><PartyPopper aria-hidden="true" className="mr-1.5 inline h-4 w-4"/>Học hết rồi! Chọn bài luyện tập</summary>
             <div className="grid grid-cols-2 gap-2 pb-3">
@@ -343,7 +345,7 @@ export default function LearnPage() {
               className="py-3 rounded-2xl font-bold text-sm bg-rose-400 text-white shadow cursor-pointer col-span-2 flex items-center justify-center gap-1.5"
             ><Mic aria-hidden="true" className="h-4 w-4"/>Luyện Nói</button>
             </div>
-          </details>
+          </details></>
         )}
       </div>
     </div>

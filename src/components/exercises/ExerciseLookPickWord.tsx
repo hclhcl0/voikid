@@ -1,7 +1,7 @@
 'use client';
 
 // =============================================
-// Dạng 2: Nhìn hình và chọn từ (Look at Picture & Pick Word)
+// Dạng 2: Nhìn nghĩa và chọn từ (Look at Picture & Pick Word)
 // Hiện một hình, chọn một trong 2–3 từ. Có nút nghe lại sau khi trả lời.
 // Mục tiêu: Nhận diện mặt chữ
 // =============================================
@@ -10,7 +10,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
-import { WordImage } from '@/components/WordImage';
+import { ExerciseIllustration } from './ExerciseIllustration';
 
 interface Props {
   targetWord: Word;
@@ -66,10 +66,10 @@ export function ExerciseLookPickWord({
       {/* Header prompt */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-xs font-black mb-2">
-          <span>👀</span> Dạng 2: Nhìn hình và chọn từ
+          <span>👀</span> Dạng 2: Nhìn nghĩa và chọn từ
         </span>
         <h3 className="text-base font-black text-gray-800">
-          Nhìn hình và chọn từ tiếng Anh đúng!
+          Nhìn nghĩa và chọn từ tiếng Anh đúng!
         </h3>
       </div>
 
@@ -80,7 +80,7 @@ export function ExerciseLookPickWord({
         className="bg-white rounded-3xl p-6 shadow-md border-2 border-pink-100 text-center relative overflow-hidden"
       >
         <div className="flex items-center justify-center py-2 transform hover:scale-105 transition-transform duration-300">
-          <WordImage word={targetWord} size="xl" />
+          <ExerciseIllustration word={targetWord} />
         </div>
         <p className="text-xs font-bold text-gray-400 mt-2">
           🇻🇳 Nghĩa: <span className="text-pink-600 font-extrabold">{targetWord.vi}</span>

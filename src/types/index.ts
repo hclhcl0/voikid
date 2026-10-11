@@ -123,6 +123,8 @@ export interface Badge {
 export type UnitTestGrade = 'excellent' | 'good' | 'pass' | 'fail';
 
 export interface UnitTestResult {
+  gameReward?: { id: string; stars: number; points: number };
+  arenaReward?: { id: string; stars: number; points: number };
   correctAnswers?: number;
   questionCount?: number;
   unitId: string;
@@ -135,6 +137,7 @@ export interface UnitTestResult {
 }
 
 export interface AppProgress {
+  arenaRewardKeys?: string[];
   progressResetAt?: string;
   stickerStudyDays?: string[];
   ipaPractice?: Record<string, import('@/lib/ipa/practice').IpaPracticeRecord>;

@@ -18,6 +18,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { CATEGORIES } from '@/lib/vocabulary';
+import { ArenaInvite } from '@/components/arena/ArenaInvite';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useTTS } from '@/hooks/useTTS';
@@ -79,10 +80,10 @@ function buildTestQuestions(words: Word[]): TestQuestion[] {
     'listen_pick_pic',    // 1. Nghe và chọn hình
     'look_pick_word',     // 2. Nhìn hình và chọn từ
     'match_word_pic',     // 3. Ghép từ với hình
-    'listen_pick_letter', // 4. Nghe và chọn chữ cái
+    'fill_missing_letter', // Letter and sound practice remains in its separate station.
     'fill_missing_letter',// 5. Điền chữ còn thiếu
-    'memory_match',       // 6. Lật thẻ tìm cặp
-    'record_review',      // 7. Nghe, nói và nghe lại (AI chấm điểm)
+    'look_pick_word',     // Memory is practice, not a scored test.
+    'listen_pick_pic',    // Speaking is optional practice, not a required test.
     'order_sequence',     // 8. Nghe và sắp xếp tranh
     'look_pick_word',     // 2. Củng cố từ vựng
     'fill_missing_letter',// 5. Thử thách viết chữ
@@ -165,7 +166,7 @@ function ResultScreen({
         <p className="text-white/80 text-sm mt-1">{unitName}</p>
         <div className="mt-4 bg-white/20 rounded-2xl p-3 inline-block">
           <span className="font-black text-4xl">{score}</span>
-          <span className="text-white/80 text-sm ml-1">/ 130 điểm</span>
+          <span className="text-white/80 text-sm ml-1">/ 100 điểm</span>
         </div>
       </div>
 
@@ -242,8 +243,8 @@ export default function UnitTestPage() {
 
   const cat = useMemo(() => {
     if (!mounted) return null;
-    if (params.catId?.startsWith('custom_')) return customCats.find((c) => c.id === params.catId) || null;
-    return serverCategories.find(c => c.id === params.catId) || null;
+    const selected = params.catId?.startsWith('custom_') ? customCats.find(c => c.id === params.catId) : serverCategories.find(c => c.id === params.catId);
+    return selected ? {...selected, words: selected.words.filter(w => w.en.trim() && w.vi.trim())} : null;
   }, [params.catId, customCats, mounted, serverCategories]);
 
   // View Mode: 'stations' (practice 8 types by default) vs 'test' (10-question challenge)
@@ -253,6 +254,7 @@ export default function UnitTestPage() {
   // ── Test Challenge States ──
   const [questions, setQuestions] = useState<TestQuestion[]>([]);
   const [index, setIndex] = useState(0);
+  const answeredIndex = useRef(-1);
   const [score, setScore] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [fastCount, setFastCount] = useState(0);
@@ -292,6 +294,7 @@ export default function UnitTestPage() {
     if (!cat || cat.words.length === 0) return;
     setQuestions(buildTestQuestions(cat.words));
     setIndex(0);
+    answeredIndex.current = -1;
     setScore(0);
     setCorrect(0);
     setFastCount(0);
@@ -334,6 +337,8 @@ export default function UnitTestPage() {
 
   const handleTestAnswer = useCallback(
     (isCorrect: boolean, isFast: boolean) => {
+      if (answeredIndex.current === index) return;
+      answeredIndex.current = index;
       let pts = 0;
       let ns = streak;
       let nsm = streakMax;
@@ -345,13 +350,13 @@ export default function UnitTestPage() {
         nc++;
         setCorrect(nc);
         if (isFast) {
-          pts += 3;
+
           nf++;
           setFastCount(nf);
         }
         ns++;
         nsm = Math.max(nsm, ns);
-        if (ns >= 3) pts += 5;
+
       } else {
         ns = 0;
         // Cơ chế rớt hạng (Demotion): Khi làm bài kiểm tra sai, hạ bậc từ này để đưa vào danh sách cần ôn lại
@@ -513,6 +518,7 @@ export default function UnitTestPage() {
           <AnimatePresence mode="wait">
             {done ? (
               <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <ArenaInvite categoryId={cat.id} />
                 <ResultScreen
                   score={finalVals.score}
                   correct={finalVals.correct}
@@ -576,6 +582,7 @@ export default function UnitTestPage() {
                   )}
                   {currentQ.type === 'match_word_pic' && (
                     <ExerciseMatchWordPicture
+                      assessment
                       words={currentQ.wordsSubset}
                       onAnswer={handleTestAnswer}
                     />
@@ -588,6 +595,7 @@ export default function UnitTestPage() {
                   )}
                   {currentQ.type === 'fill_missing_letter' && (
                     <ExerciseFillMissingLetter
+                      assessment
                       targetWord={currentQ.word}
                       onAnswer={handleTestAnswer}
                     />
@@ -606,6 +614,7 @@ export default function UnitTestPage() {
                   )}
                   {currentQ.type === 'order_sequence' && (
                     <ExerciseListenOrderSequence
+                      assessment
                       words={currentQ.wordsSubset}
                       onAnswer={handleTestAnswer}
                     />
@@ -683,7 +692,7 @@ export default function UnitTestPage() {
                     <span>← Đổi dạng khác</span>
                   </button>
                   <span className="text-xs font-black text-amber-600 flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-full">
-                    <span>⭐</span> {stationStars} sao thưởng
+                    <span>⭐</span> {stationStars} lượt hoàn thành
                   </span>
                 </div>
 
@@ -698,7 +707,7 @@ export default function UnitTestPage() {
                       ← Từ trước
                     </button>
                     <span className="truncate max-w-[200px] text-center">
-                      Từ {stationWordIndex + 1} / {cat.words.length}: <strong className="text-violet-700">{currentStationWord.en}</strong> ({currentStationWord.vi})
+                      Từ {stationWordIndex + 1} / {cat.words.length}
                     </span>
                     <button
                       type="button"
@@ -718,7 +727,7 @@ export default function UnitTestPage() {
                         Ván {subsetRound + 1}
                       </span>
                       <span className="text-[11px] text-gray-500 font-medium truncate">
-                        ({currentStationSubset.map((w) => w.en).join(', ')})
+                        {activeStation !== 'order_sequence' && `(${currentStationSubset.map(w => w.en).join(', ')})`}
                       </span>
                     </div>
                     <button
@@ -742,7 +751,7 @@ export default function UnitTestPage() {
                       <span className="text-2xl animate-bounce">🎉</span>
                       <div>
                         <p className="text-xs font-black text-emerald-800">Bé làm xuất sắc lắm!</p>
-                        <p className="text-[11px] text-emerald-600 font-medium">+1 ⭐ sao thưởng bé nhé</p>
+                        <p className="text-[11px] text-emerald-600 font-medium">Đã hoàn thành lượt luyện này</p>
                       </div>
                     </div>
                     <button

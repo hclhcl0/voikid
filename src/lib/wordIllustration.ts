@@ -1,4 +1,5 @@
 const icons:Record<string,string>={
+  america:'🇺🇸', 'the usa':'🇺🇸', australia:'🇦🇺', britain:'🇬🇧', japan:'🇯🇵', malaysia:'🇲🇾', singapore:'🇸🇬', thailand:'🇹🇭', vietnam:'🇻🇳', china:'🇨🇳', france:'🇫🇷',
   apple:'🍎',banana:'🍌',orange:'🍊',grape:'🍇',watermelon:'🍉',milk:'🥛',water:'💧',bread:'🍞',rice:'🍚',fish:'🐟',chicken:'🐔',egg:'🥚',cake:'🍰',icecream:'🍦',
   cat:'🐱',dog:'🐶',bird:'🐦',duck:'🦆',rabbit:'🐰',elephant:'🐘',monkey:'🐵',tiger:'🐯',lion:'🦁',bear:'🐻',horse:'🐴',cow:'🐮',pig:'🐷',
   book:'📚',pen:'🖊️',pencil:'✏️',ruler:'📏',eraser:'🧽',school:'🏫',teacher:'🧑‍🏫',student:'🧑‍🎓',bag:'🎒',desk:'🪑',computer:'💻',

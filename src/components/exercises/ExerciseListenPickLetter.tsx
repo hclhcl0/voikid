@@ -10,7 +10,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
-import { WordImage } from '@/components/WordImage';
+import { ExerciseIllustration } from './ExerciseIllustration';
 
 type LetterMode = 'name' | 'sound';
 
@@ -118,7 +118,7 @@ export function ExerciseListenPickLetter({
       {/* Header prompt */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 text-xs font-black mb-2">
-          <span>🔤</span> Dạng 4: Nghe và chọn chữ cái
+          <span>🔤</span> Dạng 4: Luyện chữ và âm
         </span>
         <h3 className="text-base font-black text-gray-800">
           Nghe phát âm và bấm chọn chữ cái đúng!
@@ -174,7 +174,7 @@ export function ExerciseListenPickLetter({
 
         {/* Word illustration hint */}
         <div className="mt-2 flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-          <WordImage word={targetWord} size="xs" />
+          <ExerciseIllustration word={targetWord} />
           <span className="text-xs font-semibold text-gray-600">
             Từ gợi ý: <span className="font-bold text-gray-800">{targetWord.en}</span> ({targetWord.vi})
           </span>

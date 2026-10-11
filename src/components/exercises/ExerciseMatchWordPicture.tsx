@@ -1,25 +1,27 @@
 'use client';
 
 // =============================================
-// Dạng 3: Ghép từ với hình (Match Word to Picture)
+// Dạng 3: Ghép từ với nghĩa (Match Word to Picture)
 // Kéo từ vào hình tương ứng hoặc chạm lần lượt để ghép.
 // Mục tiêu: Ghi nhớ nghĩa của từ
 // =============================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Word } from '@/types';
 import { useTTS } from '@/hooks/useTTS';
 import confetti from 'canvas-confetti';
-import { WordImage } from '@/components/WordImage';
+import { ExerciseIllustration } from './ExerciseIllustration';
 
 interface Props {
   words: Word[]; // exactly 3 words to match
   onAnswer: (correct: boolean, isFast: boolean) => void;
+  assessment?: boolean;
 }
 
-export function ExerciseMatchWordPicture({ words, onAnswer }: Props) {
+export function ExerciseMatchWordPicture({ words, onAnswer, assessment = false }: Props) {
   const { speak } = useTTS();
+  const submitted = useRef(false);
   const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
   const [selectedPicId, setSelectedPicId] = useState<string | null>(null);
   const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set());
@@ -58,6 +60,7 @@ export function ExerciseMatchWordPicture({ words, onAnswer }: Props) {
   };
 
   const checkMatch = (wordId: string, picId: string) => {
+    if (submitted.current) return;
     if (wordId === picId) {
       // Correct match!
       const targetWord = words.find((w) => w.id === wordId);
@@ -80,6 +83,7 @@ export function ExerciseMatchWordPicture({ words, onAnswer }: Props) {
           colors: ['#10b981', '#6366f1', '#f59e0b', '#ec4899'],
         });
         const elapsed = (Date.now() - startTime) / 1000;
+        submitted.current = true;
         setTimeout(() => {
           onAnswer(true, elapsed < 8);
         }, 1200);
@@ -87,6 +91,7 @@ export function ExerciseMatchWordPicture({ words, onAnswer }: Props) {
     } else {
       // Mismatch
       setWrongPair({ wordId, picId });
+      if (assessment) { submitted.current = true; onAnswer(false, false); }
       setTimeout(() => {
         setWrongPair(null);
         setSelectedWordId(null);
@@ -100,10 +105,10 @@ export function ExerciseMatchWordPicture({ words, onAnswer }: Props) {
       {/* Header prompt */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black mb-2">
-          <span>🧩</span> Dạng 3: Ghép từ với hình
+          <span>🧩</span> Dạng 3: Ghép từ với nghĩa
         </span>
         <h3 className="text-base font-black text-gray-800">
-          Chạm vào Từ, rồi chạm Hình tương ứng để ghép đôi!
+          Chọn từ tiếng Anh, rồi chọn nghĩa tiếng Việt tương ứng!
         </h3>
         <p className="text-xs text-gray-500 font-semibold mt-0.5">
           Đã ghép đúng: {matchedIds.size} / {words.length} cặp
@@ -149,7 +154,7 @@ export function ExerciseMatchWordPicture({ words, onAnswer }: Props) {
         {/* Right Column: Pictures */}
         <div className="space-y-2.5">
           <p className="text-[11px] font-black uppercase tracking-wider text-gray-400 text-center">
-            🖼️ Cột Hình Ảnh
+            🇻🇳 Cột nghĩa
           </p>
           {shuffledPics.map((p) => {
             const isMatched = matchedIds.has(p.id);
@@ -173,8 +178,8 @@ export function ExerciseMatchWordPicture({ words, onAnswer }: Props) {
                 disabled={isMatched}
                 className={`w-full py-2.5 px-3 rounded-2xl flex items-center justify-center transition-all ${cardCls}`}
               >
-                <div className="flex items-center justify-center min-h-[44px]">
-                  <WordImage word={p} size="sm" />
+                <div className="flex flex-wrap items-center justify-center gap-2 min-h-[44px]">
+                  <ExerciseIllustration word={p} /><span className="ml-2 text-sm font-bold">{p.vi}</span>
                 </div>
                 {isMatched && (
                   <span className="ml-2 text-xs font-bold text-emerald-600">✓</span>
