@@ -12,7 +12,7 @@ import { ChildBadge } from '@/components/ChildBadge';
 import { LearningEntry } from '@/components/learning/LearningSummary';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import type { Category } from '@/types';
-import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,Speech,Star,Swords,UsersRound} from 'lucide-react';
+import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,ShoppingBag,Speech,Star,Swords,UsersRound} from 'lucide-react';
 import {EmojiImage} from '@/components/WordImage';
 
 type GradeCategory = Category & { gradeId?: string; isCustom?: boolean };
@@ -72,14 +72,15 @@ export default function HomePage() {
       </section>
       {!hydrated ? <p role="status" className="text-sm text-slate-500">Đang nạp hồ sơ học sinh…</p> : !activeProfile.id ? <section className="space-y-3 rounded-2xl border border-orange-200 bg-orange-50 p-5"><h2 className="font-bold">Chưa có hồ sơ học sinh</h2><p className="text-sm text-slate-600">Thêm học sinh và chọn lớp để mở bài học phù hợp.</p><Link href="/parent" className="learning-button bg-orange-600 text-white">Thêm học sinh</Link></section> : <>
       <LearningEntry />
-      <nav aria-label="Công cụ học tập" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <nav aria-label="Công cụ học tập" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
           { href: '/review', Icon: RotateCcw, color:'bg-violet-50 text-violet-600', title: 'Ôn tập', detail: due ? `${due} từ đến lịch ôn` : 'Ôn lại từ đã học' },
           { href: '/test', Icon: CircleCheck, color:'bg-emerald-50 text-emerald-600', title: 'Luyện tập', detail: 'Nghe, ghép và viết' },
           { href: '/ipa', Icon: Speech, color:'bg-orange-50 text-orange-600', title: 'Phát âm', detail: 'Khám phá 44 âm IPA' },
           { href: `/wordsearch/${categories[0]?.id ?? 'animals'}`, Icon: Search, color:'bg-sky-50 text-sky-600', title: 'Tìm từ', detail: 'Chơi cùng từ vựng' },
           { href: '/arena', Icon: Swords, color:'bg-violet-50 text-violet-600', title: 'Đấu trường', detail: 'Dùng từ vừa học để tung chiêu' },
-        ].filter(item => settings.showGames || !['Tìm từ', 'Đấu trường'].includes(item.title)).map(item => <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-orange-300">
+          { href: '/shop', Icon: ShoppingBag, color:'bg-emerald-50 text-emerald-600', title: 'Cửa hàng', detail: 'Nghe yêu cầu, giao món đúng' },
+        ].filter(item => settings.showGames || !['Tìm từ', 'Đấu trường', 'Cửa hàng'].includes(item.title)).map(item => <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-orange-300">
           <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.color}`}><item.Icon aria-hidden="true" className="h-5 w-5"/></span>
           <div><h2 className="text-sm font-bold">{item.title}</h2><p className="mt-1 text-xs text-slate-500">{item.detail}</p></div>
         </Link>)}

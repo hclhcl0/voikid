@@ -744,7 +744,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setProgress((prev) => {
       const completedAt = new Date().toISOString();
       const existing = prev.unitTestResults?.[result.unitId];
-      const reward = result.unitId.startsWith('arena:') ? result.arenaReward : result.unitId.startsWith('wordsearch:') ? result.gameReward : undefined;
+      const reward = result.unitId.startsWith('arena:') ? result.arenaReward : /^(wordsearch|shop):/.test(result.unitId) ? result.gameReward : undefined;
       if (reward && prev.arenaRewardKeys?.includes(reward.id)) return prev;
       const attempts = (existing?.attempts ?? 0) + 1;
       const saved: UnitTestResult = { ...result, completedAt, attempts };
