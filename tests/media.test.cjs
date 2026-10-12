@@ -78,6 +78,32 @@ test('media configuration and generation reject unauthenticated requests',async(
   assert.equal((await tts.POST(request)).status,401);
   assert.equal(settings.GET(new NextRequest('http://localhost:3000/api/admin/media')).status,401);
 });
+test('guests can play only cached shop words without generating new audio',async()=>{
+  const {NextRequest}=require('next/server');
+  const tts=load('src/app/api/media/tts/route.ts');
+  const audio=load('src/app/api/media/audio/[id]/route.ts');
+  const {shopItems}=load('src/lib/shop.ts');
+  const original=global.fetch;let calls=0;
+  global.fetch=async()=>{calls++;return new Response(Buffer.from('ID3guest'),{headers:{'content-type':'audio/mpeg'}});};
+  try{
+    const saved=await media.generateAudio(shopItems[0].en);
+    const privateAudio=await media.generateAudio('Private lesson.');
+    const missing=shopItems.find(item=>item.en!==shopItems[0].en&&!media.findAudio(media.audioId(item.en,media.audioSettingsForPace())));
+    assert.ok(missing);
+    const request=text=>new NextRequest('http://localhost:3000/api/media/tts',{method:'POST',headers:{host:'localhost:3000',origin:'http://localhost:3000','content-type':'application/json'},body:JSON.stringify({text})});
+    assert.equal((await tts.GET()).status,200);
+    assert.equal((await tts.GET().json()).available,true);
+    const ready=await tts.POST(request(shopItems[0].en));assert.equal(ready.status,200);
+    assert.equal((await ready.json()).id,saved.id);
+    const play=await audio.GET(new NextRequest(`http://localhost:3000/api/media/audio/${saved.id}`),{params:Promise.resolve({id:saved.id})});
+    assert.equal(play.status,200);assert.equal(await play.text(),'ID3guest');
+    const notReady=await tts.POST(request(missing.en));assert.equal(notReady.status,404);
+    assert.equal((await notReady.json()).code,'AUDIO_NOT_READY');
+    assert.equal((await tts.POST(request('Private lesson.'))).status,401);
+    assert.equal((await audio.GET(new NextRequest(`http://localhost:3000/api/media/audio/${privateAudio.id}`),{params:Promise.resolve({id:privateAudio.id})})).status,401);
+    assert.equal(calls,2);
+  }finally{global.fetch=original;}
+});
 test('student may generate only fixed shop product names and play the cached AI audio',async()=>{
   const {NextRequest}=require('next/server');
   const {signJWT}=load('src/lib/auth.ts');
