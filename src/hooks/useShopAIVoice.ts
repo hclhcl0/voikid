@@ -7,6 +7,7 @@ export function useShopAIVoice(){
   const [available,setAvailable]=useState<boolean|null>(null);
   const [isSpeaking,setIsSpeaking]=useState(false);
   const [error,setError]=useState<string|null>(null);
+  const [needsLogin,setNeedsLogin]=useState(false);
   const generation=useRef(0);
   const controller=useRef<AbortController|null>(null);
   const audio=useRef<HTMLAudioElement|null>(null);
@@ -29,25 +30,30 @@ export function useShopAIVoice(){
   },[]);
 
   const speak=useCallback(async(text:string)=>{
-    cancel();setError(null);
+    cancel();setError(null);setNeedsLogin(false);
     if(available===false){setError('Giọng AI chưa được cấu hình.');return;}
     const current=++generation.current;
     const request=new AbortController();controller.current=request;
+    let serviceError:string|null=null;
     setIsSpeaking(true);
     try{
       const response=await fetch('/api/media/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,pace:'normal'}),signal:AbortSignal.any([request.signal,AbortSignal.timeout(50000)])});
-      if(!response.ok)throw new Error('AI_AUDIO_UNAVAILABLE');
-      const result=await response.json() as {url?:string};
-      if(!result.url?.startsWith('/api/media/audio/')&&!result.url?.startsWith('/api/admin/media/audio/'))throw new Error('AI_AUDIO_UNAVAILABLE');
+      const result=await response.json().catch(()=>({})) as {url?:string;message?:string};
       if(current!==generation.current)return;
+      if(!response.ok){
+        if(response.status===401)setNeedsLogin(true);
+        serviceError=response.status===401?'Đăng nhập tài khoản để nghe giọng AI.':result.message||'Giọng AI chưa sẵn sàng cho từ này.';
+        throw new Error('SHOP_AUDIO_UNAVAILABLE');
+      }
+      if(!result.url?.startsWith('/api/media/audio/')&&!result.url?.startsWith('/api/admin/media/audio/'))throw new Error('AI_AUDIO_UNAVAILABLE');
       const player=new Audio(result.url);audio.current=player;
       player.onended=()=>{if(current===generation.current)setIsSpeaking(false);};
       player.onerror=()=>{if(current===generation.current){setIsSpeaking(false);setError('Không phát được giọng AI.');}};
       await player.play();
     }catch{
-      if(current===generation.current){setIsSpeaking(false);setError('Giọng AI chưa sẵn sàng cho câu này.');}
+      if(current===generation.current){setIsSpeaking(false);setError(serviceError||'Không tải hoặc phát được giọng AI. Vui lòng thử lại.');}
     }
   },[available,cancel]);
 
-  return {speak,cancel,isSpeaking,error,available};
+  return {speak,cancel,isSpeaking,error,needsLogin,available};
 }
