@@ -155,3 +155,71 @@ test('paid library voice rejection explains the plan requirement without leaking
     const result=await response.json();assert.equal(result.code,'PAID_VOICE');assert.match(result.message,/gói trả phí/);assert.doesNotMatch(JSON.stringify(result),/provider-secret/);
   }finally{global.fetch=original;}
 });
+
+test('batch shop route rejects unauthenticated requests and streams audio generation for admin',async()=>{
+  const {NextRequest}=require('next/server');
+  const {newAdminToken}=load('src/lib/backend/auth.ts');
+  const batchRoute=load('src/app/api/admin/media/tts/batch-shop/route.ts');
+  // Unauthenticated
+  const denied=await batchRoute.POST(new NextRequest('http://localhost:3000/api/admin/media/tts/batch-shop',{method:'POST',headers:{host:'localhost:3000',origin:'http://localhost:3000'}}));
+  assert.equal(denied.status,403);
+
+  // Authenticated
+  const original=global.fetch;
+  global.fetch=async()=>new Response(Buffer.from('ID3batchaudio'),{headers:{'content-type':'audio/mpeg'}});
+  try{
+    const response=await batchRoute.POST(new NextRequest('http://localhost:3000/api/admin/media/tts/batch-shop',{method:'POST',headers:{cookie:`vocakids_backend_session=${newAdminToken()}`,host:'localhost:3000',origin:'http://localhost:3000'}}));
+    assert.equal(response.status,200);
+    assert.equal(response.headers.get('content-type'),'application/x-ndjson');
+    const reader=response.body.getReader();
+    const decoder=new TextDecoder();
+    let text='';
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      text+=decoder.decode(value);
+      // We only need to check the initial streaming events without waiting for all items in the test
+      if(text.includes('"type":"start"'))break;
+    }
+    assert.match(text,/"type":"start"/);
+    reader.cancel();
+  }finally{global.fetch=original;}
+});
+
+test('generic batch route returns stats via GET and streams generation for chosen scope',async()=>{
+  const {NextRequest}=require('next/server');
+  const {newAdminToken}=load('src/lib/backend/auth.ts');
+  const batchRoute=load('src/app/api/admin/media/tts/batch/route.ts');
+  const cookie=`vocakids_backend_session=${newAdminToken()}`;
+
+  // GET stats
+  const statsRes=await batchRoute.GET(new NextRequest('http://localhost:3000/api/admin/media/tts/batch',{headers:{cookie}}));
+  assert.equal(statsRes.status,200);
+  const stats=await statsRes.json();
+  assert.equal(typeof stats.all.total,'number');
+  assert.equal(typeof stats.shop.total,'number');
+  assert.equal(typeof stats.curriculum.total,'number');
+  assert.ok(stats.all.total>=1400);
+
+  // POST with scope
+  const original=global.fetch;
+  global.fetch=async()=>new Response(Buffer.from('ID3scopeaudio'),{headers:{'content-type':'audio/mpeg'}});
+  try{
+    const response=await batchRoute.POST(new NextRequest('http://localhost:3000/api/admin/media/tts/batch',{method:'POST',headers:{cookie,host:'localhost:3000',origin:'http://localhost:3000','content-type':'application/json'},body:JSON.stringify({scope:'curriculum',limit:3})}));
+    assert.equal(response.status,200);
+    assert.equal(response.headers.get('content-type'),'application/x-ndjson');
+    const reader=response.body.getReader();
+    const decoder=new TextDecoder();
+    let text='';
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      text+=decoder.decode(value);
+      if(text.includes('"type":"start"'))break;
+    }
+    assert.match(text,/"type":"start"/);
+    reader.cancel();
+  }finally{global.fetch=original;}
+});
+
+
