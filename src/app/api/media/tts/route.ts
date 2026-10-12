@@ -3,6 +3,7 @@ import {isBackendAdmin,sameOrigin} from '@/lib/backend/auth';
 import {mediaRole} from '@/lib/media/access';
 import {audioId,audioSettingsForPace,findAudio,generateAudio,publicAudioSettings} from '@/lib/media/store';
 import {audioFailure} from '@/lib/media/errors';
+import {isShopVoiceText} from '@/lib/shop';
 export const runtime='nodejs';
 const limits=new Map<string,{count:number;until:number}>();
 export function GET(){const s=publicAudioSettings();return NextResponse.json({available:s.enabled&&s.configured&&!!s.voiceId},{headers:{'Cache-Control':'no-store'}});}
@@ -17,7 +18,7 @@ export async function POST(req:NextRequest){
     const s=audioSettingsForPace(pace);if(!s.enabled)return NextResponse.json({message:'Chưa bật ElevenLabs.'},{status:404});
     const urlFor=(id:string)=>`${isBackendAdmin(req)?'/api/admin/media':'/api/media'}/audio/${id}`;
     const cached=findAudio(audioId(body.text,s));if(cached)return NextResponse.json({id:cached.id,url:urlFor(cached.id)});
-    if(role==='student')return NextResponse.json({message:'Audio chưa được chuẩn bị.'},{status:404});
+    if(role==='student'&&!isShopVoiceText(body.text))return NextResponse.json({message:'Audio chưa được chuẩn bị.'},{status:404});
     const key=req.cookies.get('vocakids_backend_session')?.value||req.headers.get('cookie')||'adult',now=Date.now();
     for(const [id,l] of limits)if(l.until<now)limits.delete(id);
     const limit=limits.get(key)||{count:0,until:now+60000};limits.set(key,limit);if(++limit.count>10)return NextResponse.json({message:'Chờ một phút để tạo tiếp.'},{status:429});

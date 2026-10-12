@@ -5,6 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {load}=require('./ts-loader.cjs');
 process.env.VOCAKIDS_CONTENT_DIR=fs.mkdtempSync(path.join(process.cwd(),'.tmp-learning/media-test-'));
+process.env.VOCAKIDS_FAMILY_DIR=fs.mkdtempSync(path.join(process.cwd(),'.tmp-learning/media-family-test-'));
 delete process.env.ELEVENLABS_API_KEY;
 const media=load('src/lib/media/store.ts');
 test('settings never expose credentials; malformed voice/model rejected',()=>{
@@ -76,6 +77,28 @@ test('media configuration and generation reject unauthenticated requests',async(
   const request=new NextRequest('http://localhost:3000/api/media/tts',{method:'POST',headers:{host:'localhost:3000',origin:'http://localhost:3000','content-type':'application/json'},body:JSON.stringify({text:'Hello.'})});
   assert.equal((await tts.POST(request)).status,401);
   assert.equal(settings.GET(new NextRequest('http://localhost:3000/api/admin/media')).status,401);
+});
+test('student may generate only fixed shop product names and play the cached AI audio',async()=>{
+  const {NextRequest}=require('next/server');
+  const {signJWT}=load('src/lib/auth.ts');
+  const {writeFamilies}=load('src/lib/backend/families.ts');
+  const tts=load('src/app/api/media/tts/route.ts');
+  const audio=load('src/app/api/media/audio/[id]/route.ts');
+  const student={id:'shop-child',email:'shop-child@test.local',displayName:'Shop child',passwordHash:'',role:'student'};
+  writeFamilies({accounts:[student],profiles:[],progresses:{},categories:{},revisions:{}});
+  const cookie=`vocakids_auth_token=${signJWT({accountId:student.id,email:student.email,displayName:student.displayName,role:'student'})}`;
+  const request=text=>new NextRequest('http://localhost:3000/api/media/tts',{method:'POST',headers:{cookie,host:'localhost:3000',origin:'http://localhost:3000','content-type':'application/json'},body:JSON.stringify({text})});
+  const original=global.fetch;let calls=0;
+  global.fetch=async()=>{calls++;return new Response(Buffer.from('ID3shop'),{headers:{'content-type':'audio/mpeg'}});};
+  try{
+    const denied=await tts.POST(request('Read an unrelated passage.'));assert.equal(denied.status,404);assert.equal(calls,0);
+    const sentence=await tts.POST(request('Can I have a strawberry, please?'));assert.equal(sentence.status,404);assert.equal(calls,0);
+    const allowed=await tts.POST(request('strawberry'));assert.equal(allowed.status,200);assert.equal(calls,1);
+    const item=await allowed.json();assert.match(item.url,/^\/api\/media\/audio\/[a-f0-9]{64}$/);
+    const played=await audio.GET(new NextRequest(`http://localhost:3000${item.url}`,{headers:{cookie}}),{params:Promise.resolve({id:item.id})});
+    assert.equal(played.status,200);assert.equal(await played.text(),'ID3shop');
+    const repeat=await tts.POST(request('strawberry'));assert.equal(repeat.status,200);assert.equal(calls,1);
+  }finally{global.fetch=original;}
 });
 test('admin scoped cookie creates and plays media through admin endpoints',async()=>{
   const {NextRequest}=require('next/server');
