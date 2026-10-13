@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import {
   BookOpen,
@@ -35,8 +36,10 @@ export default function GuidePage() {
             <ArrowLeft className="h-4 w-4" />
             Về Trang Chủ
           </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl" aria-hidden="true">🦉</span>
+          <div className="flex items-center gap-2.5">
+            <div className="relative h-8 w-8 overflow-hidden rounded-xl shadow-sm border border-orange-200">
+              <Image src="/logo.png" alt="Logo" width={32} height={32} className="h-full w-full object-cover" />
+            </div>
             <span className="font-extrabold text-lg tracking-tight text-orange-600">VocaKids</span>
             <span className="text-xs bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded-full">
               Cẩm nang

@@ -31,6 +31,8 @@ const andika = Andika({
   display: 'swap',
 });
 
+import { PwaInstallPrompt } from '@/components/pwa/PwaInstallPrompt';
+
 export const metadata: Metadata = {
   title: 'VocaKids – Luyện Từ Vựng Tiếng Anh Cho Bé',
   description:
@@ -42,8 +44,13 @@ export const metadata: Metadata = {
     title: 'VocaKids',
   },
   icons: {
-    icon: '/icon-192.png',
-    apple: '/icon-192.png',
+    icon: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   keywords: ['học tiếng anh', 'từ vựng', 'trẻ em', 'phát âm', 'tiếng anh cho bé'],
 };
@@ -61,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-nunito antialiased bg-[#FFF7ED] min-h-screen">
         <AppProviders>
           {children}
+          <PwaInstallPrompt />
         </AppProviders>
       </body>
     </html>

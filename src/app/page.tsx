@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { GRADE_METAS } from '@/lib/vocabulary';
 import { useProgress } from '@/hooks/useProgress';
@@ -46,7 +47,12 @@ export default function HomePage() {
   return <div className="clean-home min-h-screen bg-slate-50 text-slate-800">
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight"><span aria-hidden="true">🦉</span>{settings.appName}</Link>
+        <Link href="/" className="flex items-center gap-2.5 text-xl font-extrabold tracking-tight">
+          <div className="relative h-9 w-9 overflow-hidden rounded-xl shadow-sm border border-orange-200 shrink-0">
+            <Image src="/logo.png" alt="Logo" width={36} height={36} className="h-full w-full object-cover" priority />
+          </div>
+          <span className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 bg-clip-text text-transparent font-black tracking-tight">{settings.appName}</span>
+        </Link>
         <div className="flex items-center gap-2">
           <ChildBadge variant="compact" />
           <div className="flex">
@@ -57,6 +63,13 @@ export default function HomePage() {
           </div>
           {isAdmin && <button onClick={logoutAdmin} className="learning-button text-sm text-orange-700">Khóa quản trị</button>}
           {account?.role !== 'student' && !adminSession.loading && !adminSession.authenticated && <Link href="/admin" className="learning-button text-sm text-slate-600">Quản trị</Link>}
+          <button
+            onClick={() => window.dispatchEvent(new Event('vocakids:open-install-guide'))}
+            className="learning-button border border-orange-200 bg-orange-50/70 text-sm font-bold text-orange-700 hover:bg-orange-100 hidden sm:inline-flex items-center gap-1.5"
+            title="Cài đặt ứng dụng lên màn hình chính điện thoại"
+          >
+            📱 Cài App
+          </button>
           <Link href="/guide" className="learning-button border border-slate-200 bg-white text-sm text-slate-700 hover:text-orange-600" title="Hướng dẫn sử dụng">📖 Hướng dẫn</Link>
         </div>
       </div>

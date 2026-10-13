@@ -1,16 +1,56 @@
 {
-  "name": "VocaKids",
+  "name": "VocaKids – Tiếng Anh Cho Bé",
   "short_name": "VocaKids",
-  "description": "Luyện đọc và nói từ vựng tiếng Anh cho bé",
+  "description": "Luyện đọc và phát âm tiếng Anh tương tác chuẩn Bộ GD&ĐT cho trẻ em",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#6c63ff",
-  "theme_color": "#6c63ff",
-  "orientation": "portrait",
+  "background_color": "#FFF7ED",
+  "theme_color": "#F97316",
+  "orientation": "portrait-primary",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
   ],
-  "categories": ["education", "kids"],
+  "shortcuts": [
+    {
+      "name": "Từ mới hôm nay",
+      "short_name": "Từ mới",
+      "description": "Học từ mới và luyện nói AI mỗi ngày",
+      "url": "/daily",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Cửa hàng Little Market",
+      "short_name": "Cửa hàng",
+      "description": "Trò chơi mua sắm tiếng Anh vui nhộn",
+      "url": "/shop",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Góc Phụ huynh",
+      "short_name": "Phụ huynh",
+      "description": "Quản lý hồ sơ và tiến độ học của bé",
+      "url": "/parent",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["education", "kids", "games"],
   "lang": "vi"
 }
