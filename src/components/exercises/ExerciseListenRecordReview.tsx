@@ -18,9 +18,11 @@ import { ExerciseIllustration } from './ExerciseIllustration';
 interface Props {
   targetWord: Word;
   onAnswer: (correct: boolean, isFast: boolean) => void;
+  badgeTitle?: string;
+  subtitle?: string;
 }
 
-export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
+export function ExerciseListenRecordReview({ targetWord, onAnswer, badgeTitle, subtitle }: Props) {
   const { speak, isSpeaking } = useTTS();
   const { apiKey } = useSettings();
   const { recordAttempt } = useProfileContext();
@@ -85,7 +87,8 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const mime = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mime });
         const url = URL.createObjectURL(audioBlob);
         setRecordedBlob(audioBlob);
         setRecordedAudioUrl(url);
@@ -221,10 +224,10 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer }: Props) {
       {/* Header prompt */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-black mb-2">
-          <span>🎙️</span> Dạng 7: Nghe, nói & nghe lại (Kèm AI)
+          <span>🎙️</span> {badgeTitle || 'Dạng 7: Nghe, nói & nghe lại (Kèm AI)'}
         </span>
         <h3 className="text-base font-black text-gray-800">
-          Nghe mẫu ➡️ Bé ghi âm ➡️ Nghe lại giọng mình!
+          {subtitle || 'Nghe mẫu ➡️ Bé ghi âm ➡️ Nghe lại giọng mình!'}
         </h3>
       </div>
 

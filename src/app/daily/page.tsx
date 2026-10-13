@@ -10,12 +10,9 @@ import {
   Mic,
   Volume2,
   CheckCircle,
-  Square,
-  LoaderCircle,
   ArrowRight,
   Flame,
   Star,
-  PartyPopper,
   Swords,
   House,
   Turtle,
@@ -25,10 +22,9 @@ import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useProgress } from '@/hooks/useProgress';
 import { useCustomCategories, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
 import { useTTS } from '@/hooks/useTTS';
-import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { selectDailyWords, getTodayDateString } from '@/lib/dailyWords';
 import { EmojiImage } from '@/components/WordImage';
-import { PronunciationResult } from '@/types';
+import { ExerciseListenRecordReview } from '@/components/exercises/ExerciseListenRecordReview';
 
 function DailyLearningContent() {
   const searchParams = useSearchParams();
@@ -39,12 +35,9 @@ function DailyLearningContent() {
   const { categories: customCategories, hydrated: customHydrated } = useCustomCategories();
   const { progress, hydrated, activeProfile, recordAttempt } = useProgress();
   const { speak, isSpeaking } = useTTS();
-  const recorder = useAudioRecorder();
 
   const [activeTab, setActiveTab] = useState<'learn' | 'speak'>(initialTab);
   const [selectedWordIndex, setSelectedWordIndex] = useState(0);
-  const [evaluating, setEvaluating] = useState(false);
-  const [pronounceResult, setPronounceResult] = useState<PronunciationResult | null>(null);
 
   const selectedGrade = activeProfile?.gradeId ?? 'lop1';
 
@@ -87,13 +80,6 @@ function DailyLearningContent() {
   const completedWords = dailyWords.filter(w => w.isCompleted).length;
   const allFinished = completedWords === totalWords && totalWords > 0;
 
-  // Tự động phát âm thanh khi đổi từ
-  useEffect(() => {
-    if (currentItem?.word?.en && hydrated) {
-      setPronounceResult(null);
-    }
-  }, [currentItem?.word?.id, hydrated]);
-
   // Hành động ghi nhận đã học từ (Flashcard)
   const handleMarkLearned = useCallback(() => {
     if (!currentItem) return;
@@ -103,68 +89,6 @@ function DailyLearningContent() {
     // Tự động gợi ý chuyển sang Luyện nói
     setActiveTab('speak');
   }, [currentItem, recordAttempt]);
-
-  // Gửi audio lên server chấm phát âm AI
-  const handleEvaluateAudio = useCallback(async (base64: string, mime: string) => {
-    if (!currentItem) return;
-    const { category, word } = currentItem;
-    setEvaluating(true);
-    try {
-      const res = await fetch('/api/pronunciation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          audioBase64: base64,
-          mimeType: mime,
-          targetWord: word.en,
-          phonetic: word.phonetic,
-          taskKind: 'word',
-        }),
-      });
-
-      const data: PronunciationResult = await res.json();
-      setPronounceResult(data);
-
-      if (data.passed) {
-        recordAttempt(category.id, word.id, data.score, data.status, data.attemptId);
-        confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
-      }
-    } catch {
-      setPronounceResult({
-        attemptId: '',
-        status: 'service_error',
-        reason: 'network_error',
-        contentStatus: 'unknown',
-        passed: false,
-        score: null,
-        scoreType: 'none',
-        feedbackVi: 'Không kết nối được dịch vụ chấm phát âm. Bé hãy thử nói lại nhé!',
-        engineVersion: '2.0.0',
-        rubricVersion: null,
-        calibrationVersion: null,
-      });
-    } finally {
-      setEvaluating(false);
-    }
-  }, [currentItem, recordAttempt]);
-
-  // Tự động gửi audio chấm phát âm khi recorder hoàn thành
-  useEffect(() => {
-    if (recorder.audioBase64 && recorder.status === 'idle' && activeTab === 'speak' && currentItem) {
-      const mime = recorder.audioBlob?.type || 'audio/webm';
-      void handleEvaluateAudio(recorder.audioBase64, mime);
-    }
-  }, [recorder.audioBase64, recorder.status, activeTab, currentItem, handleEvaluateAudio]);
-
-  // Toggle thu âm
-  const handleToggleRecording = useCallback(async () => {
-    if (recorder.status === 'recording') {
-      recorder.stopRecording();
-    } else {
-      setPronounceResult(null);
-      await recorder.startRecording();
-    }
-  }, [recorder]);
 
   if (!hydrated) {
     return (
@@ -237,7 +161,6 @@ function DailyLearningContent() {
                   key={item.word.id}
                   onClick={() => {
                     setSelectedWordIndex(idx);
-                    setPronounceResult(null);
                   }}
                   className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
                     idx === selectedWordIndex
@@ -392,128 +315,51 @@ function DailyLearningContent() {
 
         {/* ── NỘI DUNG CHÍNH: TAB 2 - LUYỆN NÓI AI (SPEAK) ─────────────────── */}
         {activeTab === 'speak' && (
-          <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <div className="flex flex-col items-center text-center">
-              <span className="text-xs font-bold uppercase tracking-wider text-rose-600">
-                Thử thách phát âm chuẩn
-              </span>
+          <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm">
+            <ExerciseListenRecordReview
+              key={`daily_speak_${currentItem.word.id}`}
+              targetWord={currentItem.word}
+              badgeTitle="🎙️ Luyện Nói AI (Từ Mới Hôm Nay)"
+              subtitle="Nghe mẫu ➡️ Bé ghi âm ➡️ Nghe lại giọng mình ➡️ Nhờ AI chấm điểm!"
+              onAnswer={() => {
+                const { category, word } = currentItem;
+                recordAttempt(category.id, word.id, 100, 'pass');
+                confetti({ particleCount: 75, spread: 80, origin: { y: 0.6 } });
 
-              <h2 className="mt-1 text-3xl font-black text-slate-900 sm:text-4xl">
-                {word.en}
-              </h2>
+                if (totalWords > 1 && selectedWordIndex < totalWords - 1) {
+                  setTimeout(() => {
+                    setSelectedWordIndex(i => i + 1);
+                    setActiveTab('learn');
+                  }, 1200);
+                }
+              }}
+            />
 
-              <p className="mt-1 text-base font-semibold text-slate-600">
-                {word.vi}
-              </p>
-
-              {word.phonetic && (
-                <p className="mt-1 text-sm font-mono text-orange-600">
-                  {word.phonetic}
-                </p>
-              )}
-
-              {/* Nghe mẫu trước */}
-              <button
-                type="button"
-                disabled={isSpeaking}
-                onClick={() => speak(word.en, 'en-US', 0.85)}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100"
-              >
-                <Volume2 className="h-3.5 w-3.5 text-orange-600" /> Nghe giọng mẫu
-              </button>
-            </div>
-
-            {/* Nút Mic to trực quan */}
-            <div className="flex flex-col items-center justify-center py-4">
-              <button
-                type="button"
-                disabled={evaluating || recorder.status === 'requesting'}
-                onClick={handleToggleRecording}
-                className={`relative flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-full text-white shadow-xl transition-all font-bold ${
-                  recorder.status === 'recording'
-                    ? 'bg-rose-600 animate-pulse scale-105'
-                    : evaluating
-                    ? 'bg-amber-500'
-                    : 'bg-gradient-to-tr from-rose-500 to-pink-500 hover:scale-105 active:scale-95'
-                }`}
-              >
-                {evaluating || recorder.status === 'requesting' ? (
-                  <LoaderCircle className="h-9 w-9 animate-spin" />
-                ) : recorder.status === 'recording' ? (
-                  <Square className="h-8 w-8 fill-current" />
-                ) : (
-                  <Mic className="h-9 w-9" />
-                )}
-                <span className="text-[11px]">
-                  {evaluating
-                    ? 'Đang chấm…'
-                    : recorder.status === 'requesting'
-                    ? 'Đang mở mic…'
-                    : recorder.status === 'recording'
-                    ? 'Dừng lại'
-                    : 'Nhấn để nói'}
-                </span>
-              </button>
-
-              <p className="mt-3 text-xs text-slate-500">
-                {recorder.status === 'recording'
-                  ? 'Bé đang nói... Nhấn nút vuông để kết thúc'
-                  : 'Nhấn nút mic và phát âm rõ ràng từ trên nhé'}
-              </p>
-            </div>
-
-            {/* Kết quả đánh giá phát âm AI */}
-            {pronounceResult && (
-              <div
-                className={`rounded-2xl border p-4 text-center transition-all ${
-                  pronounceResult.passed
-                    ? 'border-emerald-300 bg-emerald-50/80 text-emerald-950'
-                    : pronounceResult.status === 'service_error'
-                    ? 'border-amber-300 bg-amber-50 text-amber-900'
-                    : 'border-rose-300 bg-rose-50/80 text-rose-950'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  {pronounceResult.passed ? (
-                    <PartyPopper className="h-6 w-6 text-emerald-600" />
-                  ) : (
-                    <Sparkles className="h-6 w-6 text-rose-600" />
-                  )}
-                  <span className="text-lg font-black">
-                    {pronounceResult.passed
-                      ? 'Xuất sắc! Phát âm rất chuẩn 🎉'
-                      : 'Bé cần thử nói lại một chút nhé!'}
-                  </span>
-                </div>
-
-                {pronounceResult.score !== null && (
-                  <div className="mt-2 text-2xl font-black">
-                    Điểm số: {pronounceResult.score}/100
-                  </div>
-                )}
-
-                {pronounceResult.feedbackVi && (
-                  <p className="mt-1.5 text-xs font-medium">
-                    {pronounceResult.feedbackVi}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Điều hướng từ tiếp theo */}
-            {totalWords > 1 && selectedWordIndex < totalWords - 1 && (
-              <div className="border-t border-slate-100 pt-4 flex justify-end">
+            {totalWords > 1 && (
+              <div className="border-t border-slate-100 pt-4 flex justify-between items-center">
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedWordIndex(i => i + 1);
+                    setSelectedWordIndex(i => Math.max(0, i - 1));
                     setActiveTab('learn');
-                    setPronounceResult(null);
                   }}
-                  className="flex items-center gap-1.5 rounded-2xl bg-orange-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-700"
+                  disabled={selectedWordIndex === 0}
+                  className="text-xs font-bold text-slate-500 hover:text-slate-800 disabled:opacity-30 cursor-pointer"
                 >
-                  Từ tiếp theo ({dailyWords[selectedWordIndex + 1]?.word?.en}) →
+                  ← Từ trước
                 </button>
+                {selectedWordIndex < totalWords - 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedWordIndex(i => i + 1);
+                      setActiveTab('learn');
+                    }}
+                    className="flex items-center gap-1.5 rounded-2xl bg-orange-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-orange-700 shadow-xs cursor-pointer"
+                  >
+                    Từ tiếp theo ({dailyWords[selectedWordIndex + 1]?.word?.en}) →
+                  </button>
+                )}
               </div>
             )}
           </section>
