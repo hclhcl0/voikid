@@ -57,7 +57,7 @@ export default function HomePage() {
           </div>
           {isAdmin && <button onClick={logoutAdmin} className="learning-button text-sm text-orange-700">Khóa quản trị</button>}
           {account?.role !== 'student' && !adminSession.loading && !adminSession.authenticated && <Link href="/admin" className="learning-button text-sm text-slate-600">Quản trị</Link>}
-          
+          <Link href="/guide" className="learning-button border border-slate-200 bg-white text-sm text-slate-700 hover:text-orange-600" title="Hướng dẫn sử dụng">📖 Hướng dẫn</Link>
         </div>
       </div>
     </header>
@@ -69,7 +69,9 @@ export default function HomePage() {
           <span className="inline-flex items-center gap-1.5"><Star aria-hidden="true" className="h-4 w-4 fill-amber-100 text-amber-500"/><strong>{hydrated ? progress.totalStars : 0}</strong> sao</span>
           <span className="inline-flex items-center gap-1.5"><Flame aria-hidden="true" className="h-4 w-4 text-orange-500"/><strong>{hydrated ? progress.streak : 0}</strong> ngày học</span>
           <Link href="/stickers" className="underline decoration-slate-300 underline-offset-4">Sticker</Link>
+          <Link href="/guide" className="underline decoration-slate-300 underline-offset-4 text-orange-600 font-medium">Hướng dẫn</Link>
         </div>
+
       </section>
       {!hydrated ? <p role="status" className="text-sm text-slate-500">Đang nạp hồ sơ học sinh…</p> : !activeProfile.id ? <section className="space-y-3 rounded-2xl border border-orange-200 bg-orange-50 p-5"><h2 className="font-bold">Chưa có hồ sơ học sinh</h2><p className="text-sm text-slate-600">Thêm học sinh và chọn lớp để mở bài học phù hợp.</p><Link href="/parent" className="learning-button bg-orange-600 text-white">Thêm học sinh</Link></section> : <>
       <LearningEntry />
