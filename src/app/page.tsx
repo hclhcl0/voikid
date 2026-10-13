@@ -14,7 +14,7 @@ import { ChildBadge } from '@/components/ChildBadge';
 import { LearningEntry } from '@/components/learning/LearningSummary';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import type { Category } from '@/types';
-import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,ShoppingBag,Speech,Star,Swords,UsersRound,Sparkles,Settings} from 'lucide-react';
+import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,ShoppingBag,Speech,Star,Swords,UsersRound,Settings} from 'lucide-react';
 import {EmojiImage} from '@/components/WordImage';
 import {DailyWordCard} from '@/components/learning/DailyWordCard';
 
@@ -185,10 +185,9 @@ export default function HomePage() {
             </h2>
             <nav
               aria-label="Công cụ học tập"
-              className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3"
+              className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-6 gap-2.5 sm:gap-3"
             >
               {[
-                { href: '/daily', Icon: Sparkles, color: 'bg-amber-100 text-amber-600', title: 'Từ mới', detail: 'Học & nói AI' },
                 { href: '/review', Icon: RotateCcw, color: 'bg-violet-100 text-violet-600', title: 'Ôn tập', detail: due ? `${due} từ ôn` : 'Trí nhớ dài hạn' },
                 { href: '/test', Icon: CircleCheck, color: 'bg-emerald-100 text-emerald-600', title: 'Luyện tập', detail: 'Nghe & ghép từ' },
                 { href: '/ipa', Icon: Speech, color: 'bg-orange-100 text-orange-600', title: 'Phát âm', detail: '44 âm IPA chuẩn' },
