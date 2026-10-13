@@ -18,8 +18,9 @@ import { UserProfile, AppProgress } from '@/types';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface AccountInfo {
-  role?: 'parent' | 'student';
+  role?: 'admin' | 'parent' | 'student';
   parentId?: string;
+
   profileId?: string;
   id: string;
   email: string;
@@ -41,6 +42,7 @@ interface AuthContextType {
   isGuest: boolean;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 
   // Modal controls
   isAuthModalOpen: boolean;
@@ -60,6 +62,7 @@ interface AuthContextType {
   }): Promise<AuthResult>;
 
   login(email: string, password: string): Promise<AuthResult>;
+  loginAdmin(password: string): Promise<AuthResult>;
   logout(): Promise<void>;
   refreshSession(): Promise<void>;
   migrateGuestToAccount(profile: UserProfile, progress: AppProgress): Promise<{ success: boolean; message: string }>;
@@ -68,6 +71,7 @@ interface AuthContextType {
   cloudProfiles: UserProfile[];
   reloadCloudProfiles(): Promise<void>;
 }
+
 
 // ── Context ────────────────────────────────────────────────────────────────────
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -180,6 +184,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAccount(data.account);
         setCloudProfiles(data.profiles || []);
         setIsAuthModalOpen(false);
+
+        if (data.account.role === 'admin') {
+          try { sessionStorage.setItem('vocakids_admin_session_v1', 'true'); } catch {}
+          window.dispatchEvent(new Event('vocakids:admin-session-changed'));
+        }
       }
 
       return data;
@@ -188,13 +197,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // ── Login Admin ───────────────────────────────────────────────────────────────
+  const loginAdmin = useCallback(async (password: string): Promise<AuthResult> => {
+    try {
+      const res = await fetch('/api/admin/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.authenticated) {
+        try { sessionStorage.setItem('vocakids_admin_session_v1', 'true'); } catch {}
+        window.dispatchEvent(new Event('vocakids:admin-session-changed'));
+        await refreshSession();
+        setIsAuthModalOpen(false);
+        return { success: true, message: 'Đăng nhập Quản trị viên thành công! 👑', account: data.account };
+      }
+      return { success: false, message: data.message || 'Mật khẩu quản trị không chính xác.' };
+    } catch (err: any) {
+      return { success: false, message: `Lỗi kết nối: ${err?.message || 'Không thể đăng nhập admin'}` };
+    }
+  }, [refreshSession]);
+
   // ── Logout ────────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch {
-      // Ignore network errors
-    }
+    } catch {}
+    try {
+      await fetch('/api/admin/session', { method: 'DELETE', credentials: 'include' });
+    } catch {}
+    try {
+      sessionStorage.removeItem('vocakids_admin_session_v1');
+    } catch {}
+    window.dispatchEvent(new Event('vocakids:admin-session-changed'));
     setAccount(null);
     setCloudProfiles([]);
   }, []);
@@ -218,18 +255,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [reloadCloudProfiles]);
 
+  const isAdmin = useMemo(() => account?.role === 'admin', [account]);
+
   // ── Context Value ─────────────────────────────────────────────────────────────
   const value = useMemo<AuthContextType>(() => ({
     account,
     isGuest: !account,
     isLoading,
     isAuthenticated: !!account,
+    isAdmin,
     isAuthModalOpen,
     authModalTab,
     openAuthModal,
     closeAuthModal,
     register,
     login,
+    loginAdmin,
     logout,
     refreshSession,
     migrateGuestToAccount,
@@ -238,12 +279,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }), [
     account,
     isLoading,
+    isAdmin,
     isAuthModalOpen,
     authModalTab,
     openAuthModal,
     closeAuthModal,
     register,
     login,
+    loginAdmin,
     logout,
     refreshSession,
     migrateGuestToAccount,
@@ -264,12 +307,14 @@ export function useAuth(): AuthContextType {
       isGuest: true,
       isLoading: false,
       isAuthenticated: false,
+      isAdmin: false,
       isAuthModalOpen: false,
       authModalTab: 'login',
       openAuthModal: () => {},
       closeAuthModal: () => {},
       register: async () => ({ success: false, message: 'AuthProvider không tìm thấy' }),
       login: async () => ({ success: false, message: 'AuthProvider không tìm thấy' }),
+      loginAdmin: async () => ({ success: false, message: 'AuthProvider không tìm thấy' }),
       logout: async () => {},
       refreshSession: async () => {},
       migrateGuestToAccount: async () => ({ success: false, message: 'AuthProvider không tìm thấy' }),
@@ -279,3 +324,4 @@ export function useAuth(): AuthContextType {
   }
   return ctx;
 }
+

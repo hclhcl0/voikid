@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFamilies, publicAccount, ownsProfile } from '@/lib/backend/families';
 import { getAccountFromRequest } from '@/lib/auth';
+import { isBackendAdmin } from '@/lib/backend/auth';
 import { isPostgresConfigured, pgGetParentAccountById, pgGetProfilesByOwner } from '@/lib/postgres';
 
 export const runtime = 'nodejs';
@@ -9,6 +10,23 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   try {
     const payload = getAccountFromRequest(req);
+    const isAdmin = isBackendAdmin(req) || payload?.role === 'admin' || payload?.accountId === 'backend_admin';
+
+    if (isAdmin) {
+      const family = readFamilies();
+      return NextResponse.json({
+        success: true,
+        account: {
+          id: 'backend_admin',
+          email: payload?.email || 'admin@vocakids.local',
+          displayName: payload?.displayName || 'Quản trị viên (Admin)',
+          role: 'admin',
+        },
+        profiles: family.profiles,
+        isGuest: false,
+      }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
     if (!payload) {
       return NextResponse.json(
         { success: false, message: 'Chưa đăng nhập hoặc phiên đã hết hạn.' },
@@ -20,6 +38,7 @@ export async function GET(req: NextRequest) {
     const member = family.accounts.find(a => a.id === payload.accountId);
     if (member) return NextResponse.json({ success: true, account: publicAccount(member), profiles: family.profiles.filter(p => ownsProfile(member,p)), isGuest: false }, { headers: { 'Cache-Control': 'no-store' } });
     if (payload.role && !member) return NextResponse.json({ success: false, message: 'Tài khoản không còn tồn tại.' }, { status: 401 });
+
     // If PostgreSQL is not configured, return payload-only (from JWT)
     if (!isPostgresConfigured()) {
       return NextResponse.json({

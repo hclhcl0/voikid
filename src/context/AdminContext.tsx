@@ -50,6 +50,15 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       console.error('Error hydrating admin state:', e);
     }
     setHydrated(true);
+
+    const onSessionChanged = () => {
+      try {
+        const s = sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
+        setIsAdmin(s === 'true');
+      } catch {}
+    };
+    window.addEventListener('vocakids:admin-session-changed', onSessionChanged);
+    return () => window.removeEventListener('vocakids:admin-session-changed', onSessionChanged);
   }, []);
 
   const verifyPin = useCallback((pin: string): boolean => {
@@ -62,6 +71,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       try {
         sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, 'true');
       } catch {}
+      window.dispatchEvent(new Event('vocakids:admin-session-changed'));
       return true;
     }
     return false;
@@ -72,7 +82,9 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     try {
       sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
     } catch {}
+    window.dispatchEvent(new Event('vocakids:admin-session-changed'));
   }, []);
+
 
   const changePin = useCallback((oldPin: string, newPin: string): { success: boolean; message: string } => {
     if (oldPin.trim() !== adminPin) {

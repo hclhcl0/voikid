@@ -4,131 +4,49 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useProfileContext, COLOR_THEMES, AVATAR_LIST } from '@/context/ProfileContext';
 import { useAuth } from '@/context/AuthContext';
+import { useProfileContext, AVATAR_LIST } from '@/context/ProfileContext';
 import { GRADE_LEVELS } from '@/lib/vocabulary';
 
 export default function LoginPage() {
   const router = useRouter();
   const {
-    profiles,
-    activeProfileId,
-    setActiveProfileId,
-    getProfileStars,
-    loginWithCodeOrName,
-    createProfile,
-    syncWithServer,
-  } = useProfileContext();
-
-  const {
     account,
     isAuthenticated,
+    isAdmin,
     login: authLogin,
     register: authRegister,
     logout: authLogout,
-    cloudProfiles,
   } = useAuth();
+  const { syncWithServer } = useProfileContext();
 
-  // Top level mode: 'parent' (Cloud / Personal) vs 'guest' (Quick / Child Code)
-  const [authMode, setAuthMode] = useState<'parent' | 'guest'>('guest');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Parent tab: 'login' | 'register'
-  const [parentTab, setParentTab] = useState<'login' | 'register'>('login');
-  const [parentEmail, setParentEmail] = useState('');
-  const [parentPassword, setParentPassword] = useState('');
-  const [parentDisplayName, setParentDisplayName] = useState('');
-  const [parentChildName, setParentChildName] = useState('');
-  const [parentChildAvatar, setParentChildAvatar] = useState('🐰');
-  const [parentChildGrade, setParentChildGrade] = useState('lop1');
-  const [parentShowPw, setParentShowPw] = useState(false);
-
-  // Guest tabs: 'pick' | 'code' | 'new'
-  const [guestTab, setGuestTab] = useState<'pick' | 'code' | 'new'>('pick');
-  const [query, setQuery] = useState('');
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
-
-  // New child in guest mode
-  const [newName, setNewName] = useState('');
-  const [newAvatar, setNewAvatar] = useState('🐰');
-  const [newGradeId, setNewGradeId] = useState('lop1');
-  const [newColor, setNewColor] = useState('orange');
-  const [newCustomCode, setNewCustomCode] = useState('');
+  // Register extra fields
+  const [displayName, setDisplayName] = useState('');
+  const [childName, setChildName] = useState('');
+  const [childAvatar, setChildAvatar] = useState('🐰');
+  const [childGrade, setChildGrade] = useState('lop1');
 
   // Status & loading
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // ── Child select ──
-  const handleSelectChild = (id: string, name: string) => {
-    setActiveProfileId(id);
-    setMsg({ type: 'success', text: `Chào mừng ${name} đã đăng nhập! Đang vào bài học... 🚀` });
-    setTimeout(() => {
-      router.push('/');
-    }, 800);
-  };
-
-  // ── Child code login ──
-  const handleCodeLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) {
-      setMsg({ type: 'error', text: 'Vui lòng nhập tên của bé hoặc mã tài khoản!' });
-      return;
-    }
-    setLoading(true);
+  // Quick fill Admin credentials helper
+  const handleFillAdmin = () => {
+    setEmail('admin@vocakids.com');
+    setPassword('admin123');
     setMsg(null);
-
-    const res = await loginWithCodeOrName(query) as { success: boolean; message?: string; profile?: { name: string } };
-    setLoading(false);
-
-    if (res.success && res.profile) {
-      setMsg({ type: 'success', text: res.message || `Đăng nhập thành công cho ${res.profile.name}! Đang chuyển hướng... 🚀` });
-      setTimeout(() => {
-        router.push('/');
-      }, 900);
-    } else {
-      setMsg({ type: 'error', text: res.message || 'Không tìm thấy bé với tên hoặc mã này.' });
-    }
   };
 
-  // ── Guest child create ──
-  const handleCreateChild = async (e: React.FormEvent) => {
+  // Handle Unified Login
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanName = newName.trim();
-    if (!cleanName) {
-      setMsg({ type: 'error', text: 'Vui lòng nhập tên của bé!' });
-      return;
-    }
-
-    setLoading(true);
-    setMsg(null);
-
-    try {
-      const created = await createProfile({
-        name: cleanName,
-        avatar: newAvatar,
-        gradeId: newGradeId,
-        color: newColor,
-        code: newCustomCode.trim() ? newCustomCode.trim().toUpperCase() : undefined,
-      });
-
-      setMsg({
-        type: 'success',
-        text: `Đã tạo tài khoản cho ${created.name} với Mã: ${created.code || ''}! Đang vào học... 🎉`,
-      });
-
-      setTimeout(() => {
-        router.push('/');
-      }, 1000);
-    } catch (err: any) {
-      setMsg({ type: 'error', text: err?.message || 'Có lỗi xảy ra khi tạo tài khoản.' });
-      setLoading(false);
-    }
-  };
-
-  // ── Parent Login ──
-  const handleParentLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!parentEmail.trim() || !parentPassword) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
       setMsg({ type: 'error', text: 'Vui lòng nhập email và mật khẩu!' });
       return;
     }
@@ -136,32 +54,40 @@ export default function LoginPage() {
     setLoading(true);
     setMsg(null);
 
-    const res = await authLogin(parentEmail.trim(), parentPassword);
+    const res = await authLogin(cleanEmail, password);
     setLoading(false);
 
     if (res.success) {
-      setMsg({ type: 'success', text: res.message || 'Đăng nhập thành công! 🎉' });
+      const isUserAdmin = res.account?.role === 'admin';
+      setMsg({
+        type: 'success',
+        text: isUserAdmin
+          ? 'Đăng nhập Quản trị viên (Admin) thành công! Đang chuyển hướng... 👑'
+          : 'Đăng nhập thành công! Đang chuyển hướng... 🚀',
+      });
       await syncWithServer();
       setTimeout(() => {
-        router.push('/');
-      }, 900);
+        if (isUserAdmin) router.push('/admin');
+        else router.push('/parent');
+      }, 700);
     } else {
       setMsg({ type: 'error', text: res.message || 'Email hoặc mật khẩu không chính xác.' });
     }
   };
 
-  // ── Parent Register ──
-  const handleParentRegister = async (e: React.FormEvent) => {
+  // Handle Register
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!parentEmail.trim() || !parentPassword) {
-      setMsg({ type: 'error', text: 'Vui lòng điền email và mật khẩu!' });
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
+      setMsg({ type: 'error', text: 'Vui lòng nhập email và mật khẩu!' });
       return;
     }
-    if (parentPassword.length < 6) {
+    if (password.length < 6) {
       setMsg({ type: 'error', text: 'Mật khẩu phải có ít nhất 6 ký tự!' });
       return;
     }
-    if (!parentChildName.trim()) {
+    if (!childName.trim()) {
       setMsg({ type: 'error', text: 'Vui lòng nhập tên của bé!' });
       return;
     }
@@ -170,41 +96,34 @@ export default function LoginPage() {
     setMsg(null);
 
     const res = await authRegister({
-      email: parentEmail.trim(),
-      password: parentPassword,
-      displayName: parentDisplayName.trim() || parentEmail.trim().split('@')[0],
-      childName: parentChildName.trim(),
-      childAvatar: parentChildAvatar,
-      childGradeId: parentChildGrade,
+      email: cleanEmail,
+      password,
+      displayName: displayName.trim() || cleanEmail.split('@')[0],
+      childName: childName.trim(),
+      childAvatar,
+      childGradeId: childGrade,
     });
     setLoading(false);
 
     if (res.success) {
-      setMsg({ type: 'success', text: res.message || 'Tài khoản đã tạo thành công! 🎉' });
+      setMsg({ type: 'success', text: 'Tạo tài khoản thành công! Đang vào bài học... 🎉' });
       await syncWithServer();
       setTimeout(() => {
         router.push('/');
-      }, 1000);
+      }, 900);
     } else {
       setMsg({ type: 'error', text: res.message || 'Đăng ký không thành công.' });
     }
   };
 
-  const handleCopy = (code: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigator.clipboard?.writeText(code);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
-  };
-
   return (
     <div className="min-h-screen bg-[#FFF7ED] py-8 px-4 flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Decorative circles */}
-      <div className="absolute -top-12 -left-12 w-64 h-64 rounded-full bg-orange-300/20 blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-12 -right-12 w-64 h-64 rounded-full bg-amber-300/20 blur-2xl pointer-events-none" />
+      {/* Background accents */}
+      <div className="absolute -top-12 -left-12 w-72 h-72 rounded-full bg-orange-300/20 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-12 -right-12 w-72 h-72 rounded-full bg-amber-300/20 blur-3xl pointer-events-none" />
 
-      {/* Header Mascot */}
-      <div className="text-center mb-5 max-w-md w-full">
+      {/* Mascot Header */}
+      <div className="text-center mb-6 max-w-md w-full">
         <Link href="/" className="inline-block hover:scale-105 transition-transform">
           <div className="text-6xl mb-2 drop-shadow-md">🦉</div>
           <h1
@@ -215,52 +134,16 @@ export default function LoginPage() {
           </h1>
         </Link>
         <p className="text-sm font-bold text-orange-600 mt-1">
-          Luyện từ vựng tiếng Anh vui nhộn cho bé ✨
+          Hệ thống luyện từ vựng tiếng Anh cho bé ✨
         </p>
       </div>
 
-      {/* Main Login Card */}
+      {/* Main Single Card */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white rounded-3xl shadow-xl border-3 border-orange-200 overflow-hidden relative z-10"
+        className="w-full max-w-md bg-white rounded-3xl shadow-xl border-3 border-orange-200 overflow-hidden relative z-10 p-6 sm:p-7"
       >
-        {/* Top Mode Selector: Guest vs Parent */}
-        <div className="p-2 bg-gradient-to-r from-orange-100 to-amber-100 border-b border-orange-200">
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-white/80 rounded-2xl shadow-xs text-xs font-black">
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMode('guest');
-                setMsg(null);
-              }}
-              className={`py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                authMode === 'guest'
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-orange-600'
-              }`}
-            >
-              <span>👶</span>
-              <span>Bé Học / Khách</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMode('parent');
-                setMsg(null);
-              }}
-              className={`py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                authMode === 'parent'
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-orange-600'
-              }`}
-            >
-              <span>☁️</span>
-              <span>Tài Khoản Phụ Huynh</span>
-            </button>
-          </div>
-        </div>
-
         {/* Status Message */}
         <AnimatePresence>
           {msg && (
@@ -268,10 +151,10 @@ export default function LoginPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className={`p-3.5 text-xs font-black text-center ${
+              className={`mb-4 p-3.5 rounded-2xl text-xs font-black text-center ${
                 msg.type === 'success'
-                  ? 'bg-emerald-100 text-emerald-800 border-b border-emerald-200'
-                  : 'bg-rose-100 text-rose-800 border-b border-rose-200'
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                  : 'bg-rose-100 text-rose-800 border border-rose-300'
               }`}
             >
               {msg.text}
@@ -279,455 +162,298 @@ export default function LoginPage() {
           )}
         </AnimatePresence>
 
-        {/* ── MODE 1: PARENT ACCOUNT (Cloud Sync) ── */}
-        {authMode === 'parent' ? (
-          <div className="p-5">
-            {isAuthenticated && account ? (
-              <div className="space-y-4">
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
-                  <span className="text-4xl mb-1 inline-block">🎉</span>
-                  <h3 className="font-black text-gray-800 text-base">
-                    Xin chào, {account.displayName || account.email}!
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Tài khoản cá nhân đã kết nối đám mây</p>
-                  <p className="text-xs font-bold text-amber-700 mt-2">
-                    Các bé: {cloudProfiles.map((p) => p.name).join(', ') || 'Chưa có bé nào'}
-                  </p>
-                </div>
+        {/* CASE 1: ALREADY LOGGED IN */}
+        {isAuthenticated && account ? (
+          <div className="space-y-4">
+            <div className="text-center p-4 bg-orange-50 rounded-2xl border-2 border-orange-200">
+              <span className="text-4xl mb-2 inline-block">
+                {account.role === 'admin' ? '👑' : '👨‍👩‍👧'}
+              </span>
+              <h2 className="text-lg font-black text-gray-800">
+                Xin chào, {account.displayName || account.email}!
+              </h2>
+              <span
+                className={`inline-block mt-1 text-xs font-black px-2.5 py-0.5 rounded-full ${
+                  account.role === 'admin'
+                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                    : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                }`}
+              >
+                {account.role === 'admin' ? '👑 Quản Trị Viên Hệ Thống' : '👨‍👩‍👧 Tài Khoản Phụ Huynh'}
+              </span>
+              <p className="text-xs text-gray-500 mt-2 font-mono">{account.email}</p>
+            </div>
 
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => router.push('/')}
-                    className="flex-1 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-sm shadow-md transition-all cursor-pointer text-center"
-                  >
-                    Vào Học Ngay 🚀
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await authLogout();
-                      setMsg({ type: 'success', text: 'Đã đăng xuất về chế độ Khách.' });
-                    }}
-                    className="py-3 px-4 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition-colors cursor-pointer"
-                  >
-                    Đăng xuất
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Tabs: Login vs Register */}
-                <div className="grid grid-cols-2 p-1 bg-orange-100/60 rounded-2xl text-xs font-black">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setParentTab('login');
-                      setMsg(null);
-                    }}
-                    className={`py-2 rounded-xl transition-all cursor-pointer ${
-                      parentTab === 'login' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-orange-600'
-                    }`}
-                  >
-                    🔑 Đăng Nhập
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setParentTab('register');
-                      setMsg(null);
-                    }}
-                    className={`py-2 rounded-xl transition-all cursor-pointer ${
-                      parentTab === 'register' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-orange-600'
-                    }`}
-                  >
-                    ✨ Đăng Ký Mới
-                  </button>
-                </div>
+            <div className="space-y-2 pt-2">
+              {account.role === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => router.push('/admin')}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-md transition-all cursor-pointer text-center"
+                >
+                  ⚙️ Vào Trang Quản Trị Hệ Thống (/admin)
+                </button>
+              )}
 
-                {parentTab === 'login' ? (
-                  <form onSubmit={handleParentLogin} className="space-y-3.5">
-                    <div>
-                      <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
-                        Email phụ huynh:
-                      </label>
-                      <input
-                        type="email"
-                        value={parentEmail}
-                        onChange={(e) => setParentEmail(e.target.value)}
-                        placeholder="baome@example.com"
-                        required
-                        className="w-full px-4 py-2.5 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
-                        autoFocus
-                      />
-                    </div>
+              <button
+                type="button"
+                onClick={() => router.push('/parent')}
+                className="w-full py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-sm transition-colors cursor-pointer text-center"
+              >
+                👨‍👩‍👧 Vào Góc Phụ Huynh (/parent)
+              </button>
 
-                    <div>
-                      <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
-                        Mật khẩu:
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={parentShowPw ? 'text' : 'password'}
-                          value={parentPassword}
-                          onChange={(e) => setParentPassword(e.target.value)}
-                          placeholder="••••••••"
-                          required
-                          className="w-full px-4 py-2.5 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20 pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setParentShowPw(!parentShowPw)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
-                        >
-                          {parentShowPw ? '🙈' : '👁️'}
-                        </button>
-                      </div>
-                    </div>
+              <button
+                type="button"
+                onClick={() => router.push('/')}
+                className="w-full py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-sm transition-colors cursor-pointer text-center"
+              >
+                📚 Về Trang Học Của Bé
+              </button>
 
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-md transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      {loading ? 'Đang kiểm tra...' : '🚀 Đăng Nhập & Đồng Bộ'}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleParentRegister} className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
-                        Tên phụ huynh (Bố / Mẹ):
-                      </label>
-                      <input
-                        type="text"
-                        value={parentDisplayName}
-                        onChange={(e) => setParentDisplayName(e.target.value)}
-                        placeholder="Ví dụ: Mẹ Lan, Bố Nam..."
-                        className="w-full px-4 py-2 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
-                        maxLength={30}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
-                        Email:
-                      </label>
-                      <input
-                        type="email"
-                        value={parentEmail}
-                        onChange={(e) => setParentEmail(e.target.value)}
-                        placeholder="baome@example.com"
-                        required
-                        className="w-full px-4 py-2 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
-                        Mật khẩu (tối thiểu 6 ký tự):
-                      </label>
-                      <input
-                        type="password"
-                        value={parentPassword}
-                        onChange={(e) => setParentPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                        minLength={6}
-                        className="w-full px-4 py-2 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
-                      />
-                    </div>
-
-                    <div className="pt-2 border-t border-orange-100">
-                      <p className="text-xs font-black text-orange-600 uppercase tracking-wide mb-1.5">
-                        👶 Hồ sơ bé:
-                      </p>
-                      <input
-                        type="text"
-                        value={parentChildName}
-                        onChange={(e) => setParentChildName(e.target.value)}
-                        placeholder="Tên của bé (Ví dụ: Bé Bống...)"
-                        required
-                        className="w-full px-4 py-2 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20 mb-2"
-                        maxLength={30}
-                      />
-
-                      <div className="grid grid-cols-3 gap-1.5 mb-2">
-                        {GRADE_LEVELS.map((g) => (
-                          <button
-                            key={g.id}
-                            type="button"
-                            onClick={() => setParentChildGrade(g.id)}
-                            className={`py-1.5 rounded-xl text-xs font-bold border-2 transition-all cursor-pointer ${
-                              parentChildGrade === g.id
-                                ? 'bg-orange-500 text-white border-orange-500'
-                                : 'bg-gray-50 text-gray-600 border-gray-200'
-                            }`}
-                          >
-                            {g.label}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-6 gap-1.5">
-                        {AVATAR_LIST.slice(0, 6).map((av) => (
-                          <button
-                            key={av.emoji}
-                            type="button"
-                            onClick={() => setParentChildAvatar(av.emoji)}
-                            className={`h-10 rounded-xl flex items-center justify-center text-xl border-2 transition-all cursor-pointer ${
-                              parentChildAvatar === av.emoji
-                                ? 'bg-amber-100 border-amber-500 scale-105 shadow-xs'
-                                : 'bg-gray-50 border-gray-200'
-                            }`}
-                          >
-                            {av.emoji}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-md transition-all cursor-pointer disabled:opacity-50 mt-2"
-                    >
-                      {loading ? 'Đang tạo tài khoản...' : '🎉 Đăng Ký Tài Khoản'}
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
+              <button
+                type="button"
+                onClick={async () => {
+                  await authLogout();
+                  setMsg({ type: 'success', text: 'Đã đăng xuất.' });
+                }}
+                className="w-full py-2.5 rounded-2xl text-rose-600 hover:bg-rose-50 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Đăng xuất tài khoản
+              </button>
+            </div>
           </div>
-        ) : (
-          /* ── MODE 2: GUEST / CHILD CODE LOGIN ── */
+        ) : !isRegistering ? (
+          /* CASE 2: SINGLE UNIFIED LOGIN FORM */
           <div>
-            {/* Navigation Tabs */}
-            <div className="grid grid-cols-3 p-1.5 bg-orange-100/60 border-b border-orange-200 text-xs font-black">
-              <button
-                type="button"
-                onClick={() => {
-                  setGuestTab('pick');
-                  setMsg(null);
-                }}
-                className={`py-2 rounded-xl transition-all cursor-pointer ${
-                  guestTab === 'pick' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-orange-600'
-                }`}
+            <div className="text-center mb-5">
+              <h2
+                className="text-2xl font-black text-gray-800"
+                style={{ fontFamily: 'var(--font-baloo), sans-serif' }}
               >
-                👶 Chọn bé ({profiles.length})
+                Đăng Nhập
+              </h2>
+              <p className="text-xs font-semibold text-gray-500 mt-0.5">
+                Một tài khoản duy nhất cho Phụ Huynh & Quản Trị Viên
+              </p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-black text-gray-700 mb-1.5 uppercase tracking-wide">
+                  Email / Tên đăng nhập:
+                </label>
+                <input
+                  type="text"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@vocakids.com hoặc email phụ huynh"
+                  required
+                  autoFocus
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-black text-gray-700 uppercase tracking-wide">
+                    Mật khẩu:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-xs text-orange-600 font-bold hover:underline"
+                  >
+                    {showPassword ? 'Ẩn' : 'Hiện'} mật khẩu
+                  </button>
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-base shadow-md hover:shadow-lg active:scale-98 transition-all cursor-pointer disabled:opacity-50 mt-2"
+              >
+                {loading ? 'Đang kiểm tra...' : 'Đăng Nhập 🚀'}
               </button>
+            </form>
+
+            {/* Quick Admin Helper Card */}
+            <div className="mt-4 p-3 bg-amber-50/80 rounded-2xl border border-amber-200/80 flex items-center justify-between text-xs">
+              <div className="min-w-0 pr-2">
+                <span className="font-black text-amber-900 block">👑 Quản trị viên (Admin):</span>
+                <span className="font-mono text-[11px] text-amber-700">admin@vocakids.com / admin123</span>
+              </div>
               <button
                 type="button"
-                onClick={() => {
-                  setGuestTab('code');
-                  setMsg(null);
-                }}
-                className={`py-2 rounded-xl transition-all cursor-pointer ${
-                  guestTab === 'code' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-orange-600'
-                }`}
+                onClick={handleFillAdmin}
+                className="py-1 px-2.5 rounded-xl bg-amber-200 hover:bg-amber-300 text-amber-900 font-black text-[11px] cursor-pointer shrink-0 transition-colors"
               >
-                🔑 Nhập mã / Tên
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setGuestTab('new');
-                  setMsg(null);
-                }}
-                className={`py-2 rounded-xl transition-all cursor-pointer ${
-                  guestTab === 'new' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-600 hover:text-orange-600'
-                }`}
-              >
-                ➕ Thêm bé mới
+                Điền nhanh
               </button>
             </div>
 
-            <div className="p-5">
-              {/* TAB 1: PICK EXISTING CHILD */}
-              {guestTab === 'pick' && (
-                <div className="space-y-3">
-                  <p className="text-xs font-bold text-gray-500 mb-2">
-                    Chạm vào bé để đăng nhập và học tiếp:
-                  </p>
+            {/* Switch to Register */}
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegistering(true);
+                  setMsg(null);
+                }}
+                className="text-xs font-bold text-orange-600 hover:underline cursor-pointer"
+              >
+                Chưa có tài khoản? Đăng ký phụ huynh mới →
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* CASE 3: SIMPLE REGISTER FORM */
+          <div>
+            <div className="text-center mb-4">
+              <h2
+                className="text-2xl font-black text-gray-800"
+                style={{ fontFamily: 'var(--font-baloo), sans-serif' }}
+              >
+                Đăng Ký Phụ Huynh
+              </h2>
+              <p className="text-xs font-semibold text-gray-500 mt-0.5">
+                Tạo tài khoản để theo dõi tiến độ và quản lý bài học của bé
+              </p>
+            </div>
 
-                  <div className="space-y-2.5 max-h-[50vh] overflow-y-auto">
-                    {profiles.map((p) => {
-                      const isActive = p.id === activeProfileId;
-                      const stars = getProfileStars(p.id);
-                      const grade = GRADE_LEVELS.find((g) => g.id === p.gradeId) || GRADE_LEVELS[1];
-                      const theme = COLOR_THEMES[p.color] || COLOR_THEMES.orange;
-                      const code = p.code || 'CHUA_CO';
+            <form onSubmit={handleRegister} className="space-y-3">
+              <div>
+                <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
+                  Tên phụ huynh (Bố / Mẹ):
+                </label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Ví dụ: Mẹ Lan, Bố Nam..."
+                  className="w-full px-3.5 py-2.5 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
+                  maxLength={30}
+                />
+              </div>
 
-                      return (
-                        <motion.div
-                          key={p.id}
-                          whileHover={{ scale: 1.02, y: -1 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => handleSelectChild(p.id, p.name)}
-                          className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-3.5 group ${
-                            isActive
-                              ? 'bg-amber-50/90 border-amber-400 shadow-md ring-2 ring-amber-300/60'
-                              : 'bg-white hover:bg-orange-50/50 border-gray-200 hover:border-orange-300'
-                          }`}
-                        >
-                          <div
-                            className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${theme.bg} flex items-center justify-center text-2xl shadow-md shrink-0`}
-                          >
-                            {p.avatar}
-                          </div>
+              <div>
+                <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
+                  Email đăng ký:
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="baome@example.com"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
+                />
+              </div>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-black text-gray-800 text-sm truncate">{p.name}</h3>
-                              {isActive && (
-                                <span className="text-[10px] bg-amber-500 text-white font-black px-1.5 py-0.5 rounded-full shrink-0">
-                                  Đang chọn ✓
-                                </span>
-                              )}
-                            </div>
+              <div>
+                <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
+                  Mật khẩu (tối thiểu 6 ký tự):
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                  className="w-full px-3.5 py-2.5 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
+                />
+              </div>
 
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-gray-500 font-semibold">{grade.label}</span>
-                              <span className="text-gray-300">•</span>
-                              <span className="text-xs font-black text-amber-600">⭐ {stars} sao</span>
-                            </div>
+              <div className="pt-2 border-t border-orange-100">
+                <label className="block text-xs font-black text-orange-600 mb-1 uppercase tracking-wide">
+                  👶 Tên của bé:
+                </label>
+                <input
+                  type="text"
+                  value={childName}
+                  onChange={(e) => setChildName(e.target.value)}
+                  placeholder="Ví dụ: Bé Bống, Minh Quân..."
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20 mb-2"
+                />
 
-                            <div className="mt-1 flex items-center gap-2">
-                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-100/90 text-amber-800 border border-amber-200">
-                                Mã: {code}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={(e) => handleCopy(code, e)}
-                                className="text-[10px] text-gray-400 hover:text-orange-600 font-bold"
-                              >
-                                {copiedCode === code ? '✓ Đã chép' : '📋 Chép'}
-                              </button>
-                            </div>
-                          </div>
-
-                          <span className="text-orange-400 group-hover:text-orange-600 font-black text-base transition-colors">
-                            →
-                          </span>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
+                <div className="grid grid-cols-3 gap-1.5 mb-2">
+                  {GRADE_LEVELS.map((g) => (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => setChildGrade(g.id)}
+                      className={`py-1.5 rounded-xl text-xs font-bold border-2 transition-all cursor-pointer ${
+                        childGrade === g.id
+                          ? 'bg-orange-500 text-white border-orange-500'
+                          : 'bg-gray-50 text-gray-600 border-gray-200'
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  ))}
                 </div>
-              )}
 
-              {/* TAB 2: CODE LOGIN */}
-              {guestTab === 'code' && (
-                <form onSubmit={handleCodeLogin} className="space-y-4">
-                  <div className="bg-amber-50 border border-amber-200 p-3 rounded-2xl">
-                    <p className="text-xs text-amber-800 leading-relaxed font-semibold">
-                      📲 Nhập <strong>Tên của bé</strong> (VD: <code className="font-bold">Bé Bống</code>) hoặc <strong>Mã tài khoản</strong> (VD: <code className="font-mono font-bold">BONG88</code>) để đăng nhập trên máy này.
-                    </p>
-                  </div>
+                <div className="grid grid-cols-6 gap-1.5">
+                  {AVATAR_LIST.slice(0, 6).map((av) => (
+                    <button
+                      key={av.emoji}
+                      type="button"
+                      onClick={() => setChildAvatar(av.emoji)}
+                      className={`h-9 rounded-xl flex items-center justify-center text-lg border-2 transition-all cursor-pointer ${
+                        childAvatar === av.emoji
+                          ? 'bg-amber-100 border-amber-500 scale-105'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      {av.emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                  <div>
-                    <label className="block text-xs font-black text-gray-700 mb-1.5 uppercase tracking-wide">
-                      Tên bé hoặc Mã tài khoản:
-                    </label>
-                    <input
-                      type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Ví dụ: Bé Bống hoặc BONG88..."
-                      className="w-full px-4 py-3 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
-                      autoFocus
-                    />
-                  </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-base shadow-md transition-all cursor-pointer disabled:opacity-50 mt-2"
+              >
+                {loading ? 'Đang tạo tài khoản...' : 'Tạo Tài Khoản & Bắt Đầu Học 🎉'}
+              </button>
+            </form>
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-md transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {loading ? 'Đang kiểm tra...' : '🚀 Đăng Nhập & Học'}
-                  </button>
-                </form>
-              )}
-
-              {/* TAB 3: CREATE CHILD */}
-              {guestTab === 'new' && (
-                <form onSubmit={handleCreateChild} className="space-y-3.5">
-                  <div>
-                    <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
-                      Tên của bé:
-                    </label>
-                    <input
-                      type="text"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      placeholder="Ví dụ: Bé Bống, Minh Quân..."
-                      className="w-full px-3.5 py-2.5 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-sm bg-orange-50/20"
-                      maxLength={30}
-                      autoFocus
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
-                      Lớp của bé:
-                    </label>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {GRADE_LEVELS.map((g) => (
-                        <button
-                          key={g.id}
-                          type="button"
-                          onClick={() => setNewGradeId(g.id)}
-                          className={`py-1.5 rounded-xl text-xs font-bold border-2 transition-all cursor-pointer ${
-                            newGradeId === g.id
-                              ? 'bg-orange-500 text-white border-orange-500'
-                              : 'bg-gray-50 text-gray-600 border-gray-200'
-                          }`}
-                        >
-                          {g.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black text-gray-700 mb-1 uppercase tracking-wide">
-                      Con vật đại diện:
-                    </label>
-                    <div className="grid grid-cols-6 gap-1.5">
-                      {AVATAR_LIST.slice(0, 6).map((av) => (
-                        <button
-                          key={av.emoji}
-                          type="button"
-                          onClick={() => setNewAvatar(av.emoji)}
-                          className={`h-10 rounded-xl flex items-center justify-center text-xl border-2 transition-all cursor-pointer ${
-                            newAvatar === av.emoji
-                              ? 'bg-amber-100 border-amber-500 scale-105 shadow-xs'
-                              : 'bg-gray-50 border-gray-200'
-                          }`}
-                        >
-                          {av.emoji}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-md transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {loading ? 'Đang tạo...' : '🎉 Tạo Hồ Sơ & Học Ngay'}
-                  </button>
-                </form>
-              )}
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegistering(false);
+                  setMsg(null);
+                }}
+                className="text-xs font-bold text-orange-600 hover:underline cursor-pointer"
+              >
+                ← Đã có tài khoản? Quay lại Đăng Nhập
+              </button>
             </div>
           </div>
         )}
 
-        {/* Footer Link back home */}
-        <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
-          <Link href="/" className="text-xs font-bold text-gray-500 hover:text-orange-600">
-            ← Quay lại Trang Chủ
+        {/* Guest Mode Direct Link */}
+        <div className="mt-5 pt-4 border-t border-orange-100 text-center">
+          <Link
+            href="/"
+            className="text-xs font-black text-gray-500 hover:text-orange-600 transition-colors inline-flex items-center gap-1"
+          >
+            <span>👶</span>
+            <span>Hoặc vào học ngay với chế độ Khách (không cần tài khoản) →</span>
           </Link>
         </div>
       </motion.div>
