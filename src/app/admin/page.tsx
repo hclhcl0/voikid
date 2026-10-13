@@ -164,7 +164,7 @@ export default function BackendPage() {
             )}
 
             <div className="text-center pt-2 text-xs text-slate-400">
-              💡 Mặc định: <span className="font-mono text-slate-600 font-bold">admin@vocakids.com</span> / <span className="font-mono text-slate-600 font-bold">admin123</span>
+              🔒 Khu vực quản trị bảo mật của hệ thống VocaKids
             </div>
           </form>
         </div>

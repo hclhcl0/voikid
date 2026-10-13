@@ -63,7 +63,7 @@ export function AdminGateModal() {
       closeAdminModal();
       if (onSuccessCallback) onSuccessCallback();
     } else {
-      setErrorMsg('Mật khẩu không chính xác! (Mặc định: admin123 hoặc 1234)');
+      setErrorMsg('Mật khẩu không chính xác! Vui lòng thử lại.');
     }
   };
 
@@ -121,14 +121,11 @@ export function AdminGateModal() {
                   type="password"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="Nhập admin123 hoặc 1234..."
+                  placeholder="••••••••"
                   required
                   autoFocus
                   className="w-full px-4 py-3 rounded-2xl border-2 border-orange-200 focus:border-orange-500 focus:outline-hidden text-gray-800 font-bold text-center text-base bg-orange-50/20"
                 />
-                <p className="text-[11px] text-gray-500 text-center mt-1.5 font-medium">
-                  💡 Mặc định: <code className="font-mono font-bold text-orange-600">admin123</code> hoặc <code className="font-mono font-bold text-orange-600">1234</code>
-                </p>
               </div>
 
               <button

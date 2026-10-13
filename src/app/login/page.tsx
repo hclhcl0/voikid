@@ -35,12 +35,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Quick fill Admin credentials helper
-  const handleFillAdmin = () => {
-    setEmail('admin@vocakids.com');
-    setPassword('admin123');
-    setMsg(null);
-  };
 
   // Handle Unified Login
   const handleLogin = async (e: React.FormEvent) => {
@@ -286,20 +280,6 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* Quick Admin Helper Card */}
-            <div className="mt-4 p-3 bg-amber-50/80 rounded-2xl border border-amber-200/80 flex items-center justify-between text-xs">
-              <div className="min-w-0 pr-2">
-                <span className="font-black text-amber-900 block">👑 Quản trị viên (Admin):</span>
-                <span className="font-mono text-[11px] text-amber-700">admin@vocakids.com / admin123</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleFillAdmin}
-                className="py-1 px-2.5 rounded-xl bg-amber-200 hover:bg-amber-300 text-amber-900 font-black text-[11px] cursor-pointer shrink-0 transition-colors"
-              >
-                Điền nhanh
-              </button>
-            </div>
 
             {/* Switch to Register */}
             <div className="mt-4 text-center">

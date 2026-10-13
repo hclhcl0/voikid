@@ -70,7 +70,7 @@ export function AdminGate({
             <div>
               <p className="text-xs font-black text-orange-800">Bảo Vệ Dữ Liệu Của Bé</p>
               <p className="text-[11px] font-semibold text-orange-700/90 mt-0.5">
-                Vui lòng nhập mật khẩu Quản trị (mặc định <code className="bg-orange-200/80 px-1 py-0.5 rounded font-mono font-bold text-orange-900">admin123</code> hoặc <code className="bg-orange-200/80 px-1 py-0.5 rounded font-mono font-bold text-orange-900">1234</code>) để tiếp tục.
+                Vui lòng nhập mật khẩu Quản trị để tiếp tục.
               </p>
             </div>
           </div>
