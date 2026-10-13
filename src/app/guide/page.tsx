@@ -10,7 +10,6 @@ import {
   ShoppingBag,
   Gift,
   ShieldCheck,
-  Settings,
   Star,
   Flame,
   ChevronRight,
@@ -19,10 +18,11 @@ import {
   Trophy,
   ArrowLeft,
   CheckCircle2,
+  Phone,
 } from 'lucide-react';
 
 export default function GuidePage() {
-  const [activeTab, setActiveTab] = useState<'student' | 'parent' | 'admin'>('student');
+  const [activeTab, setActiveTab] = useState<'student' | 'parent'>('student');
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-24">
@@ -91,17 +91,6 @@ export default function GuidePage() {
           >
             <ShieldCheck className="h-4 w-4" />
             Góc Phụ Huynh
-          </button>
-          <button
-            onClick={() => setActiveTab('admin')}
-            className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 transition-all ${
-              activeTab === 'admin'
-                ? 'bg-white text-orange-600 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Settings className="h-4 w-4" />
-            Quản Trị Viên (Admin)
           </button>
         </div>
 
@@ -275,64 +264,29 @@ export default function GuidePage() {
           </div>
         )}
 
-        {/* TAB 3: Quản trị viên (Admin) */}
-        {activeTab === 'admin' && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800">
-              <Settings className="h-5 w-5 text-orange-600" />
-              Cấu hình hệ thống & Trí tuệ nhân tạo (Admin)
-            </h2>
-
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-3">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Volume2 className="h-5 w-5 text-orange-500" />
-                  1. Cấu hình đa API Key ElevenLabs (TTS Pool)
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Hệ thống cho phép thêm nhiều API Key ElevenLabs dự phòng. Hỗ trợ 2 chế độ:
-                </p>
-                <ul className="text-sm text-slate-600 list-disc list-inside space-y-1 ml-2">
-                  <li><strong>Ưu tiên (Failover):</strong> Luôn dùng key chính, tự động chuyển sang key phụ khi key chính chạm giới hạn Quota hoặc lỗi xác thực.</li>
-                  <li><strong>Luân phiên (Round-robin):</strong> Chia đều các yêu cầu tạo âm thanh qua các key để dàn đều hạn ngạch sử dụng.</li>
-                  <li>Công cụ <strong>Batch TTS</strong> cho phép tạo trước toàn bộ âm thanh cho 500 từ Cửa hàng và toàn bộ SGK.</li>
-                </ul>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-3">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Mic className="h-5 w-5 text-amber-500" />
-                  2. Cấu hình Gemini AI chấm điểm phát âm
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Cung cấp Google Gemini API Key để kích hoạt tính năng phân tích âm thanh giọng nói của bé qua Micro, phát hiện lỗi phát âm và trả về lời khuyên sư phạm tức thì.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-3">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-emerald-500" />
-                  3. Cấu hình tính năng "Từ mới mỗi ngày"
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Tại trang Admin, bạn có thể tùy chỉnh:
-                </p>
-                <ul className="text-sm text-slate-600 list-disc list-inside space-y-1 ml-2">
-                  <li><strong>Số từ mới mỗi ngày:</strong> Từ 1 đến 20 từ (mặc định: 1 từ/ngày).</li>
-                  <li><strong>Nguồn từ vựng:</strong> Lấy từ SGK theo lớp (<code>curriculum</code>), Game Cửa Hàng 500 từ (<code>shop</code>) hoặc kết hợp cả hai (<code>all</code>).</li>
-                </ul>
-                <div className="pt-2">
-                  <Link
-                    href="/admin"
-                    className="learning-button inline-flex bg-orange-600 text-white text-sm"
-                  >
-                    Vào Trang Quản Trị Admin
-                  </Link>
-                </div>
-              </div>
+        {/* Author Contact Card */}
+        <section className="rounded-3xl border-2 border-orange-200 bg-gradient-to-br from-orange-50/90 via-amber-50/80 to-white p-6 sm:p-8 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div className="space-y-1.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-800">
+                👨‍💻 Hỗ trợ &amp; Đồng hành
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+                Liên hệ tác giả: Hồ Công Lượng
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed max-w-xl">
+                Mọi góp ý về nội dung, tính năng bài học hoặc hỗ trợ kỹ thuật trong quá trình học tập của bé, xin vui lòng liên hệ trực tiếp với tác giả.
+              </p>
             </div>
+            <a
+              href="tel:0935593353"
+              className="inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 px-6 py-3.5 text-base font-black text-white shadow-md hover:from-orange-700 hover:to-amber-700 active:scale-95 transition-all whitespace-nowrap"
+            >
+              <Phone className="h-5 w-5" />
+              <span>SĐT: 0935593353</span>
+            </a>
           </div>
-        )}
+        </section>
 
         {/* FAQ Section */}
         <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">

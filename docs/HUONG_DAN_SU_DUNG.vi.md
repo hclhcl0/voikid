@@ -13,7 +13,7 @@ Chào mừng bạn đến với **VocaKids** – Ứng dụng học tiếng Anh 
    - [2.4. Góc Vui Chơi & Trò Chơi Tiếng Anh](#24-góc-vui-chơi--trò-chơi-tiếng-anh)
    - [2.5. Thu Thập Sticker 3D & Phần Thưởng](#25-thu-thập-sticker-3d--phần-thưởng)
 3. [Hướng Dẫn Dành Cho Phụ Huynh (`/parent`)](#3-hướng-dẫn-dành-cho-phụ-huynh-parent)
-4. [Hướng Dẫn Dành Cho Quản Trị Viên (`/admin`)](#4-hướng-dẫn-dành-cho-quản-trị-viên-admin)
+4. [Liên Hệ Tác Giả & Hỗ Trợ Kỹ Thuật](#4-liên-hệ-tác-giả--hỗ-trợ-kỹ-thuật)
 5. [Câu Hỏi Thường Gặp (FAQ) & Khắc Phục Sự Cố](#5-câu-hỏi-thường-gặp-faq--khắc-phục-sự-cố)
 
 ---
@@ -101,27 +101,13 @@ Phụ huynh có thể quản lý việc học của các con hoàn toàn riêng 
 
 ---
 
-## 4. HƯỚNG DẪN DÀNH CHO QUẢN TRỊ VIÊN (`/admin`)
+## 4. LIÊN HỆ TÁC GIẢ & HỖ TRỢ KỸ THUẬT
 
-Trang quản trị cho phép nhà trường và quản trị viên tùy biến nội dung và hệ sinh thái AI:
+Mọi đóng góp ý kiến về nội dung học liệu, tính năng ứng dụng hoặc yêu cầu hỗ trợ kỹ thuật trong quá trình học tập của bé, xin vui lòng liên hệ trực tiếp tác giả:
 
-1. **Đăng nhập quản trị**:
-   - Truy cập `/admin`, nhập mật khẩu quản trị (cấu hình qua biến môi trường `ADMIN_PASSWORD`).
-2. **Cấu hình Trí tuệ Nhân tạo ElevenLabs**:
-   - **Nhiều API Key (Multi-key Pool)**: Nhập danh sách nhiều API key dự phòng.
-   - **Chế độ**:
-     - *Ưu tiên (Failover)*: Dùng Key chính, tự động chuyển sang Key dự phòng khi Key chính hết hạn mức quota hoặc lỗi.
-     - *Luân phiên (Round-robin)*: Chia đều tải giữa các API Key để tối ưu hạn ngạch sử dụng.
-   - **Giọng đọc & Tốc độ**: Tùy chọn giọng chuẩn (Rachel, Adam, Lily,...) và tốc độ phát âm cho trẻ nhỏ.
-   - **Tạo âm thanh hàng loạt (Batch TTS)**: Bấm tạo trước âm thanh cho toàn bộ kho từ vựng và Cửa hàng để người dùng học mượt mà không tốn thời gian chờ.
-3. **Cấu hình Trí tuệ Nhân tạo Gemini AI**:
-   - Cung cấp Gemini API Key để kích hoạt tính năng lắng nghe và chấm điểm phát âm tương tác giọng nói tức thì.
-4. **Cài đặt Tính năng "Từ mới mỗi ngày"**:
-   - **Số từ mới mỗi ngày**: Cài đặt từ 1 đến 20 từ (mặc định: 1 từ).
-   - **Nguồn từ mới**:
-     - *📚 Bài học SGK theo khối lớp (`curriculum`)*
-     - *🏪 Trò chơi Cửa hàng 500 từ (`shop`)*
-     - *🌟 Kết hợp cả hai (`all`)*
+* **Tác giả**: **Hồ Công Lượng**
+* **Số điện thoại / Zalo**: **0935593353**
+* **Hỗ trợ**: Tư vấn cài đặt, sử dụng và giải đáp thắc mắc 24/7.
 
 ---
 
