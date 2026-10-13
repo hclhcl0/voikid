@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {isBackendAdmin,sameOrigin} from '@/lib/backend/auth';
-import {audioId,audioSettingsForPace,findAudio,generateAudio} from '@/lib/media/store';
+import {audioId,audioSettingsForPace,findAudio,generateAudio,publicAudioSettings} from '@/lib/media/store';
 import {readContent} from '@/lib/backend/store';
 import {shopItems} from '@/lib/shop';
 
@@ -76,7 +76,8 @@ export async function POST(req:NextRequest){
   }catch{/* fallback to all */}
 
   const settings = audioSettingsForPace('normal');
-  if(!settings.enabled||!settings.apiKey||!settings.voiceId){
+  const pub = publicAudioSettings();
+  if(!settings.enabled||!pub.configured||!settings.voiceId){
     return new Response(JSON.stringify({message:'ElevenLabs chưa được cấu hình hoặc chưa bật. Vào Admin → Media để nhập API key và Voice ID rồi lưu cấu hình trước.'}),{status:400,headers:{'Content-Type':'application/json'}});
   }
 

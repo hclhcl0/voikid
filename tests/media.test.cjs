@@ -222,4 +222,187 @@ test('generic batch route returns stats via GET and streams generation for chose
   }finally{global.fetch=original;}
 });
 
+test('settings can store and mask multiple ElevenLabs API keys; keyMode priority and round_robin validated',()=>{
+  media.saveAudioSettings({
+    enabled: true,
+    voiceId: 'test_voice',
+    model: 'eleven_flash_v2_5',
+    keyMode: 'priority',
+    apiKeys: [
+      { id: 'k1', name: 'Key Một', key: 'eleven-secret-key-1', enabled: true },
+      { id: 'k2', name: 'Key Hai', key: 'eleven-secret-key-2', enabled: false },
+    ],
+  });
+  const pub = media.publicAudioSettings();
+  assert.equal(pub.configured, true);
+  assert.equal(pub.activeKeyCount, 1);
+  assert.equal(pub.keyMode, 'priority');
+  assert.equal(pub.apiKeys.length, 2);
+  assert.equal(pub.apiKeys[0].name, 'Key Một');
+  assert.equal(pub.apiKeys[0].masked, '••••••ey-1');
+  assert.equal(pub.apiKeys[1].name, 'Key Hai');
+  assert.equal(pub.apiKeys[1].enabled, false);
+  // Ensure raw keys never leak
+  assert.equal(JSON.stringify(pub).includes('eleven-secret-key-1'), false);
+  assert.equal(JSON.stringify(pub).includes('eleven-secret-key-2'), false);
+
+  // Switch to round_robin mode
+  media.saveAudioSettings({
+    enabled: true,
+    voiceId: 'test_voice',
+    model: 'eleven_flash_v2_5',
+    keyMode: 'round_robin',
+    apiKeys: [
+      { id: 'k1', name: 'Key Một', key: 'eleven-secret-key-1', enabled: true },
+      { id: 'k2', name: 'Key Hai', key: 'eleven-secret-key-2', enabled: true },
+    ],
+  });
+  const pub2 = media.publicAudioSettings();
+  assert.equal(pub2.keyMode, 'round_robin');
+  assert.equal(pub2.activeKeyCount, 2);
+});
+
+test('multi-key pool fails over when key 1 encounters quota 429 and succeeds on key 2',async()=>{
+  media.resetKeyUsagePool();
+  media.saveAudioSettings({
+    enabled: true,
+    voiceId: 'failover_voice',
+    model: 'eleven_flash_v2_5',
+    keyMode: 'priority',
+    apiKeys: [
+      { id: 'key_exhausted', name: 'Key Hết Quota', key: 'secret_key_1111', enabled: true },
+      { id: 'key_backup', name: 'Key Dự Phòng', key: 'secret_key_2222', enabled: true },
+    ],
+  });
+
+  const usedKeys = [];
+  const original = global.fetch;
+  global.fetch = async (_url, options) => {
+    const key = options.headers['xi-api-key'];
+    usedKeys.push(key);
+    if (key === 'secret_key_1111') {
+      return new Response(JSON.stringify({ detail: { status: 'quota_exceeded' } }), {
+        status: 429,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+    return new Response(Buffer.from('ID3backupaudio'), {
+      headers: { 'content-type': 'audio/mpeg' },
+    });
+  };
+
+  try {
+    const audio = await media.generateAudio('Testing failover message.');
+    assert.ok(audio.id);
+    assert.deepEqual(usedKeys, ['secret_key_1111', 'secret_key_2222']);
+    const pub = media.publicAudioSettings();
+    const k1 = pub.apiKeys.find(k => k.id === 'key_exhausted');
+    const k2 = pub.apiKeys.find(k => k.id === 'key_backup');
+    assert.equal(k1.failures, 1);
+    assert.equal(k1.isCooldown, true);
+    assert.equal(k2.successes, 1);
+  } finally {
+    global.fetch = original;
+  }
+});
+
+test('multi-key pool fails over when key 1 encounters 401 invalid key and uses key 2',async()=>{
+  media.resetKeyUsagePool();
+  media.saveAudioSettings({
+    enabled: true,
+    voiceId: 'auth_failover_voice',
+    model: 'eleven_flash_v2_5',
+    keyMode: 'priority',
+    apiKeys: [
+      { id: 'key_bad_auth', name: 'Key Hỏng', key: 'secret_bad_key', enabled: true },
+      { id: 'key_good_auth', name: 'Key Tốt', key: 'secret_good_key', enabled: true },
+    ],
+  });
+
+  const usedKeys = [];
+  const original = global.fetch;
+  global.fetch = async (_url, options) => {
+    const key = options.headers['xi-api-key'];
+    usedKeys.push(key);
+    if (key === 'secret_bad_key') {
+      return new Response(JSON.stringify({ detail: { status: 'invalid_api_key' } }), {
+        status: 401,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+    return new Response(Buffer.from('ID3goodauthaudio'), {
+      headers: { 'content-type': 'audio/mpeg' },
+    });
+  };
+
+  try {
+    const audio = await media.generateAudio('Testing auth failover.');
+    assert.ok(audio.id);
+    assert.deepEqual(usedKeys, ['secret_bad_key', 'secret_good_key']);
+  } finally {
+    global.fetch = original;
+  }
+});
+
+test('multi-key round_robin mode rotates requests across enabled keys',async()=>{
+  media.resetKeyUsagePool();
+  media.saveAudioSettings({
+    enabled: true,
+    voiceId: 'rr_voice',
+    model: 'eleven_flash_v2_5',
+    keyMode: 'round_robin',
+    apiKeys: [
+      { id: 'rr_1', name: 'RR 1', key: 'secret_rr_1', enabled: true },
+      { id: 'rr_2', name: 'RR 2', key: 'secret_rr_2', enabled: true },
+    ],
+  });
+
+  const usedKeys = [];
+  const original = global.fetch;
+  global.fetch = async (_url, options) => {
+    const key = options.headers['xi-api-key'];
+    usedKeys.push(key);
+    return new Response(Buffer.from('ID3rraudio'), {
+      headers: { 'content-type': 'audio/mpeg' },
+    });
+  };
+
+  try {
+    await media.generateAudio('First sentence in round robin.');
+    await media.generateAudio('Second sentence in round robin.');
+    assert.equal(usedKeys.length, 2);
+    assert.notEqual(usedKeys[0], usedKeys[1]);
+    assert.deepEqual(new Set(usedKeys), new Set(['secret_rr_1', 'secret_rr_2']));
+  } finally {
+    global.fetch = original;
+  }
+});
+
+test('multi-key pool throws quota error only when all keys are exhausted',async()=>{
+  media.resetKeyUsagePool();
+  media.saveAudioSettings({
+    enabled: true,
+    voiceId: 'all_fail_voice',
+    model: 'eleven_flash_v2_5',
+    keyMode: 'priority',
+    apiKeys: [
+      { id: 'all_1', name: 'All 1', key: 'secret_all_1', enabled: true },
+      { id: 'all_2', name: 'All 2', key: 'secret_all_2', enabled: true },
+    ],
+  });
+
+  const original = global.fetch;
+  global.fetch = async () => new Response(JSON.stringify({ detail: { status: 'quota_exceeded' } }), {
+    status: 429,
+    headers: { 'content-type': 'application/json' },
+  });
+
+  try {
+    await assert.rejects(media.generateAudio('All keys exhausted.'), /QUOTA/);
+  } finally {
+    global.fetch = original;
+  }
+});
+
+
 

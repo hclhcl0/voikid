@@ -11,7 +11,7 @@
 const { load } = require('../tests/ts-loader.cjs');
 const { readContent } = load('src/lib/backend/store.ts');
 const { shopItems } = load('src/lib/shop.ts');
-const { audioId, audioSettingsForPace, findAudio, generateAudio, listAudio } = load('src/lib/media/store.ts');
+const { audioId, audioSettingsForPace, findAudio, generateAudio, listAudio, publicAudioSettings } = load('src/lib/media/store.ts');
 
 const args = process.argv.slice(2);
 const scopeArg = args.find(a => a.startsWith('--scope='))?.split('=')[1] || 'all';
@@ -24,17 +24,26 @@ async function main() {
   console.log('════════════════════════════════════════════════════════════════\n');
 
   const settings = audioSettingsForPace('normal');
+  const pub = publicAudioSettings();
   console.log('⚙️  Cấu hình hiện tại:');
-  console.log(`   - Enabled:  ${settings.enabled ? '✓ Bật' : '✗ Đang tắt'}`);
-  console.log(`   - Model:    ${settings.model}`);
-  console.log(`   - Voice ID: ${settings.voiceId || '(chưa có)'}`);
-  console.log(`   - API Key:  ${settings.apiKey ? `${settings.apiKey.slice(0, 4)}...${settings.apiKey.slice(-4)}` : '(chưa có)'}`);
-  console.log(`   - Tốc độ:   ${settings.speed}×\n`);
+  console.log(`   - Enabled:    ${settings.enabled ? '✓ Bật' : '✗ Đang tắt'}`);
+  console.log(`   - Model:      ${settings.model}`);
+  console.log(`   - Voice ID:   ${settings.voiceId || '(chưa có)'}`);
+  console.log(`   - Chế độ key: ${pub.keyMode === 'round_robin' ? '🔄 Luân phiên (Round-Robin)' : '🥇 Ưu tiên (Priority / Failover)'}`);
+  console.log(`   - Số API Key: ${pub.activeKeyCount || (pub.configured ? 1 : 0)} key đang kích hoạt`);
+  if (pub.apiKeys && pub.apiKeys.length > 0) {
+    pub.apiKeys.forEach((k, idx) => {
+      console.log(`     [${idx + 1}] ${k.name}: ${k.masked} (${k.enabled ? 'Bật' : 'Tắt'})`);
+    });
+  } else if (settings.apiKey) {
+    console.log(`     [1] Key chính: ${settings.apiKey.slice(0, 4)}...${settings.apiKey.slice(-4)}`);
+  }
+  console.log(`   - Tốc độ:     ${settings.speed}×\n`);
 
-  if (!dryRun && (!settings.enabled || !settings.apiKey || !settings.voiceId)) {
+  if (!dryRun && (!settings.enabled || !pub.configured || !settings.voiceId)) {
     console.error('❌ LỖI: ElevenLabs chưa được cấu hình hoặc chưa bật.');
     console.error('👉 Vui lòng vào trang Admin (http://localhost:3000/admin → Media) nhập key và voice ID,');
-    console.error('   hoặc cấu hình các biến môi trường: ELEVENLABS_ENABLED=true, ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID.');
+    console.error('   hoặc cấu hình các biến môi trường: ELEVENLABS_ENABLED=true, ELEVENLABS_API_KEY/ELEVENLABS_API_KEYS, ELEVENLABS_VOICE_ID.');
     console.error('💡 Gợi ý: Có thể thêm cờ `--dry-run` để chỉ quét kiểm tra danh sách từ chưa có audio mà không gọi API.\n');
     process.exit(1);
   }

@@ -1,9 +1,10 @@
 import { defaultPronunciationSettings, validatePronunciationSettings, type PronunciationSettings } from '@/lib/pronunciation/settings';
 import type { Category } from '@/types';
 export interface ManagedCategory extends Category { gradeId: string; archived?: boolean }
-export interface SiteSettings { appName: string; welcomeText: string; dailyGoal: number; showGames: boolean; pronunciation?: PronunciationSettings }
+export type DailyWordSource = 'curriculum' | 'shop' | 'all';
+export interface SiteSettings { appName: string; welcomeText: string; dailyGoal: number; dailyNewWordsCount?: number; dailyNewWordsSource?: DailyWordSource; showGames: boolean; pronunciation?: PronunciationSettings }
 export interface ContentStore { revision: number; categories: ManagedCategory[]; settings: SiteSettings; updatedAt: string }
-export const defaultSettings: SiteSettings = { appName: 'VocaKids', welcomeText: 'Học một chút, tiến bộ mỗi ngày', dailyGoal: 5, showGames: true, pronunciation: { ...defaultPronunciationSettings } };
+export const defaultSettings: SiteSettings = { appName: 'VocaKids', welcomeText: 'Học một chút, tiến bộ mỗi ngày', dailyGoal: 5, dailyNewWordsCount: 1, dailyNewWordsSource: 'curriculum', showGames: true, pronunciation: { ...defaultPronunciationSettings } };
 export function validateContent(value: unknown): asserts value is ContentStore {
   if (!value || typeof value !== 'object') throw new Error('Dữ liệu không hợp lệ.');
   const data = value as ContentStore;
@@ -25,4 +26,6 @@ export function validateContent(value: unknown): asserts value is ContentStore {
   const s = data.settings;
   if (s?.pronunciation !== undefined) validatePronunciationSettings(s.pronunciation);
   if (!s || !text(s.appName, 80, true) || !text(s.welcomeText, 300, true) || !Number.isInteger(s.dailyGoal) || s.dailyGoal < 1 || s.dailyGoal > 50 || typeof s.showGames !== 'boolean') throw new Error('Cài đặt không hợp lệ. Mục tiêu mỗi ngày từ 1 đến 50 từ.');
+  if (s.dailyNewWordsCount !== undefined && (!Number.isInteger(s.dailyNewWordsCount) || s.dailyNewWordsCount < 1 || s.dailyNewWordsCount > 20)) throw new Error('Cài đặt không hợp lệ. Số từ mới mỗi ngày từ 1 đến 20 từ.');
+  if (s.dailyNewWordsSource !== undefined && !['curriculum','shop','all'].includes(s.dailyNewWordsSource)) throw new Error('Cài đặt không hợp lệ. Nguồn từ mới phải là curriculum, shop hoặc all.');
 }

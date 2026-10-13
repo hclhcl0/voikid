@@ -37,6 +37,9 @@ yarn-error.log*
 # scratch & temporary files
 /scratch/
 /.tmp-learning/
+/*.png
+/*.jpg
+/*.jpeg
 
 # vercel
 .vercel

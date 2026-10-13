@@ -55,7 +55,9 @@ Tài liệu Coolify: [Environment Variables](https://coolify.io/docs/application
 
 Trong **Configuration → Environment Variables**, thêm các biến sau và bật **Runtime Variable**:
 
-- `ELEVENLABS_API_KEY`: API key của tài khoản ElevenLabs.
+- `ELEVENLABS_API_KEY`: API key đơn lẻ của tài khoản ElevenLabs (hoặc key chính).
+- `ELEVENLABS_API_KEYS`: Danh sách nhiều API key cách nhau bởi dấu phẩy (VD: `key1,key2,key3`) để tự động luân phiên hoặc dự phòng.
+- `ELEVENLABS_KEY_MODE`: `priority` (ưu tiên lần lượt/failover - mặc định) hoặc `round_robin` (luân phiên chia đều).
 - `ELEVENLABS_VOICE_ID`: Voice ID được tài khoản cho phép dùng qua API.
 - `ELEVENLABS_MODEL`: `eleven_flash_v2_5` (khuyến nghị) hoặc `eleven_multilingual_v2`.
 - `ELEVENLABS_ENABLED`: `true`.

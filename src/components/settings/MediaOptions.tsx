@@ -4,6 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import type {MediaAudio} from '@/lib/media/store';
 import {MIN_NORMAL_SPEED,SLOW_AUDIO_SPEED,MAX_AUDIO_SPEED} from '@/lib/media/pace';
 import {isShopVoiceText} from '@/lib/shop';
+import {KeyRound,Plus,Trash2,ArrowUp,ArrowDown,Shuffle,Award,CheckCircle2,AlertCircle} from 'lucide-react';
 
 const field='min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2';
 
@@ -33,6 +34,19 @@ interface BatchState {
   fatalError?: string;
 }
 
+interface KeyItem {
+  id: string;
+  name: string;
+  enabled: boolean;
+  masked?: string;
+  key?: string;
+  uses?: number;
+  successes?: number;
+  failures?: number;
+  isCooldown?: boolean;
+  lastError?: string | null;
+}
+
 const BATCH_IDLE: BatchState = {
   running: false,
   scope: 'all',
@@ -44,7 +58,22 @@ const BATCH_IDLE: BatchState = {
 };
 
 export function MediaOptions(){
-  const [settings,setSettings]=useState({enabled:false,voiceId:'',model:'eleven_flash_v2_5',speed:0.85,configured:false,keyFingerprint:'',keySource:''});
+  const [settings,setSettings]=useState({
+    enabled:false,
+    voiceId:'',
+    model:'eleven_flash_v2_5',
+    speed:0.85,
+    configured:false,
+    keyFingerprint:'',
+    keySource:'',
+    activeKeyCount:0,
+    keyMode:'priority' as 'priority'|'round_robin',
+  });
+  const [apiKeys,setApiKeys]=useState<KeyItem[]>([]);
+  const [keyMode,setKeyMode]=useState<'priority'|'round_robin'>('priority');
+  const [newKeyName,setNewKeyName]=useState('');
+  const [newKeySecret,setNewKeySecret]=useState('');
+
   const [key,setKey]=useState(''),[text,setText]=useState('Hello! Welcome to our English lesson.'),[items,setItems]=useState<MediaAudio[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
   const [scope,setScope]=useState<BatchScope>('all');
   const [stats,setStats]=useState<BatchStats|null>(null);
@@ -74,6 +103,8 @@ export function MediaOptions(){
     if(!r.ok)throw new Error('Không tải được Media.');
     const data=await r.json();
     setSettings(data.settings);
+    if(data.settings.apiKeys)setApiKeys(data.settings.apiKeys);
+    if(data.settings.keyMode)setKeyMode(data.settings.keyMode);
     setItems(data.items);
     await fetchStats();
   }
@@ -85,6 +116,8 @@ export function MediaOptions(){
       .then(data=>{
         if(!controller.signal.aborted){
           setSettings(data.settings);
+          if(data.settings.apiKeys)setApiKeys(data.settings.apiKeys);
+          if(data.settings.keyMode)setKeyMode(data.settings.keyMode);
           setItems(data.items);
         }
       })
@@ -94,15 +127,78 @@ export function MediaOptions(){
     return ()=>controller.abort();
   },[]);
 
+  function handleAddKey(){
+    const secret=newKeySecret.trim().replace(/[\u200B-\u200D\uFEFF]/g,'');
+    if(!secret)return;
+    if(/[\s"'`]/.test(secret)){
+      setMessage('Key không được chứa khoảng trắng hoặc ký tự đặc biệt.');
+      return;
+    }
+    const name=newKeyName.trim()||`Key ${apiKeys.length+1}`;
+    const id='key_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    setApiKeys(prev=>[
+      ...prev,
+      {
+        id,
+        name,
+        enabled:true,
+        key:secret,
+        masked:`••••••${secret.slice(-4)}`,
+        uses:0,
+        successes:0,
+        failures:0,
+      }
+    ]);
+    setNewKeyName('');
+    setNewKeySecret('');
+    setMessage(`Đã thêm "${name}" vào danh sách. Hãy nhấn "Lưu cấu hình giọng đọc" để lưu trên server.`);
+  }
+
+  function handleRemoveKey(id:string){
+    setApiKeys(prev=>prev.filter(k=>k.id!==id));
+  }
+
+  function handleToggleKey(id:string){
+    setApiKeys(prev=>prev.map(k=>k.id===id?{...k,enabled:!k.enabled}:k));
+  }
+
+  function handleMoveKey(index:number,delta:number){
+    const target=index+delta;
+    if(target<0||target>=apiKeys.length)return;
+    setApiKeys(prev=>{
+      const next=[...prev];
+      const [item]=next.splice(index,1);
+      next.splice(target,0,item);
+      return next;
+    });
+  }
+
   async function save(){
     setBusy(true);
     try{
-      const r=await fetch('/api/admin/media',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({...settings,apiKey:key||undefined})});
+      const payload={
+        ...settings,
+        apiKey:key||undefined,
+        apiKeys:apiKeys.map(k=>({
+          id:k.id,
+          name:k.name,
+          enabled:k.enabled,
+          key:k.key||undefined,
+        })),
+        keyMode,
+      };
+      const r=await fetch('/api/admin/media',{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload),
+      });
       const data=await r.json();
       if(!r.ok)throw new Error(data.message);
       setSettings(data);
+      if(data.apiKeys)setApiKeys(data.apiKeys);
+      if(data.keyMode)setKeyMode(data.keyMode);
       setKey('');
-      setMessage('Đã lưu cấu hình giọng đọc trên server.');
+      setMessage('Đã lưu cấu hình và danh sách API Key trên server thành công.');
       await fetchStats();
     }catch(e){
       setMessage(e instanceof Error?e.message:'Không lưu được.');
@@ -232,23 +328,30 @@ export function MediaOptions(){
     missing: Math.max(0, (scope === 'all' ? 1409 : scope === 'shop' ? 500 : 909) - items.length),
   };
 
-  const canBatch=settings.enabled&&settings.configured&&!!settings.voiceId;
-  const batchPct=batch.total>0?Math.round(batch.done/batch.total*100):0;
-  const cachedPct=currentStat.total>0?Math.round((currentStat.cached/currentStat.total)*100):0;
+  const activeKeysCount = apiKeys.filter(k=>k.enabled).length || (settings.configured ? 1 : 0);
+  const canBatch = settings.enabled && activeKeysCount > 0 && !!settings.voiceId;
+  const batchPct = batch.total>0?Math.round(batch.done/batch.total*100):0;
+  const cachedPct = currentStat.total>0?Math.round((currentStat.cached/currentStat.total)*100):0;
 
   return (
     <section className="space-y-6 rounded-2xl border bg-white p-6 shadow-sm">
       <header>
-        <h2 className="text-lg font-bold text-slate-800">Media · Giọng đọc ElevenLabs</h2>
+        <h2 className="text-lg font-bold text-slate-800">Media · Giọng đọc ElevenLabs & Quản Lý Nhiều API Key</h2>
         <p className="text-sm text-slate-500 mt-1">
-          Hệ thống lưu trữ audio cố định trên máy chủ. Khi admin tạo audio 1 lần, tất cả học sinh và khách vãng lai sẽ dùng lại file MP3 có sẵn, không tốn thêm ký tự ElevenLabs nào.
+          Hệ thống lưu trữ audio cố định trên máy chủ. Tự động luân phiên hoặc chuyển đổi dự phòng (failover) giữa nhiều tài khoản ElevenLabs khi hết hạn mức ký tự (quota).
         </p>
-        <p className="text-xs text-slate-500 mt-1">
-          Mã đối chiếu key: <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">{settings.keyFingerprint || 'Chưa lưu'}</code> · Nguồn: {settings.keySource === 'settings' ? 'Cài đặt Admin' : 'Biến môi trường'}.
-        </p>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-2">
+          <span className="inline-flex items-center gap-1 rounded bg-orange-100 px-2 py-0.5 font-semibold text-orange-800">
+            {activeKeysCount} key đang kích hoạt
+          </span>
+          <span>·</span>
+          <span>Chế độ: <strong>{keyMode==='round_robin'?'Luân phiên (Round-Robin)':'Ưu tiên (Failover)'}</strong></span>
+          <span>·</span>
+          <span>Nguồn: {settings.keySource === 'settings' ? 'Cài đặt Admin' : 'Biến môi trường'}</span>
+        </div>
       </header>
 
-      {/* Cấu hình ElevenLabs */}
+      {/* Cấu hình cơ bản ElevenLabs */}
       <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
         <label className="flex items-center gap-3 font-medium text-slate-800 cursor-pointer">
           <input
@@ -259,18 +362,8 @@ export function MediaOptions(){
           />
           Bật tạo và lưu audio ElevenLabs
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="block text-sm">
-            <span className="font-medium text-slate-700">API key {settings.configured?'· Đã cấu hình':''}</span>
-            <input
-              type="password"
-              autoComplete="new-password"
-              className={`${field} mt-1`}
-              value={key}
-              onChange={e=>setKey(e.target.value)}
-              placeholder="Nhập key mới; để trống giữ key đang lưu"
-            />
-          </label>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <label className="block text-sm">
             <span className="font-medium text-slate-700">Voice ID</span>
             <input
@@ -280,8 +373,6 @@ export function MediaOptions(){
               placeholder="Voice ID từ ElevenLabs"
             />
           </label>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="block text-sm">
             <span className="font-medium text-slate-700">Model</span>
             <select
@@ -302,18 +393,208 @@ export function MediaOptions(){
               step={0.05}
               value={settings.speed}
               onChange={e=>setSettings({...settings,speed:Number(e.target.value)})}
-              className="mt-2 w-full accent-orange-600"
+              className="mt-3 w-full accent-orange-600"
             />
-            <span className="text-xs text-slate-500">Chuẩn: {MIN_NORMAL_SPEED}× đến {MAX_AUDIO_SPEED}×. Nút Chậm dùng audio riêng ở {SLOW_AUDIO_SPEED}×.</span>
+            <span className="text-[11px] text-slate-500">Chuẩn: {MIN_NORMAL_SPEED}×–{MAX_AUDIO_SPEED}×. Nút Chậm: {SLOW_AUDIO_SPEED}×.</span>
           </label>
         </div>
+
+        {/* ── QUẢN LÝ NHIỀU API KEY ELEVENLABS ─────────────────────────────────── */}
+        <div className="space-y-4 pt-3 border-t border-slate-200">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-orange-600" />
+              <h3 className="font-bold text-slate-800 text-sm">Danh sách API Key ElevenLabs ({apiKeys.length})</h3>
+            </div>
+
+            {/* Chọn chế độ key */}
+            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1 text-xs font-medium">
+              <button
+                type="button"
+                onClick={()=>setKeyMode('priority')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-colors ${
+                  keyMode === 'priority'
+                    ? 'bg-orange-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Dùng key đầu tiên; khi hết quota hoặc lỗi sẽ tự động chuyển sang key tiếp theo"
+              >
+                <Award className="h-3.5 w-3.5" />
+                Ưu tiên (Failover)
+              </button>
+              <button
+                type="button"
+                onClick={()=>setKeyMode('round_robin')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-colors ${
+                  keyMode === 'round_robin'
+                    ? 'bg-orange-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Chia đều lượt gọi cho các key để phân tải hạn mức đồng đều"
+              >
+                <Shuffle className="h-3.5 w-3.5" />
+                Luân phiên (Round-Robin)
+              </button>
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-500">
+            Hỗ trợ cấu hình tối đa 20 key. Ở chế độ <strong>Ưu tiên</strong>, hệ thống tự động nhảy sang key dự phòng khi key chính gặp lỗi <code>QUOTA</code> (429) hoặc <code>INVALID_KEY</code> (401).
+          </p>
+
+          {/* Bảng danh sách các key */}
+          {apiKeys.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500 bg-white">
+              Chưa có danh sách API Key nào. Bạn có thể thêm key bên dưới hoặc nhập nhanh 1 key đơn lẻ.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {apiKeys.map((k, index)=>(
+                <div
+                  key={k.id}
+                  className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 transition-colors ${
+                    k.enabled
+                      ? 'border-slate-200 bg-white shadow-xs'
+                      : 'border-slate-200/60 bg-slate-100/60 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-bold text-orange-800">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <strong className="text-sm text-slate-800 truncate">{k.name}</strong>
+                        {k.isCooldown && (
+                          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" /> Tạm nghỉ ({k.lastError||'quota'})
+                          </span>
+                        )}
+                        {!k.isCooldown && k.enabled && (
+                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800 flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> Sẵn sàng
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 font-mono mt-0.5">
+                        <span>{k.masked || '••••••'}</span>
+                        {(k.uses ?? 0) > 0 && (
+                          <span className="font-sans text-[11px] text-slate-400">
+                            · {k.uses} lượt gọi ({k.successes ?? 0} thành công)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={()=>handleMoveKey(index, -1)}
+                      className="p-1 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-30 text-slate-600"
+                      title="Tăng độ ưu tiên (lên trước)"
+                    >
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === apiKeys.length - 1}
+                      onClick={()=>handleMoveKey(index, 1)}
+                      className="p-1 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-30 text-slate-600"
+                      title="Giảm độ ưu tiên (xuống sau)"
+                    >
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={()=>handleToggleKey(k.id)}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-colors ${
+                        k.enabled
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                          : 'border-slate-300 bg-slate-200 text-slate-600 hover:bg-slate-300'
+                      }`}
+                    >
+                      {k.enabled ? 'Đang bật' : 'Đã tắt'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={()=>handleRemoveKey(k.id)}
+                      className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+                      title="Xóa key này"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Form thêm key mới */}
+          <div className="rounded-xl border border-slate-200 bg-white p-3 space-y-3">
+            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <Plus className="h-3.5 w-3.5 text-orange-600" /> Thêm API Key mới
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+              <div className="md:col-span-4">
+                <input
+                  type="text"
+                  className={field}
+                  value={newKeyName}
+                  onChange={e=>setNewKeyName(e.target.value)}
+                  placeholder="Tên gợi nhớ (VD: Tài khoản Pro 2)"
+                />
+              </div>
+              <div className="md:col-span-6">
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  className={field}
+                  value={newKeySecret}
+                  onChange={e=>setNewKeySecret(e.target.value)}
+                  placeholder="Nhập ElevenLabs API Key bí mật..."
+                />
+              </div>
+              <div className="md:col-span-2">
+                <button
+                  type="button"
+                  onClick={handleAddKey}
+                  disabled={!newKeySecret.trim()}
+                  className="w-full h-11 rounded-xl bg-slate-800 text-white font-medium text-xs hover:bg-slate-900 disabled:opacity-40 transition-colors flex items-center justify-center gap-1"
+                >
+                  <Plus className="h-4 w-4" /> Thêm key
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Ô nhập nhanh API key cũ (tương thích ngược) */}
+          <details className="text-xs text-slate-600">
+            <summary className="cursor-pointer hover:text-slate-900 font-medium">
+              Nhập nhanh 1 key đơn lẻ thay thế toàn bộ (Legacy)
+            </summary>
+            <div className="mt-2 p-3 bg-white rounded-xl border border-slate-200">
+              <input
+                type="password"
+                autoComplete="new-password"
+                className={field}
+                value={key}
+                onChange={e=>setKey(e.target.value)}
+                placeholder="Nhập key mới để cập nhật nhanh..."
+              />
+            </div>
+          </details>
+        </div>
+
         <button
           disabled={busy}
-          className="learning-button bg-orange-600 text-white disabled:opacity-50 text-sm font-medium"
+          className="learning-button bg-orange-600 text-white disabled:opacity-50 text-sm font-medium mt-2"
           onClick={()=>void save()}
         >
           {busy ? 'Đang lưu…' : 'Lưu cấu hình giọng đọc'}
         </button>
+        {message && <p role="status" className="text-xs text-orange-800 font-semibold mt-1">{message}</p>}
       </div>
 
       {/* ── BATCH AUDIO GENERATOR: QUÉT VÀ TẠO TẤT CẢ ───────────────────────────────────────── */}
@@ -324,7 +605,7 @@ export function MediaOptions(){
             <div>
               <h3 className="font-bold text-slate-800 text-base">Quét & Tạo Audio Hàng Loạt</h3>
               <p className="text-xs text-slate-600 mt-0.5">
-                Tự động quét các từ chưa có file MP3 trên máy chủ và gọi ElevenLabs tạo mới hàng loạt.
+                Tự động quét các từ chưa có file MP3 trên máy chủ và gọi ElevenLabs tạo mới hàng loạt. Tự động chuyển đổi giữa {activeKeysCount} API Key khi hết quota.
               </p>
             </div>
           </div>
@@ -422,7 +703,7 @@ export function MediaOptions(){
         {!canBatch && !batch.running && (
           <div className="rounded-lg bg-amber-100/80 border border-amber-300 p-2.5 text-xs text-amber-900 flex items-center gap-2">
             <span>⚠</span>
-            <span>Cần cấu hình ElevenLabs (Bật checkbox + nhập API Key + Voice ID) và bấm <strong>Lưu cấu hình giọng đọc</strong> ở trên trước khi tạo hàng loạt.</span>
+            <span>Cần cấu hình ElevenLabs (Bật checkbox + Voice ID + ít nhất 1 API Key khả dụng) và bấm <strong>Lưu cấu hình giọng đọc</strong> trước khi tạo hàng loạt.</span>
           </div>
         )}
 
@@ -495,13 +776,12 @@ export function MediaOptions(){
           />
         </label>
         <button
-          disabled={busy||!text.trim()||!settings.enabled||!settings.configured||!settings.voiceId}
+          disabled={busy||!text.trim()||!canBatch}
           className="learning-button border border-slate-300 bg-white hover:bg-slate-50 text-sm disabled:opacity-50"
           onClick={()=>void generate()}
         >
           {busy?'Đang xử lý…':'Tạo và lưu vào Media'}
         </button>
-        {message && <p role="status" className="text-sm text-orange-800 font-medium">{message}</p>}
       </div>
 
       {/* Danh sách audio đã lưu */}

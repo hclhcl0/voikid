@@ -12,8 +12,9 @@ import { ChildBadge } from '@/components/ChildBadge';
 import { LearningEntry } from '@/components/learning/LearningSummary';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import type { Category } from '@/types';
-import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,ShoppingBag,Speech,Star,Swords,UsersRound} from 'lucide-react';
+import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,ShoppingBag,Speech,Star,Swords,UsersRound,Sparkles} from 'lucide-react';
 import {EmojiImage} from '@/components/WordImage';
+import {DailyWordCard} from '@/components/learning/DailyWordCard';
 
 type GradeCategory = Category & { gradeId?: string; isCustom?: boolean };
 
@@ -72,8 +73,10 @@ export default function HomePage() {
       </section>
       {!hydrated ? <p role="status" className="text-sm text-slate-500">Đang nạp hồ sơ học sinh…</p> : !activeProfile.id ? <section className="space-y-3 rounded-2xl border border-orange-200 bg-orange-50 p-5"><h2 className="font-bold">Chưa có hồ sơ học sinh</h2><p className="text-sm text-slate-600">Thêm học sinh và chọn lớp để mở bài học phù hợp.</p><Link href="/parent" className="learning-button bg-orange-600 text-white">Thêm học sinh</Link></section> : <>
       <LearningEntry />
-      <nav aria-label="Công cụ học tập" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <DailyWordCard />
+      <nav aria-label="Công cụ học tập" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
         {[
+          { href: '/daily', Icon: Sparkles, color:'bg-amber-50 text-amber-600', title: 'Từ mới', detail: 'Học từ & nói mỗi ngày' },
           { href: '/review', Icon: RotateCcw, color:'bg-violet-50 text-violet-600', title: 'Ôn tập', detail: due ? `${due} từ đến lịch ôn` : 'Ôn lại từ đã học' },
           { href: '/test', Icon: CircleCheck, color:'bg-emerald-50 text-emerald-600', title: 'Luyện tập', detail: 'Nghe, ghép và viết' },
           { href: '/ipa', Icon: Speech, color:'bg-orange-50 text-orange-600', title: 'Phát âm', detail: 'Khám phá 44 âm IPA' },
