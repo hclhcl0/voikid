@@ -45,32 +45,87 @@ export default function HomePage() {
   const starsFor = (cat: Category) => hydrated ? cat.words.reduce((sum, word) => sum + (progress.wordProgress[`${cat.id}:${word.id}`]?.stars ?? 0), 0) : 0;
 
   return <div className="clean-home min-h-screen bg-slate-50 text-slate-800">
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-extrabold tracking-tight">
-          <div className="relative h-9 w-9 overflow-hidden rounded-xl shadow-sm border border-orange-200 shrink-0">
+    <header className="border-b border-slate-200 bg-white sticky top-0 z-30">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-3">
+        {/* Left: Brand Logo & Title */}
+        <Link href="/" className="flex items-center gap-2 sm:gap-2.5 text-lg sm:text-xl font-extrabold tracking-tight shrink-0">
+          <div className="relative h-8 w-8 sm:h-9 sm:w-9 overflow-hidden rounded-xl shadow-sm border border-orange-200 shrink-0">
             <Image src="/logo.png" alt="Logo" width={36} height={36} className="h-full w-full object-cover" priority />
           </div>
-          <span className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 bg-clip-text text-transparent font-black tracking-tight">{settings.appName}</span>
+          <span className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 bg-clip-text text-transparent font-black tracking-tight">
+            {settings.appName}
+          </span>
         </Link>
-        <div className="flex items-center gap-2">
+
+        {/* Right: Profile Badge & Action Buttons */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <ChildBadge variant="compact" />
-          <div className="flex">
-            {authLoading || adminSession.loading ? <span role="status" className="learning-button text-sm text-slate-500">Đang kiểm tra tài khoản…</span>
-              : isAuthenticated ? <button onClick={() => openAuthModal('login')} className="learning-button border border-slate-200 bg-white text-sm" title={account?.email}>{account?.displayName || 'Tài khoản'}</button>
-              : adminSession.authenticated ? <Link href="/admin" className="learning-button border border-slate-200 bg-white text-sm">Admin · Đã đăng nhập</Link>
-              : <button onClick={() => openAuthModal('login')} className="learning-button border border-slate-200 bg-white text-sm">Đăng nhập</button>}
+
+          {/* Login / Account button */}
+          <div className="flex shrink-0">
+            {authLoading || adminSession.loading ? (
+              <span role="status" className="h-9 px-2.5 inline-flex items-center text-xs font-bold text-slate-400">...</span>
+            ) : isAuthenticated ? (
+              <button
+                onClick={() => openAuthModal('login')}
+                className="h-9 px-2.5 sm:px-3 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 whitespace-nowrap transition-colors"
+                title={account?.email}
+              >
+                {account?.displayName || 'Tài khoản'}
+              </button>
+            ) : adminSession.authenticated ? (
+              <Link
+                href="/admin"
+                className="h-9 px-2.5 sm:px-3 inline-flex items-center rounded-xl border border-orange-200 bg-orange-50 text-xs font-bold text-orange-700 whitespace-nowrap"
+              >
+                Admin
+              </Link>
+            ) : (
+              <button
+                onClick={() => openAuthModal('login')}
+                className="h-9 px-2.5 sm:px-3 inline-flex items-center rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 whitespace-nowrap transition-colors"
+              >
+                Đăng nhập
+              </button>
+            )}
           </div>
-          {isAdmin && <button onClick={logoutAdmin} className="learning-button text-sm text-orange-700">Khóa quản trị</button>}
-          {account?.role !== 'student' && !adminSession.loading && !adminSession.authenticated && <Link href="/admin" className="learning-button text-sm text-slate-600">Quản trị</Link>}
+
+          {/* Admin link */}
+          {account?.role !== 'student' && !adminSession.loading && !adminSession.authenticated && (
+            <Link
+              href="/admin"
+              className="h-9 px-2.5 inline-flex items-center rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 whitespace-nowrap transition-colors hidden sm:inline-flex"
+            >
+              Quản trị
+            </Link>
+          )}
+
+          {isAdmin && (
+            <button
+              onClick={logoutAdmin}
+              className="h-9 px-2.5 inline-flex items-center rounded-xl text-xs font-bold text-orange-700 hover:bg-orange-50 whitespace-nowrap transition-colors"
+            >
+              Khóa quản trị
+            </button>
+          )}
+
+          {/* Install WebApp button */}
           <button
             onClick={() => window.dispatchEvent(new Event('vocakids:open-install-guide'))}
-            className="learning-button border border-orange-200 bg-orange-50/70 text-sm font-bold text-orange-700 hover:bg-orange-100 hidden sm:inline-flex items-center gap-1.5"
+            className="h-9 px-2.5 sm:px-3 inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50/80 text-xs font-bold text-orange-700 hover:bg-orange-100 whitespace-nowrap transition-colors hidden md:inline-flex"
             title="Cài đặt ứng dụng lên màn hình chính điện thoại"
           >
             📱 Cài App
           </button>
-          <Link href="/guide" className="learning-button border border-slate-200 bg-white text-sm text-slate-700 hover:text-orange-600" title="Hướng dẫn sử dụng">📖 Hướng dẫn</Link>
+
+          {/* Guide link */}
+          <Link
+            href="/guide"
+            className="h-9 px-2 sm:px-2.5 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:text-orange-600 hover:bg-slate-50 whitespace-nowrap transition-colors hidden sm:inline-flex"
+            title="Hướng dẫn sử dụng"
+          >
+            📖 <span className="hidden md:inline">Hướng dẫn</span>
+          </Link>
         </div>
       </div>
     </header>
