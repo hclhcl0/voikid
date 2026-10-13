@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { BookOpen, Sparkles, ShoppingBag, Swords, Gift, Users, Trophy } from 'lucide-react';
+import { BookOpen, Gift, Users, Settings } from 'lucide-react';
 import { triggerHaptic } from '@/lib/haptics';
 
 interface NavItem {
@@ -24,28 +24,6 @@ const navItems: NavItem[] = [
     activeColor: 'text-orange-600',
   },
   {
-    href: '/daily',
-    label: 'Từ mới',
-    Icon: Sparkles,
-    badge: 'MỚI',
-    color: 'text-slate-500',
-    activeColor: 'text-amber-600',
-  },
-  {
-    href: '/shop',
-    label: 'Cửa hàng',
-    Icon: ShoppingBag,
-    color: 'text-slate-500',
-    activeColor: 'text-emerald-600',
-  },
-  {
-    href: '/arena',
-    label: 'Đấu trường',
-    Icon: Swords,
-    color: 'text-slate-500',
-    activeColor: 'text-violet-600',
-  },
-  {
     href: '/stickers',
     label: 'Sticker',
     Icon: Gift,
@@ -59,15 +37,17 @@ const navItems: NavItem[] = [
     color: 'text-slate-500',
     activeColor: 'text-blue-600',
   },
+  {
+    href: '/admin',
+    label: 'Cài đặt',
+    Icon: Settings,
+    color: 'text-slate-500',
+    activeColor: 'text-orange-600',
+  },
 ];
 
 export function BottomNavBar() {
   const pathname = usePathname();
-
-  // Ẩn thanh bottom nav trên trang admin để không vướng giao diện quản trị
-  if (pathname.startsWith('/admin')) {
-    return null;
-  }
 
   return (
     <nav

@@ -115,15 +115,6 @@ export default function HomePage() {
             </button>
           )}
 
-          {/* Install WebApp button */}
-          <button
-            onClick={() => window.dispatchEvent(new Event('vocakids:open-install-guide'))}
-            className="h-9 px-2.5 sm:px-3 inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50/80 text-xs font-bold text-orange-700 hover:bg-orange-100 whitespace-nowrap transition-colors hidden md:inline-flex"
-            title="Cài đặt ứng dụng lên màn hình chính điện thoại"
-          >
-            📱 Cài App
-          </button>
-
           {/* Guide link */}
           <Link
             href="/guide"
@@ -135,7 +126,7 @@ export default function HomePage() {
         </div>
       </div>
     </header>
-    <main className="mx-auto max-w-6xl space-y-7 px-4 py-6 pb-28 sm:px-6 sm:py-8">
+    <main className="mx-auto max-w-6xl space-y-7 px-4 py-6 pb-28 sm:px-6 sm:py-8 overflow-x-hidden">
       {/* Gamification Stats & Greeting Bar */}
       <section className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -199,17 +190,14 @@ export default function HomePage() {
           <LearningEntry />
           <DailyWordCard />
 
-          {/* Công cụ học tập 3D dạng Touch Rail trên mobile, Grid trên desktop */}
+          {/* Công cụ học tập 3D dạng Grid gọn gàng, không phải kéo qua lại */}
           <section aria-labelledby="tools-title" className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 id="tools-title" className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <span className="text-xl">🎮</span> Góc Luyện Tập &amp; Trò Chơi
-              </h2>
-              <span className="text-xs font-bold text-slate-400 sm:hidden">Vuốt sang để xem thêm →</span>
-            </div>
+            <h2 id="tools-title" className="text-lg font-black text-slate-900 flex items-center gap-2">
+              <span className="text-xl">🎮</span> Góc Luyện Tập &amp; Trò Chơi
+            </h2>
             <nav
               aria-label="Công cụ học tập"
-              className="touch-snap-rail -mx-4 px-4 pb-2 gap-3 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 lg:grid-cols-7"
+              className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3"
             >
               {[
                 { href: '/daily', Icon: Sparkles, color: 'bg-amber-100 text-amber-600', title: 'Từ mới', detail: 'Học & nói AI' },
@@ -226,16 +214,16 @@ export default function HomePage() {
                     key={item.title}
                     href={item.href}
                     onClick={() => triggerHaptic('light')}
-                    className="touch-snap-item min-w-[130px] sm:min-w-0 touch-spring group flex flex-col justify-between rounded-2xl border-2 border-slate-200/90 bg-white p-3.5 shadow-[0_4px_0_0_#e2e8f0] hover:shadow-[0_6px_0_0_#cbd5e1] active:translate-y-1 active:shadow-none transition-all"
+                    className="touch-spring group flex flex-col justify-between rounded-2xl border-2 border-slate-200/90 bg-white p-3 shadow-[0_4px_0_0_#e2e8f0] hover:shadow-[0_6px_0_0_#cbd5e1] active:translate-y-1 active:shadow-none transition-all"
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.color} shadow-sm group-hover:scale-105 transition-transform`}>
-                        <item.Icon aria-hidden="true" className="h-5 w-5" />
+                      <span className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl ${item.color} shadow-sm group-hover:scale-105 transition-transform`}>
+                        <item.Icon aria-hidden="true" className="h-4 w-4 sm:h-5 sm:w-5" />
                       </span>
                     </div>
-                    <div className="mt-2.5">
-                      <h3 className="text-sm font-black text-slate-800">{item.title}</h3>
-                      <p className="text-[11px] font-semibold text-slate-400 truncate">{item.detail}</p>
+                    <div className="mt-2">
+                      <h3 className="text-xs sm:text-sm font-black text-slate-800">{item.title}</h3>
+                      <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 truncate">{item.detail}</p>
                     </div>
                   </Link>
                 ))}
@@ -265,7 +253,7 @@ export default function HomePage() {
               </label>
             </div>
 
-            {/* Thanh chạm chuyển khối lớp kiểu Mobile App */}
+            {/* Thanh chạm chuyển khối lớp tự co giãn không kéo qua lại */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs font-bold text-slate-500">
                 <span>Chọn khối lớp để xem bài học:</span>
@@ -282,7 +270,7 @@ export default function HomePage() {
                   </button>
                 )}
               </div>
-              <div className="touch-snap-rail -mx-4 px-4 pb-1 gap-2 sm:mx-0 sm:px-0 sm:flex-wrap">
+              <div className="flex flex-wrap gap-2">
                 {GRADE_LEVELS.map(g => {
                   const isSelected = g.id === selectedGrade;
                   const isProfileGrade = g.id === (activeProfile?.gradeId ?? 'maugiao');
@@ -295,9 +283,9 @@ export default function HomePage() {
                         setBrowsingGrade(g.id);
                         setTopicPagination({ scope: '', page: 1 });
                       }}
-                      className={`touch-snap-item touch-spring flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-black transition-all ${
+                      className={`touch-spring flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-black transition-all ${
                         isSelected
-                          ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md border-b-2 border-orange-700 scale-102'
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md border-b-2 border-orange-700'
                           : 'bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50'
                       }`}
                     >

@@ -31,7 +31,6 @@ const andika = Andika({
   display: 'swap',
 });
 
-import { PwaInstallPrompt } from '@/components/pwa/PwaInstallPrompt';
 import { BottomNavBar } from '@/components/navigation/BottomNavBar';
 
 export const metadata: Metadata = {
@@ -70,7 +69,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppProviders>
           {children}
           <BottomNavBar />
-          <PwaInstallPrompt />
         </AppProviders>
       </body>
     </html>
