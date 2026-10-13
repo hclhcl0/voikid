@@ -1,13 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Sparkles, Volume2, Mic, BookOpen, CheckCircle, ArrowRight, Award } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Volume2, ChevronLeft, ChevronRight, ArrowRight, CheckCircle } from 'lucide-react';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useProgress } from '@/hooks/useProgress';
 import { useCustomCategories, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
 import { useTTS } from '@/hooks/useTTS';
-import { selectDailyWords, getTodayDateString } from '@/lib/dailyWords';
+import { triggerHaptic } from '@/lib/haptics';
+import { selectDailyWords } from '@/lib/dailyWords';
 import { EmojiImage } from '@/components/WordImage';
 
 export function DailyWordCard() {
@@ -15,7 +17,11 @@ export function DailyWordCard() {
   const { categories: customCategories, hydrated: customHydrated } = useCustomCategories();
   const { progress, hydrated, activeProfile } = useProgress();
   const { speak, isSpeaking } = useTTS();
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   const selectedGrade = activeProfile?.gradeId ?? 'lop1';
 
@@ -27,9 +33,12 @@ export function DailyWordCard() {
     ];
   }, [customCategories, customHydrated, serverCategories, selectedGrade]);
 
-  const dailyCount = settings.dailyNewWordsCount ?? 1;
+  // Cấu hình số từ mỗi ngày (mặc định 5 từ để slider chạy sinh động)
+  const dailyCount = settings.dailyNewWordsCount && settings.dailyNewWordsCount > 1
+    ? settings.dailyNewWordsCount
+    : 5;
 
-  // Lấy danh sách từ của ngày
+  // Lấy danh sách từ mới của ngày
   const dailyWords = useMemo(() => {
     if (!hydrated || categories.length === 0) return [];
     return selectDailyWords({
@@ -41,16 +50,43 @@ export function DailyWordCard() {
     });
   }, [categories, selectedGrade, dailyCount, settings.dailyNewWordsSource, progress.wordProgress, hydrated]);
 
-  if (!hydrated || dailyWords.length === 0) return null;
-
-  const currentItem = dailyWords[currentIndex] || dailyWords[0];
-  const { word, category, isLearned, isSpoken, isCompleted } = currentItem;
-
   const totalWords = dailyWords.length;
-  const completedWords = dailyWords.filter(w => w.isCompleted).length;
-  const allFinished = completedWords === totalWords && totalWords > 0;
+  const safeIndex = totalWords > 0 ? Math.min(currentIndex, totalWords - 1) : 0;
+  const currentItem = dailyWords[safeIndex] || dailyWords[0];
 
-  const todayStr = getTodayDateString();
+  const handleNext = () => {
+    if (totalWords <= 1) return;
+    triggerHaptic('light');
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % totalWords);
+  };
+
+  const handlePrev = () => {
+    if (totalWords <= 1) return;
+    triggerHaptic('light');
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + totalWords) % totalWords);
+  };
+
+  const handleGoTo = (index: number) => {
+    if (index === safeIndex) return;
+    triggerHaptic('light');
+    setDirection(index > safeIndex ? 1 : -1);
+    setCurrentIndex(index);
+  };
+
+  // Tự động trượt từ mới mỗi 4.5 giây khi không di chuột hoặc chạm
+  useEffect(() => {
+    if (totalWords <= 1 || isPaused) return;
+    const interval = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % totalWords);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [totalWords, isPaused]);
+
+  if (!hydrated || dailyWords.length === 0 || !currentItem) return null;
+
   const dateFormatted = new Date().toLocaleDateString('vi-VN', {
     weekday: 'long',
     day: 'numeric',
@@ -60,17 +96,33 @@ export function DailyWordCard() {
   return (
     <section
       aria-label="Từ mới hôm nay"
-      className="relative overflow-hidden rounded-3xl border-2 border-amber-200 bg-gradient-to-br from-amber-50/90 via-orange-50/80 to-rose-50/70 p-5 shadow-sm sm:p-6"
+      className="relative overflow-hidden rounded-3xl border-2 border-amber-200/90 bg-gradient-to-br from-amber-50/90 via-orange-50/80 to-rose-50/70 p-4 sm:p-5 shadow-sm"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={(e) => {
+        touchStartX.current = e.targetTouches[0].clientX;
+        setIsPaused(true);
+      }}
+      onTouchEnd={(e) => {
+        if (touchStartX.current !== null) {
+          const touchEndX = e.changedTouches[0].clientX;
+          const diff = touchStartX.current - touchEndX;
+          if (diff > 40) handleNext();
+          else if (diff < -40) handlePrev();
+        }
+        touchStartX.current = null;
+        setIsPaused(false);
+      }}
     >
       {/* Background visual accents */}
-      <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-amber-200/40 blur-2xl" />
-      <div className="pointer-events-none absolute -bottom-8 -left-8 h-36 w-36 rounded-full bg-orange-200/40 blur-2xl" />
+      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-amber-200/40 blur-2xl" />
+      <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-orange-200/40 blur-2xl" />
 
       {/* Header bar */}
-      <div className="relative flex flex-wrap items-center justify-between gap-3 border-b border-amber-200/60 pb-3.5">
+      <div className="relative flex items-center justify-between gap-3 border-b border-amber-200/60 pb-3">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-xs">
-            <Sparkles className="h-5 w-5" />
+          <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-xs">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
           </span>
           <div>
             <div className="flex items-center gap-2">
@@ -78,212 +130,147 @@ export function DailyWordCard() {
                 Từ Mới Hôm Nay
               </h2>
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-900">
-                {totalWords} từ/ngày
+                {totalWords} từ
               </span>
             </div>
-            <p className="text-xs text-slate-500 capitalize">{dateFormatted}</p>
+            <p className="text-[11px] text-slate-500 capitalize">{dateFormatted}</p>
           </div>
         </div>
 
-        {/* Progress status badge */}
-        <div className="flex items-center gap-2">
-          {totalWords > 1 && (
-            <div className="flex gap-1">
-              {dailyWords.map((item, idx) => (
-                <button
-                  key={item.word.id}
-                  onClick={() => setCurrentIndex(idx)}
-                  className={`h-2.5 rounded-full transition-all ${
-                    idx === currentIndex
-                      ? 'w-6 bg-orange-600'
-                      : item.isCompleted
-                      ? 'w-2.5 bg-emerald-500'
-                      : 'w-2.5 bg-amber-200 hover:bg-amber-300'
-                  }`}
-                  title={`Từ ${idx + 1}: ${item.word.en}`}
-                />
-              ))}
-            </div>
-          )}
-          <span
-            className={`rounded-xl px-2.5 py-1 text-xs font-bold ${
-              allFinished
-                ? 'bg-emerald-100 text-emerald-800'
-                : 'bg-amber-100/90 text-amber-900'
-            }`}
-          >
-            {allFinished ? '✓ Đã xong hôm nay!' : `Đã hoàn thành ${completedWords}/${totalWords}`}
-          </span>
-        </div>
+        {/* Slider Controls */}
+        {totalWords > 1 && (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-amber-200/90 bg-white/90 text-slate-600 hover:bg-white hover:text-orange-600 active:scale-95 transition-all shadow-xs"
+              aria-label="Từ trước"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="min-w-[40px] text-center text-xs font-black text-slate-600 select-none">
+              {safeIndex + 1}/{totalWords}
+            </span>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-amber-200/90 bg-white/90 text-slate-600 hover:bg-white hover:text-orange-600 active:scale-95 transition-all shadow-xs"
+              aria-label="Từ kế tiếp"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Main Word Display Card */}
-      <div className="relative mt-4 flex flex-col md:flex-row items-stretch gap-5">
-        {/* Left: Word Visual & Pronunciation */}
-        <div className="flex flex-1 flex-col justify-between rounded-2xl border border-amber-200/80 bg-white/90 p-5 shadow-xs backdrop-blur-xs">
-          <div>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <EmojiImage emoji={word.emoji} alt={word.en} size="lg" />
-                <div>
-                  <span className="text-xs font-medium text-slate-400">
-                    Chủ đề: {category.name_vi}
-                  </span>
-                  <div className="flex items-center gap-2.5">
-                    <h3 className="text-2xl font-black text-slate-900 sm:text-3xl">
-                      {word.en}
-                    </h3>
-                    <button
-                      type="button"
-                      disabled={isSpeaking}
-                      onClick={() => speak(word.en, 'en-US', 0.85)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors"
-                      title="Nghe phát âm chuẩn"
-                    >
-                      <Volume2 className="h-4 w-4" />
-                    </button>
+      {/* Slider Viewport */}
+      <div className="relative mt-3.5 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={currentItem.word.id}
+            initial={{ opacity: 0, x: direction * 35 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -direction * 35 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+          >
+            {/* Clickable Card -> Mở phòng học từ mới chi tiết */}
+            <Link
+              href={`/daily?wordId=${encodeURIComponent(currentItem.word.id)}`}
+              onClick={() => triggerHaptic('light')}
+              className="group block relative rounded-2xl border-2 border-amber-200/90 bg-white/95 p-4 sm:p-5 shadow-[0_4px_0_0_#fde68a] hover:shadow-[0_6px_0_0_#fcd34d] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
+              title={`Nhấn để vào học chi tiết từ ${currentItem.word.en}`}
+            >
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                {/* Thông tin từ mới: Ảnh, từ tiếng Anh, phiên âm, nghĩa tiếng Việt */}
+                <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left w-full sm:w-auto">
+                  <div className="relative flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <EmojiImage emoji={currentItem.word.emoji} alt={currentItem.word.en} size="xl" />
                   </div>
-                  {word.phonetic && (
-                    <p className="text-sm font-medium text-orange-600 font-mono">
-                      {word.phonetic}
+
+                  <div className="space-y-1 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+                      <span className="rounded-lg bg-orange-50 px-2 py-0.5 text-[11px] font-bold text-orange-700">
+                        {currentItem.category.name_vi}
+                      </span>
+                      {currentItem.isCompleted ? (
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
+                          <CheckCircle className="h-3 w-3" /> Đã thuộc
+                        </span>
+                      ) : currentItem.isLearned ? (
+                        <span className="rounded-lg bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700">
+                          ✓ Đã học
+                        </span>
+                      ) : (
+                        <span className="rounded-lg bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+                          🌟 Từ mới
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-center sm:justify-start gap-2.5">
+                      <h3 className="text-2xl sm:text-3xl font-black text-slate-900 group-hover:text-orange-600 transition-colors tracking-tight">
+                        {currentItem.word.en}
+                      </h3>
+                      {/* Nút nghe thử phát âm */}
+                      <button
+                        type="button"
+                        disabled={isSpeaking}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          speak(currentItem.word.en, 'en-US', 0.85);
+                        }}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-700 hover:bg-orange-200 active:scale-90 transition-all shadow-xs"
+                        title="Nghe phát âm chuẩn"
+                        aria-label={`Nghe phát âm ${currentItem.word.en}`}
+                      >
+                        <Volume2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {currentItem.word.phonetic && (
+                      <p className="text-xs sm:text-sm font-semibold font-mono text-orange-600">
+                        {currentItem.word.phonetic}
+                      </p>
+                    )}
+
+                    <p className="text-base sm:text-lg font-bold text-slate-700">
+                      {currentItem.word.vi}
                     </p>
-                  )}
+                  </div>
+                </div>
+
+                {/* Nút hành động kêu gọi vào trang chi tiết */}
+                <div className="w-full sm:w-auto flex-shrink-0 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-3 text-xs sm:text-sm font-black text-white shadow-md group-hover:from-orange-600 group-hover:to-amber-600 transition-all">
+                  <span>Học chi tiết &amp; Luyện nói AI</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-
-              {/* Status pills */}
-              <div className="flex flex-col items-end gap-1">
-                {isCompleted ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
-                    <CheckCircle className="h-3 w-3" /> Hoàn thành
-                  </span>
-                ) : (
-                  <div className="flex items-center gap-1">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                        isLearned
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {isLearned ? '✓ Đã học' : 'Chưa học'}
-                    </span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                        isSpoken
-                          ? 'bg-rose-100 text-rose-800'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {isSpoken ? '✓ Đã nói' : 'Chưa nói'}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Meaning & Kids Phonics */}
-            <div className="mt-3.5 space-y-1.5">
-              <p className="text-base font-bold text-slate-800">
-                {word.vi}
-              </p>
-              {word.kids_phonics?.text && (
-                <p className="text-xs text-slate-600">
-                  Phát âm kiểu bé: <strong className="text-orange-700">{word.kids_phonics.text}</strong>
-                  {word.kids_phonics.mouth_tip && (
-                    <span className="text-slate-500 italic"> ({word.kids_phonics.mouth_tip})</span>
-                  )}
-                </p>
-              )}
-            </div>
-
-            {/* Example sentence */}
-            {word.example_en && (
-              <div className="mt-3 rounded-xl bg-slate-50 p-2.5 text-xs">
-                <p className="font-medium text-slate-800">“{word.example_en}”</p>
-                {word.example_vi && (
-                  <p className="text-slate-500 mt-0.5">{word.example_vi}</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Pagination if multiple */}
-          {totalWords > 1 && (
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500">
-              <span>Từ {currentIndex + 1} / {totalWords}</span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={currentIndex === 0}
-                  onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
-                  className="rounded-lg border px-2 py-1 disabled:opacity-30 hover:bg-slate-50"
-                >
-                  ← Trước
-                </button>
-                <button
-                  type="button"
-                  disabled={currentIndex === totalWords - 1}
-                  onClick={() => setCurrentIndex(i => Math.min(totalWords - 1, i + 1))}
-                  className="rounded-lg border px-2 py-1 disabled:opacity-30 hover:bg-slate-50"
-                >
-                  Sau →
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right: Action Buttons */}
-        <div className="flex flex-col justify-center gap-3 sm:w-64">
-          <Link
-            href={`/daily?wordId=${encodeURIComponent(word.id)}&tab=learn`}
-            className="flex items-center justify-between rounded-2xl bg-orange-600 px-4 py-3.5 font-bold text-white shadow-sm transition-all hover:bg-orange-700 active:scale-98"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/20">
-                <BookOpen className="h-4 w-4" />
-              </span>
-              <div className="text-left">
-                <div className="text-xs text-orange-100 font-normal">Chế độ 1</div>
-                <div className="text-sm font-extrabold">Học Từ Vựng</div>
-              </div>
-            </div>
-            {isLearned ? (
-              <CheckCircle className="h-5 w-5 text-emerald-300" />
-            ) : (
-              <ArrowRight className="h-5 w-5 text-orange-200" />
-            )}
-          </Link>
-
-          <Link
-            href={`/daily?wordId=${encodeURIComponent(word.id)}&tab=speak`}
-            className="flex items-center justify-between rounded-2xl border-2 border-rose-300 bg-white px-4 py-3.5 font-bold text-rose-700 shadow-sm transition-all hover:bg-rose-50 active:scale-98"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
-                <Mic className="h-4 w-4" />
-              </span>
-              <div className="text-left">
-                <div className="text-xs text-slate-500 font-normal">Chế độ 2</div>
-                <div className="text-sm font-extrabold text-slate-900">Luyện Nói AI</div>
-              </div>
-            </div>
-            {isSpoken ? (
-              <CheckCircle className="h-5 w-5 text-emerald-600" />
-            ) : (
-              <ArrowRight className="h-5 w-5 text-rose-400" />
-            )}
-          </Link>
-
-          <Link
-            href="/daily"
-            className="text-center text-xs font-bold text-orange-800 hover:text-orange-950 underline decoration-orange-300 underline-offset-4 py-1"
-          >
-            Mở phòng học từ mới đầy đủ →
-          </Link>
-        </div>
+            </Link>
+          </motion.div>
+        </AnimatePresence>
       </div>
+
+      {/* Pagination Dots */}
+      {totalWords > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-1.5">
+          {dailyWords.map((item, idx) => (
+            <button
+              key={item.word.id}
+              onClick={() => handleGoTo(idx)}
+              className={`h-2 rounded-full transition-all ${
+                idx === safeIndex
+                  ? 'w-6 bg-orange-600 shadow-xs'
+                  : item.isCompleted
+                  ? 'w-2 bg-emerald-500'
+                  : 'w-2 bg-amber-200 hover:bg-amber-300'
+              }`}
+              title={`Từ ${idx + 1}: ${item.word.en}`}
+              aria-label={`Chuyển đến từ ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

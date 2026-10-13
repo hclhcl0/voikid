@@ -4,7 +4,7 @@ export interface ManagedCategory extends Category { gradeId: string; archived?: 
 export type DailyWordSource = 'curriculum' | 'shop' | 'all';
 export interface SiteSettings { appName: string; welcomeText: string; dailyGoal: number; dailyNewWordsCount?: number; dailyNewWordsSource?: DailyWordSource; showGames: boolean; pronunciation?: PronunciationSettings }
 export interface ContentStore { revision: number; categories: ManagedCategory[]; settings: SiteSettings; updatedAt: string }
-export const defaultSettings: SiteSettings = { appName: 'VocaKids', welcomeText: 'Học một chút, tiến bộ mỗi ngày', dailyGoal: 5, dailyNewWordsCount: 1, dailyNewWordsSource: 'curriculum', showGames: true, pronunciation: { ...defaultPronunciationSettings } };
+export const defaultSettings: SiteSettings = { appName: 'VocaKids', welcomeText: 'Học một chút, tiến bộ mỗi ngày', dailyGoal: 5, dailyNewWordsCount: 5, dailyNewWordsSource: 'curriculum', showGames: true, pronunciation: { ...defaultPronunciationSettings } };
 export function validateContent(value: unknown): asserts value is ContentStore {
   if (!value || typeof value !== 'object') throw new Error('Dữ liệu không hợp lệ.');
   const data = value as ContentStore;
