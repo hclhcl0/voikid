@@ -94,18 +94,6 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Admin / Settings gear icon button */}
-          {account?.role !== 'student' && !adminSession.loading && !adminSession.authenticated && (
-            <Link
-              href="/admin"
-              className="h-9 w-9 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50 transition-colors shadow-xs"
-              title="Quản trị ứng dụng & Cài đặt hệ thống"
-              aria-label="Quản trị ứng dụng"
-            >
-              <Settings className="h-4 w-4" />
-            </Link>
-          )}
-
           {isAdmin && (
             <button
               onClick={logoutAdmin}
