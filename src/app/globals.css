@@ -129,9 +129,79 @@ html, body { overscroll-behavior: none; }
   box-shadow: 0 2px 0 rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.07);
 }
 
+/* ── 3D Arcade & Learning App Button Styles ─── */
+.btn-3d-orange {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background-color: #ea580c;
+  color: #ffffff;
+  font-weight: 800;
+  border-bottom: 4px solid #9a3412;
+  box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.25);
+  transition: all 120ms ease;
+  user-select: none;
+}
+.btn-3d-orange:hover {
+  background-color: #f97316;
+}
+.btn-3d-orange:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+}
+
+.btn-3d-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background-color: #ffffff;
+  color: #334155;
+  font-weight: 800;
+  border: 2px solid #e2e8f0;
+  border-bottom: 4px solid #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all 120ms ease;
+  user-select: none;
+}
+.btn-3d-white:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+.btn-3d-white:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+}
+
+.btn-3d-emerald {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background-color: #059669;
+  color: #ffffff;
+  font-weight: 800;
+  border-bottom: 4px solid #065f46;
+  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.25);
+  transition: all 120ms ease;
+  user-select: none;
+}
+.btn-3d-emerald:hover {
+  background-color: #10b981;
+}
+.btn-3d-emerald:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+}
+
 /* ── Hide scrollbar but keep scroll ─────────── */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 
 .learning-button {
   display: inline-flex;

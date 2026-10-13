@@ -40,6 +40,8 @@ yarn-error.log*
 /*.png
 /*.jpg
 /*.jpeg
+/.cursor/
+/.agent/
 
 # vercel
 .vercel

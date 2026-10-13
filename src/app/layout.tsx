@@ -32,6 +32,7 @@ const andika = Andika({
 });
 
 import { PwaInstallPrompt } from '@/components/pwa/PwaInstallPrompt';
+import { BottomNavBar } from '@/components/navigation/BottomNavBar';
 
 export const metadata: Metadata = {
   title: 'VocaKids – Luyện Từ Vựng Tiếng Anh Cho Bé',
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-nunito antialiased bg-[#FFF7ED] min-h-screen">
         <AppProviders>
           {children}
+          <BottomNavBar />
           <PwaInstallPrompt />
         </AppProviders>
       </body>
