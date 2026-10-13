@@ -13,7 +13,7 @@ import { ChildBadge } from '@/components/ChildBadge';
 import { LearningEntry } from '@/components/learning/LearningSummary';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import type { Category } from '@/types';
-import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,ShoppingBag,Speech,Star,Swords,UsersRound,Sparkles} from 'lucide-react';
+import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,ShoppingBag,Speech,Star,Swords,UsersRound,Sparkles,Settings} from 'lucide-react';
 import {EmojiImage} from '@/components/WordImage';
 import {DailyWordCard} from '@/components/learning/DailyWordCard';
 
@@ -76,9 +76,11 @@ export default function HomePage() {
             ) : adminSession.authenticated ? (
               <Link
                 href="/admin"
-                className="h-9 px-2.5 sm:px-3 inline-flex items-center rounded-xl border border-orange-200 bg-orange-50 text-xs font-bold text-orange-700 whitespace-nowrap"
+                className="h-9 px-2.5 sm:px-3 inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 text-xs font-bold text-orange-700 hover:bg-orange-100 whitespace-nowrap transition-colors"
+                title="Quản trị ứng dụng (Đã đăng nhập)"
               >
-                Admin
+                <Settings className="h-4 w-4 text-orange-600 animate-spin-slow" />
+                <span className="hidden sm:inline">Admin</span>
               </Link>
             ) : (
               <button
@@ -90,13 +92,15 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Admin link */}
+          {/* Admin / Settings gear icon button */}
           {account?.role !== 'student' && !adminSession.loading && !adminSession.authenticated && (
             <Link
               href="/admin"
-              className="h-9 px-2.5 inline-flex items-center rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 whitespace-nowrap transition-colors hidden sm:inline-flex"
+              className="h-9 w-9 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50 transition-colors shadow-xs"
+              title="Quản trị ứng dụng & Cài đặt hệ thống"
+              aria-label="Quản trị ứng dụng"
             >
-              Quản trị
+              <Settings className="h-4 w-4" />
             </Link>
           )}
 
