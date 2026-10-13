@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { GRADE_METAS } from '@/lib/vocabulary';
+import { GRADE_METAS, GRADE_LEVELS } from '@/lib/vocabulary';
+import { triggerHaptic } from '@/lib/haptics';
 import { useProgress } from '@/hooks/useProgress';
 import { useCustomCategories, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
 import { useAdminContext } from '@/context/AdminContext';
@@ -28,7 +29,8 @@ export default function HomePage() {
   const adminSession = useBackendSession();
   const [query, setQuery] = useState('');
   const [topicPagination, setTopicPagination] = useState({ scope: '', page: 1 });
-  const selectedGrade = activeProfile?.gradeId ?? 'maugiao';
+  const [browsingGrade, setBrowsingGrade] = useState<string | null>(null);
+  const selectedGrade = browsingGrade ?? (activeProfile?.gradeId ?? 'maugiao');
   const gradeMeta = GRADE_METAS[selectedGrade] ?? GRADE_METAS.lop1;
   const due = hydrated ? getDueReviewWords().length : 0;
   const categories = [
@@ -197,14 +199,17 @@ export default function HomePage() {
           <LearningEntry />
           <DailyWordCard />
 
-          {/* Công cụ học tập 3D */}
+          {/* Công cụ học tập 3D dạng Touch Rail trên mobile, Grid trên desktop */}
           <section aria-labelledby="tools-title" className="space-y-3">
-            <h2 id="tools-title" className="text-lg font-black text-slate-900 flex items-center gap-2">
-              <span className="text-xl">🎮</span> Góc Luyện Tập &amp; Trò Chơi
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 id="tools-title" className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <span className="text-xl">🎮</span> Góc Luyện Tập &amp; Trò Chơi
+              </h2>
+              <span className="text-xs font-bold text-slate-400 sm:hidden">Vuốt sang để xem thêm →</span>
+            </div>
             <nav
               aria-label="Công cụ học tập"
-              className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7"
+              className="touch-snap-rail -mx-4 px-4 pb-2 gap-3 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 lg:grid-cols-7"
             >
               {[
                 { href: '/daily', Icon: Sparkles, color: 'bg-amber-100 text-amber-600', title: 'Từ mới', detail: 'Học & nói AI' },
@@ -220,7 +225,8 @@ export default function HomePage() {
                   <Link
                     key={item.title}
                     href={item.href}
-                    className="group flex flex-col justify-between rounded-2xl border-2 border-slate-200/90 bg-white p-3.5 shadow-[0_4px_0_0_#e2e8f0] hover:shadow-[0_6px_0_0_#cbd5e1] hover:-translate-y-0.5 active:translate-y-1 active:shadow-none transition-all"
+                    onClick={() => triggerHaptic('light')}
+                    className="touch-snap-item min-w-[130px] sm:min-w-0 touch-spring group flex flex-col justify-between rounded-2xl border-2 border-slate-200/90 bg-white p-3.5 shadow-[0_4px_0_0_#e2e8f0] hover:shadow-[0_6px_0_0_#cbd5e1] active:translate-y-1 active:shadow-none transition-all"
                   >
                     <div className="flex items-center justify-between">
                       <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.color} shadow-sm group-hover:scale-105 transition-transform`}>
@@ -259,6 +265,59 @@ export default function HomePage() {
               </label>
             </div>
 
+            {/* Thanh chạm chuyển khối lớp kiểu Mobile App */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+                <span>Chọn khối lớp để xem bài học:</span>
+                {browsingGrade && browsingGrade !== activeProfile?.gradeId && (
+                  <button
+                    onClick={() => {
+                      triggerHaptic('light');
+                      setBrowsingGrade(null);
+                      setTopicPagination({ scope: '', page: 1 });
+                    }}
+                    className="text-orange-600 font-extrabold hover:underline"
+                  >
+                    Về lớp của bé ↩
+                  </button>
+                )}
+              </div>
+              <div className="touch-snap-rail -mx-4 px-4 pb-1 gap-2 sm:mx-0 sm:px-0 sm:flex-wrap">
+                {GRADE_LEVELS.map(g => {
+                  const isSelected = g.id === selectedGrade;
+                  const isProfileGrade = g.id === (activeProfile?.gradeId ?? 'maugiao');
+                  const meta = GRADE_METAS[g.id] ?? GRADE_METAS.lop1;
+                  return (
+                    <button
+                      key={g.id}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        setBrowsingGrade(g.id);
+                        setTopicPagination({ scope: '', page: 1 });
+                      }}
+                      className={`touch-snap-item touch-spring flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-black transition-all ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md border-b-2 border-orange-700 scale-102'
+                          : 'bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-sm">{meta.icon}</span>
+                      <span>{g.label}</span>
+                      {isProfileGrade && (
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                            isSelected ? 'bg-white/25 text-white' : 'bg-orange-100 text-orange-700'
+                          }`}
+                        >
+                          Lớp bé
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pagedTopics.map(cat => {
                 const stars = starsFor(cat);
@@ -268,7 +327,7 @@ export default function HomePage() {
                 return (
                   <article
                     key={cat.id}
-                    className="flex flex-col rounded-3xl border-2 border-slate-200/90 bg-white p-5 shadow-[0_6px_0_0_#e2e8f0] hover:shadow-[0_10px_0_0_#cbd5e1] hover:-translate-y-1 transition-all duration-200"
+                    className="touch-spring flex flex-col rounded-3xl border-2 border-slate-200/90 bg-white p-5 shadow-[0_6px_0_0_#e2e8f0] hover:shadow-[0_10px_0_0_#cbd5e1] hover:-translate-y-1 transition-all duration-200"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 border border-orange-100 shadow-inner">
@@ -316,12 +375,14 @@ export default function HomePage() {
                     <div className="mt-4 grid grid-cols-2 gap-2.5">
                       <Link
                         href={`/learn/${cat.id}`}
+                        onClick={() => triggerHaptic('medium')}
                         className="btn-3d-orange py-2.5 text-xs font-black shadow-sm"
                       >
                         Học từ 🚀
                       </Link>
                       <Link
                         href={`/test/${cat.id}`}
+                        onClick={() => triggerHaptic('light')}
                         className="btn-3d-white py-2.5 text-xs font-bold"
                       >
                         Luyện tập 🎯

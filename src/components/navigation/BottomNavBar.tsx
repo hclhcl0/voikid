@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { BookOpen, Sparkles, ShoppingBag, Swords, Gift, Users, Trophy } from 'lucide-react';
+import { triggerHaptic } from '@/lib/haptics';
 
 interface NavItem {
   href: string;
@@ -84,7 +85,8 @@ export function BottomNavBar() {
             <Link
               key={item.href}
               href={item.href}
-              className="relative flex flex-1 flex-col items-center justify-center py-1 transition-transform active:scale-90"
+              onClick={() => triggerHaptic('light')}
+              className="relative flex flex-1 flex-col items-center justify-center py-1 touch-spring active:scale-90 transition-transform"
             >
               <div className="relative flex items-center justify-center">
                 {isActive && (

@@ -105,11 +105,44 @@
 }
 
 /* ── Prevent scroll bounce on iOS ─────────── */
-html, body { overscroll-behavior: none; }
+html, body {
+  overscroll-behavior-y: contain;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, [role="button"], input, select {
+  touch-action: manipulation;
+}
 
 /* ── Safe-area padding for notch devices ───── */
 .safe-top    { padding-top:    env(safe-area-inset-top); }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* ── Mobile Touch Spring & Snap Helpers ──────── */
+.touch-spring {
+  transition: transform 120ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 120ms ease;
+  will-change: transform;
+}
+.touch-spring:active {
+  transform: scale(0.96);
+  filter: brightness(0.95);
+}
+
+.touch-snap-rail {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.touch-snap-rail::-webkit-scrollbar {
+  display: none;
+}
+.touch-snap-item {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
 
 /* ── Claymorphism helpers ────────────────────── */
 .clay {
