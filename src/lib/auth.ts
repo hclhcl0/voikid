@@ -21,6 +21,7 @@ function getJwtSecret(): string {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface JWTPayload {
+  adminSessionVersion?: number;
   role?: 'admin' | 'parent' | 'student';
   accountId: string;
   email: string;
@@ -49,7 +50,7 @@ export async function verifyPassword(plaintext: string, hash: string): Promise<b
 
 // ── JWT Helpers ───────────────────────────────────────────────────────────────
 export function signJWT(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, getJwtSecret(), { expiresIn: JWT_EXPIRY_SECONDS });
+  return jwt.sign({...payload,adminSessionVersion:payload.role==='admin'?2:undefined}, getJwtSecret(), { expiresIn: JWT_EXPIRY_SECONDS });
 }
 
 export function verifyJWT(token: string): JWTPayload | null {

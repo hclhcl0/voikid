@@ -7,7 +7,7 @@ import {
   setAuthCookie,
   validateEmail,
 } from '@/lib/auth';
-import { passwordMatches, ADMIN_COOKIE, newAdminToken } from '@/lib/backend/auth';
+import { passwordMatches, ADMIN_COOKIE, newAdminToken,isAdminLoginEmail } from '@/lib/backend/auth';
 import { readFamilies, publicAccount, ownsProfile } from '@/lib/backend/families';
 
 export const runtime = 'nodejs';
@@ -56,7 +56,8 @@ export async function POST(req: NextRequest) {
     const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
     // --- Admin Check ---
-    const isSystemAdmin = passwordMatches(password);
+    const existingAccount=readFamilies().accounts.find(a=>a.email===cleanEmail);
+    const isSystemAdmin = !existingAccount && isAdminLoginEmail(cleanEmail) && passwordMatches(password);
 
     if (isSystemAdmin) {
       const adminEmail = cleanEmail.includes('@') ? cleanEmail : 'admin@vocakids.com';

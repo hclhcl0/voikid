@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { getAccountFromRequest, hashPassword, verifyPassword, signJWT, setAuthCookie, validateEmail, validatePassword } from '@/lib/auth';
-import { sameOrigin, isBackendAdmin, ADMIN_COOKIE, newAdminToken, passwordMatches } from '@/lib/backend/auth';
+import { sameOrigin, isBackendAdmin, ADMIN_COOKIE, newAdminToken, passwordMatches,isAdminLoginEmail } from '@/lib/backend/auth';
 import { readFamilies, writeFamilies, publicAccount, createFamilyProfile, emptyProgress, ownsProfile, familyId } from '@/lib/backend/families';
 import { validateContent, defaultSettings } from '@/lib/backend/types';
 export const runtime = 'nodejs';
@@ -54,7 +54,8 @@ export async function POST(req: NextRequest) {
       const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
       const password = typeof body.password === 'string' ? body.password : '';
 
-      const isSystemAdmin = body.action === 'login' && passwordMatches(password);
+      const existingAccount=readFamilies().accounts.find(a=>a.email===email);
+      const isSystemAdmin = body.action === 'login' && !existingAccount && isAdminLoginEmail(email) && passwordMatches(password);
 
       if (isSystemAdmin) {
         account = { id: 'backend_admin', email: email.includes('@') ? email : 'admin@vocakids.com', displayName: 'Quản trị viên (Admin)', passwordHash: '', role: 'admin' as const };
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
           const profile = createFamilyProfile(account.id, String(body.childName || ''), String(body.childGradeId || 'lop1'), String(body.childAvatar || '🐰').slice(0,32));
           store.accounts.push(account); store.profiles.push(profile); store.progresses[profile.id] = emptyProgress(); writeFamilies(store);
         } else {
-          account = readFamilies().accounts.find(a => a.email === email);
+          account = existingAccount;
           if (!account || !await verifyPassword(password, account.passwordHash)) return NextResponse.json({ success: false, message: 'Email hoặc mật khẩu không đúng.' }, { status: 401 });
         }
       }

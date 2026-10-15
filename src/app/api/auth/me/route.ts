@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFamilies, publicAccount, ownsProfile } from '@/lib/backend/families';
-import { getAccountFromRequest } from '@/lib/auth';
+import { getAccountFromRequest,clearAuthCookie,clearAdminSessionCookies } from '@/lib/auth';
 import { isBackendAdmin } from '@/lib/backend/auth';
 import { isPostgresConfigured, pgGetParentAccountById, pgGetProfilesByOwner } from '@/lib/postgres';
 
@@ -10,7 +10,11 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   try {
     const payload = getAccountFromRequest(req);
-    const isAdmin = isBackendAdmin(req) || payload?.role === 'admin' || payload?.accountId === 'backend_admin';
+    const isAdmin = isBackendAdmin(req);
+    if(payload?.role==='admin'&&!isAdmin){
+      const response=NextResponse.json({success:false,message:'Phiên quản trị cũ đã hết hiệu lực. Vui lòng đăng nhập lại đúng tài khoản.'},{status:401,headers:{'Cache-Control':'no-store'}});
+      clearAuthCookie(response);clearAdminSessionCookies(response);return response;
+    }
 
     if (isAdmin) {
       const family = readFamilies();

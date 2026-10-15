@@ -113,6 +113,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     refreshSession().finally(() => setIsLoading(false));
+    const refresh=()=>{void refreshSession();};
+    window.addEventListener('vocakids:admin-session-changed',refresh);
+    window.addEventListener('focus',refresh);
+    return()=>{window.removeEventListener('vocakids:admin-session-changed',refresh);window.removeEventListener('focus',refresh);};
   }, [refreshSession]);
 
   // ── Reload Cloud Profiles ─────────────────────────────────────────────────────

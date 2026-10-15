@@ -9,6 +9,7 @@ import { ParentAiOptions } from '@/components/settings/ParentAiOptions';
 import SettingsPanel from '@/components/settings/SettingsPanel';
 import { useEffect, useState } from 'react';
 import type { ContentStore } from '@/lib/backend/types';
+import {useAuth} from '@/context/AuthContext';
 
 type AdminTab = 'parents' | 'app' | 'media' | 'system';
 
@@ -22,44 +23,39 @@ const TABS: { id: AdminTab; label: string; icon: string }[] = [
 const field = 'min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2';
 const button = 'ui-button ui-button-secondary text-sm hover:bg-slate-50';
 export default function BackendPage() {
+  const {account,isLoading:authLoading}=useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('parents');
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [configured, setConfigured] = useState(true);
   const [password, setPassword] = useState('');
   const [data, setData] = useState<ContentStore | null>(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
   useEffect(() => {
-    fetch('/api/admin/session').then(r => r.json()).then(async session => {
-      setConfigured(session.configured === true);
+    if(authLoading)return;
+    let controller:AbortController|null=null;
+    const refresh=()=>{
+      controller?.abort();controller=new AbortController();const signal=controller.signal;
+      fetch('/api/admin/session',{cache:'no-store',signal}).then(r => r.json()).then(async session => {
+      if(signal.aborted)return;
       if (!session.configured) setMessage('Server chưa có mật khẩu admin. Đặt VOCAKIDS_ADMIN_PASSWORD trong biến môi trường runtime rồi khởi động lại ứng dụng.');
       if (session.authenticated) {
-        const response = await fetch('/api/admin/content');
-        if (response.ok) { setData(await response.json()); setAuthenticated(true); }
-      }
-    }).catch(() => setMessage('Không kết nối được server.')).finally(() => setLoading(false));
-  }, []);
+        const response = await fetch('/api/admin/content',{cache:'no-store',signal});
+        const content=response.ok?await response.json():null;if(signal.aborted)return;
+        setData(content);setAuthenticated(!!content);
+      }else{setAuthenticated(false);setData(null);setDirty(false);}
+    }).catch(() => {if(!signal.aborted){setAuthenticated(false);setData(null);setMessage('Không kết nối được server.');}}).finally(() => {if(!signal.aborted)setLoading(false);});
+    };
+    refresh();window.addEventListener('focus',refresh);window.addEventListener('vocakids:admin-session-changed',refresh);
+    return()=>{controller?.abort();window.removeEventListener('focus',refresh);window.removeEventListener('vocakids:admin-session-changed',refresh);};
+  }, [authLoading,account?.id,account?.role]);
   useEffect(() => {
     if (!dirty) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
-  async function login() {
-    setBusy(true); setMessage('');
-    try {
-      const response = await fetch('/api/admin/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message);
-      const content = await fetch('/api/admin/content');
-      if (!content.ok) throw new Error('Không tải được dữ liệu.');
-      setData(await content.json()); setAuthenticated(true); setPassword('');
-      window.dispatchEvent(new Event('vocakids:admin-session-changed'));
-    } catch (error) { setMessage(error instanceof Error ? error.message : 'Đăng nhập thất bại.'); }
-    finally { setBusy(false); }
-  }
   async function save() {
     if (!data) return;
     setBusy(true); setMessage('');
@@ -88,6 +84,7 @@ export default function BackendPage() {
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Đăng nhập không thành công.');
+      window.dispatchEvent(new Event('vocakids:admin-session-changed'));
 
       // Check if session is admin
       const sessionRes = await fetch('/api/admin/session');
@@ -108,7 +105,8 @@ export default function BackendPage() {
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4"><p className="text-sm font-bold text-slate-500 animate-pulse" role="status">Đang mở khu vực quản trị…</p></div>;
+  if(!authLoading&&account&&account.role!=='admin')return <main className="mx-auto max-w-md space-y-4 p-8"><h1 className="text-2xl font-bold">Khu vực chỉ dành cho admin</h1><p>Tài khoản hiện tại không có quyền xem danh sách phụ huynh hoặc cài đặt hệ thống.</p><Link href={account.role==='student'?'/':'/parent'} className="ui-button ui-button-primary">{account.role==='student'?'Về học bài':'Về Góc gia đình'}</Link></main>;
+  if (loading||authLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4"><p className="text-sm font-bold text-slate-500 animate-pulse" role="status">Đang mở khu vực quản trị…</p></div>;
   if (!authenticated) {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-12 pb-28 flex flex-col items-center justify-center">

@@ -48,12 +48,13 @@ export function AdminParentsManager() {
   const fetchParents = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/family', { cache: 'no-store' });
+      const res = await fetch('/api/admin/family', { cache: 'no-store' });
       const data = await res.json();
-      if (data.success && Array.isArray(data.parents)) {
+      if (res.ok&&data.success && Array.isArray(data.parents)) {
         setParents(data.parents);
-      }
+      }else{setParents([]);setMsg({type:'error',text:'Phiên quản trị không còn hiệu lực.'});}
     } catch {
+      setParents([]);
       setMsg({ type: 'error', text: 'Không tải được danh sách phụ huynh.' });
     } finally {
       setLoading(false);
@@ -76,7 +77,7 @@ export function AdminParentsManager() {
     setSubmittingReset(true);
     setMsg(null);
     try {
-      const res = await fetch('/api/family', {
+      const res = await fetch('/api/admin/family', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -107,7 +108,7 @@ export function AdminParentsManager() {
 
     setMsg(null);
     try {
-      const res = await fetch('/api/family', {
+      const res = await fetch('/api/admin/family', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -142,7 +143,7 @@ export function AdminParentsManager() {
     setSubmittingCreate(true);
     setMsg(null);
     try {
-      const res = await fetch('/api/family', {
+      const res = await fetch('/api/admin/family', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

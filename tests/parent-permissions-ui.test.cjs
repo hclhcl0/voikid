@@ -41,3 +41,11 @@ test('student profile selector hides edit, delete and create actions even when t
   const html=renderToStaticMarkup(React.createElement(ProfileModal));
   assert.doesNotMatch(html,/title="Chỉnh sửa"|title="Xóa hồ sơ"|Thêm tài khoản bé mới/);
 });
+
+test('parent and student opening the admin URL cannot render admin tabs or parent management',()=>{
+  for(const current of ['parent','student']){
+    role=current;const html=render('src/app/admin/page.tsx');
+    assert.match(html,/Khu vực chỉ dành cho admin/);
+    assert.doesNotMatch(html,/Phụ Huynh &amp; Học Sinh|Lưu thay đổi|Quản trị ứng dụng/);
+  }
+});
