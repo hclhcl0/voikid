@@ -1,79 +1,51 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import confetti from 'canvas-confetti';
-import {
-  Sparkles,
-  BookOpen,
-  Mic,
-  Volume2,
-  CheckCircle,
-  ArrowRight,
-  Flame,
-  Star,
-  Swords,
-  House,
-  Turtle,
-  MessageCircle,
-} from 'lucide-react';
+import { BookOpen, Mic, Volume2, CheckCircle, Swords, House, Turtle, MessageCircle } from 'lucide-react';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useProgress } from '@/hooks/useProgress';
 import { useCustomCategories, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
 import { useTTS } from '@/hooks/useTTS';
 import { selectDailyWords, getTodayDateString } from '@/lib/dailyWords';
 import { EmojiImage } from '@/components/WordImage';
-import { ExerciseListenRecordReview } from '@/components/exercises/ExerciseListenRecordReview';
+import { WordSpeakingPractice } from '@/components/learning/WordSpeakingPractice';
+import { dailyWordStatus } from '@/lib/dailyWordProgress';
+import type { Category } from '@/types';
+import type { SiteSettings } from '@/lib/backend/types';
 
-function DailyLearningContent() {
+function DailyLearningContent(){
+  const searchParams=useSearchParams();
+  const {categories:server,settings}=useVocabularyCatalog();
+  const {categories:custom,hydrated:customHydrated}=useCustomCategories();
+  const {hydrated,activeProfile}=useProgress();
+  if(!hydrated||!customHydrated)return <p role="status" className="p-8 text-center">Đang chuẩn bị từ mới hôm nay…</p>;
+  const grade=activeProfile.gradeId;
+  const categories=[...custom.filter(c=>c.id===NEW_WORDS_CAT_ID?c.words.length>0:!c.gradeId||c.gradeId===grade),...server.filter(c=>!c.gradeId||c.gradeId===grade)];
+  return <DailyLearningSession key={`${activeProfile.id}:${grade}:${getTodayDateString()}:${settings.dailyNewWordsCount}:${settings.dailyNewWordsSource}:${searchParams.get('wordId')}:${searchParams.get('tab')}`} categories={categories} settings={settings}/>;
+}
+
+function DailyLearningSession({categories,settings}:{categories:Category[];settings:SiteSettings}) {
   const searchParams = useSearchParams();
   const initialWordId = searchParams.get('wordId');
   const initialTab = searchParams.get('tab') === 'speak' ? 'speak' : 'learn';
 
-  const { categories: serverCategories, settings } = useVocabularyCatalog();
-  const { categories: customCategories, hydrated: customHydrated } = useCustomCategories();
-  const { progress, hydrated, activeProfile, recordAttempt } = useProgress();
+  const { progress, hydrated, activeProfile, markDailyWordLearned } = useProgress();
   const { speak, isSpeaking } = useTTS();
 
   const [activeTab, setActiveTab] = useState<'learn' | 'speak'>(initialTab);
-  const [selectedWordIndex, setSelectedWordIndex] = useState(0);
 
   const selectedGrade = activeProfile?.gradeId ?? 'lop1';
 
-  // Tổng hợp categories
-  const categories = useMemo(() => {
-    return [
-      ...(customHydrated ? customCategories.filter(c => c.id === NEW_WORDS_CAT_ID ? c.words.length > 0 : !c.gradeId || c.gradeId === selectedGrade) : []),
-      ...serverCategories.filter(c => (c as { gradeId?: string }).gradeId === selectedGrade || !(c as { gradeId?: string }).gradeId),
-    ];
-  }, [customCategories, customHydrated, serverCategories, selectedGrade]);
-
-  const dailyCount = settings.dailyNewWordsCount ?? 1;
-
-  // Danh sách từ mới hôm nay
-  const dailyWords = useMemo(() => {
-    if (!hydrated || categories.length === 0) return [];
-    return selectDailyWords({
-      categories,
-      gradeId: selectedGrade,
-      count: dailyCount,
-      source: settings.dailyNewWordsSource,
-      wordProgress: progress.wordProgress,
-    });
-  }, [categories, selectedGrade, dailyCount, settings.dailyNewWordsSource, progress.wordProgress, hydrated]);
-
-  // Chọn từ theo initialWordId nếu có
-  useEffect(() => {
-    if (initialWordId && dailyWords.length > 0) {
-      const idx = dailyWords.findIndex(w => w.word.id === initialWordId);
-      if (idx !== -1) setSelectedWordIndex(idx);
-    }
-  }, [initialWordId, dailyWords]);
-
-  useEffect(() => {
-    if (initialTab) setActiveTab(initialTab);
-  }, [initialTab]);
+  const [plan]=useState(()=>selectDailyWords({categories,gradeId:selectedGrade,count:settings.dailyNewWordsCount??1,source:settings.dailyNewWordsSource,wordProgress:progress.wordProgress}));
+  const [selectedWordIndex,setSelectedWordIndex]=useState(()=>Math.max(0,plan.findIndex(item=>item.word.id===initialWordId)));
+  const dailyWords=useMemo(()=>plan.map(item=>{
+    const current=progress.wordProgress[`${item.category.id}:${item.word.id}`];
+    return {...item,progress:current,...dailyWordStatus(current)};
+  }),[plan,progress.wordProgress]);
 
   const currentItem = dailyWords[selectedWordIndex] || dailyWords[0];
   const totalWords = dailyWords.length;
@@ -84,11 +56,11 @@ function DailyLearningContent() {
   const handleMarkLearned = useCallback(() => {
     if (!currentItem) return;
     const { category, word } = currentItem;
-    recordAttempt(category.id, word.id, 100, 'pass');
+    markDailyWordLearned(category.id, word.id);
     confetti({ particleCount: 35, spread: 50, origin: { y: 0.7 } });
     // Tự động gợi ý chuyển sang Luyện nói
     setActiveTab('speak');
-  }, [currentItem, recordAttempt]);
+  }, [currentItem, markDailyWordLearned]);
 
   if (!hydrated) {
     return (
@@ -109,7 +81,7 @@ function DailyLearningContent() {
     );
   }
 
-  const { word, category, isLearned, isSpoken, isCompleted } = currentItem;
+  const { word, category, isLearned, isSpoken } = currentItem;
   const dateFormatted = new Date().toLocaleDateString('vi-VN', {
     weekday: 'long',
     day: 'numeric',
@@ -120,34 +92,12 @@ function DailyLearningContent() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900"
-          >
-            ← Trang chủ
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">
-              <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-              Từ mới hôm nay ({completedWords}/{totalWords})
-            </span>
-            <span className="flex items-center gap-1 text-xs text-slate-600">
-              <Star className="h-3.5 w-3.5 fill-amber-300 text-amber-500" />
-              <strong>{progress.totalStars}</strong>
-            </span>
-          </div>
-        </div>
-      </header>
+      <AppPageHeader title="Từ mới hôm nay" description="Học từ, nghe mẫu và luyện nói trong một lượt học ngắn." inset actions={<span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">{completedWords}/{totalWords} từ · {progress.totalStars} sao</span>}/>
 
-      <main className="mx-auto max-w-4xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
         {/* Banner tiêu đề */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 sm:text-3xl">
-              Từ Mới Hôm Nay 🌟
-            </h1>
             <p className="mt-1 text-xs text-slate-500 capitalize sm:text-sm">
               {dateFormatted} · Khối lớp: {selectedGrade.toUpperCase()}
             </p>
@@ -177,13 +127,13 @@ function DailyLearningContent() {
         </div>
 
         {/* Thanh chuyển chế độ: Học từ vs Luyện nói */}
-        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-200/70 p-1.5">
+        <div className="ui-tabs grid grid-cols-2">
           <button
             type="button"
-            onClick={() => setActiveTab('learn')}
+            onClick={() => setActiveTab('learn')} aria-pressed={activeTab==='learn'}
             className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-all ${
               activeTab === 'learn'
-                ? 'bg-white text-orange-700 shadow-sm'
+                ? 'bg-violet-50 text-violet-800 ring-1 ring-violet-200'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -194,10 +144,10 @@ function DailyLearningContent() {
 
           <button
             type="button"
-            onClick={() => setActiveTab('speak')}
+            onClick={() => setActiveTab('speak')} aria-pressed={activeTab==='speak'}
             className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-all ${
               activeTab === 'speak'
-                ? 'bg-white text-rose-700 shadow-sm'
+                ? 'bg-violet-50 text-violet-800 ring-1 ring-violet-200'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -307,7 +257,7 @@ function DailyLearningContent() {
                 className="flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 font-extrabold text-white shadow-sm hover:bg-emerald-700 transition-all"
               >
                 <CheckCircle className="h-5 w-5" />
-                {isLearned ? 'Đã thuộc từ này · Chuyển sang Luyện nói →' : 'Đã nhớ từ (+1 ⭐) → Luyện nói'}
+                {isLearned ? 'Đã thuộc từ này · Chuyển sang Luyện nói →' : 'Đã nhớ từ → Luyện nói'}
               </button>
             </div>
           </section>
@@ -315,54 +265,12 @@ function DailyLearningContent() {
 
         {/* ── NỘI DUNG CHÍNH: TAB 2 - LUYỆN NÓI AI (SPEAK) ─────────────────── */}
         {activeTab === 'speak' && (
-          <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm">
-            <ExerciseListenRecordReview
-              key={`daily_speak_${currentItem.word.id}`}
-              targetWord={currentItem.word}
-              badgeTitle="🎙️ Luyện Nói AI (Từ Mới Hôm Nay)"
-              subtitle="Nghe mẫu ➡️ Bé ghi âm ➡️ Nghe lại giọng mình ➡️ Nhờ AI chấm điểm!"
-              onAnswer={() => {
-                const { category, word } = currentItem;
-                recordAttempt(category.id, word.id, 100, 'pass');
-                confetti({ particleCount: 75, spread: 80, origin: { y: 0.6 } });
-
-                if (totalWords > 1 && selectedWordIndex < totalWords - 1) {
-                  setTimeout(() => {
-                    setSelectedWordIndex(i => i + 1);
-                    setActiveTab('learn');
-                  }, 1200);
-                }
-              }}
-            />
-
-            {totalWords > 1 && (
-              <div className="border-t border-slate-100 pt-4 flex justify-between items-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedWordIndex(i => Math.max(0, i - 1));
-                    setActiveTab('learn');
-                  }}
-                  disabled={selectedWordIndex === 0}
-                  className="text-xs font-bold text-slate-500 hover:text-slate-800 disabled:opacity-30 cursor-pointer"
-                >
-                  ← Từ trước
-                </button>
-                {selectedWordIndex < totalWords - 1 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedWordIndex(i => i + 1);
-                      setActiveTab('learn');
-                    }}
-                    className="flex items-center gap-1.5 rounded-2xl bg-orange-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-orange-700 shadow-xs cursor-pointer"
-                  >
-                    Từ tiếp theo ({dailyWords[selectedWordIndex + 1]?.word?.en}) →
-                  </button>
-                )}
-              </div>
-            )}
-          </section>
+          <WordSpeakingPractice
+            key={`${activeProfile.id}:${category.id}:${word.id}`}
+            categoryId={category.id} word={word}
+            onPrevious={selectedWordIndex>0?()=>setSelectedWordIndex(i=>i-1):undefined}
+            onNext={selectedWordIndex<totalWords-1?()=>setSelectedWordIndex(i=>i+1):undefined}
+          />
         )}
 
         {/* ── BANNER CHÚC MỪNG KHI HOÀN THÀNH TẤT CẢ TỪ ───────────────────── */}
@@ -373,7 +281,7 @@ function DailyLearningContent() {
               Hoan hô! Bé đã hoàn thành mục tiêu từ mới hôm nay!
             </h3>
             <p className="mt-1 text-xs text-emerald-800">
-              Bé đã học và luyện nói thành thạo toàn bộ {totalWords} từ mới. Hẹn gặp lại bé vào ngày mai nhé!
+              Bé đã học và được AI xác nhận đọc đúng toàn bộ {totalWords} từ mới. Hẹn gặp lại bé vào ngày mai nhé!
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <Link

@@ -14,9 +14,9 @@ import { ChildBadge } from '@/components/ChildBadge';
 import { LearningEntry } from '@/components/learning/LearningSummary';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import type { Category } from '@/types';
-import {BookOpen,CircleCheck,Flame,House,RotateCcw,Search,ShoppingBag,Speech,Star,Swords,UsersRound,Settings} from 'lucide-react';
-import {EmojiImage} from '@/components/WordImage';
-import {DailyWordCard} from '@/components/learning/DailyWordCard';
+import { CircleCheck, Flame, RotateCcw, Search, ShoppingBag, Speech, Star, Swords, Settings } from 'lucide-react';
+import { EmojiImage } from '@/components/WordImage';
+import { DailyWordCard } from '@/components/learning/DailyWordCard';
 
 type GradeCategory = Category & { gradeId?: string; isCustom?: boolean };
 
@@ -48,7 +48,7 @@ export default function HomePage() {
 
   return <div className="clean-home min-h-screen bg-slate-50 text-slate-800">
     <header className="border-b border-slate-200 bg-white sticky top-0 z-30">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-3">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-3">
         {/* Left: Brand Logo & Title */}
         <Link href="/" className="flex items-center gap-2 sm:gap-2.5 text-lg sm:text-xl font-extrabold tracking-tight shrink-0">
           <div className="relative h-8 w-8 sm:h-9 sm:w-9 overflow-hidden rounded-xl shadow-sm border border-orange-200 shrink-0">
@@ -60,17 +60,17 @@ export default function HomePage() {
         </Link>
 
         {/* Right: Profile Badge & Action Buttons */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           <ChildBadge variant="compact" />
 
           {/* Login / Account button */}
           <div className="flex shrink-0">
             {authLoading || adminSession.loading ? (
-              <span role="status" className="h-9 px-2.5 inline-flex items-center text-xs font-bold text-slate-400">...</span>
+              <span role="status" className="min-h-11 px-2.5 inline-flex items-center text-xs font-bold text-slate-400">...</span>
             ) : isAuthenticated ? (
               <button
                 onClick={() => openAuthModal('login')}
-                className="h-9 px-2.5 sm:px-3 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 whitespace-nowrap transition-colors"
+                className="min-h-11 px-2.5 sm:px-3 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 whitespace-nowrap transition-colors"
                 title={account?.email}
               >
                 {account?.displayName || 'Tài khoản'}
@@ -78,16 +78,16 @@ export default function HomePage() {
             ) : adminSession.authenticated ? (
               <Link
                 href="/admin"
-                className="h-9 px-2.5 sm:px-3 inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 text-xs font-bold text-orange-700 hover:bg-orange-100 whitespace-nowrap transition-colors"
+                className="min-h-11 px-2.5 sm:px-3 inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 text-xs font-bold text-orange-700 hover:bg-orange-100 whitespace-nowrap transition-colors"
                 title="Quản trị ứng dụng (Đã đăng nhập)"
               >
-                <Settings className="h-4 w-4 text-orange-600 animate-spin-slow" />
+                <Settings className="h-4 w-4 text-orange-600" />
                 <span className="hidden sm:inline">Admin</span>
               </Link>
             ) : (
               <button
                 onClick={() => openAuthModal('login')}
-                className="h-9 px-2.5 sm:px-3 inline-flex items-center rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 whitespace-nowrap transition-colors"
+                className="min-h-11 px-2.5 sm:px-3 inline-flex items-center rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 whitespace-nowrap transition-colors"
               >
                 Đăng nhập
               </button>
@@ -97,7 +97,7 @@ export default function HomePage() {
           {isAdmin && (
             <button
               onClick={logoutAdmin}
-              className="h-9 px-2.5 inline-flex items-center rounded-xl text-xs font-bold text-orange-700 hover:bg-orange-50 whitespace-nowrap transition-colors"
+              className="min-h-11 px-2.5 inline-flex items-center rounded-xl text-xs font-bold text-orange-700 hover:bg-orange-50 whitespace-nowrap transition-colors"
             >
               Khóa quản trị
             </button>
@@ -106,7 +106,7 @@ export default function HomePage() {
           {/* Guide link */}
           <Link
             href="/guide"
-            className="h-9 px-2 sm:px-2.5 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:text-orange-600 hover:bg-slate-50 whitespace-nowrap transition-colors hidden sm:inline-flex"
+            className="min-h-11 px-2 sm:px-2.5 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:text-orange-600 hover:bg-slate-50 whitespace-nowrap transition-colors hidden sm:inline-flex"
             title="Hướng dẫn sử dụng"
           >
             📖 <span className="hidden md:inline">Hướng dẫn</span>
@@ -114,7 +114,7 @@ export default function HomePage() {
         </div>
       </div>
     </header>
-    <main className="mx-auto max-w-6xl space-y-7 px-4 py-6 pb-28 sm:px-6 sm:py-8 overflow-x-hidden">
+    <main className="mx-auto max-w-5xl space-y-7 px-4 py-6 pb-28 sm:px-6 sm:py-8 overflow-x-hidden">
       {/* Gamification Stats & Greeting Bar */}
       <section className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -128,19 +128,19 @@ export default function HomePage() {
 
         {/* Gamified counters: Streak, Stars, Stickers */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3" aria-label="Thành tích học tập">
-          <div className="inline-flex items-center gap-1.5 rounded-2xl border-b-2 border-orange-700 bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 text-xs font-black text-white shadow-sm sm:px-4 sm:text-sm">
-            <Flame className="h-4 w-4 animate-bounce-slow text-yellow-200" />
+          <div className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-800">
+            <Flame className="h-4 w-4 text-orange-700" />
             <span>{hydrated ? progress.streak : 0} ngày</span>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 rounded-2xl border-b-2 border-amber-600 bg-gradient-to-r from-yellow-400 to-amber-400 px-3 py-1.5 text-xs font-black text-amber-950 shadow-sm sm:px-4 sm:text-sm">
+          <div className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">
             <Star className="h-4 w-4 fill-amber-300 text-amber-800" />
             <span>{hydrated ? progress.totalStars : 0} sao</span>
           </div>
 
           <Link
             href="/stickers"
-            className="inline-flex items-center gap-1.5 rounded-2xl border-b-2 border-pink-700 bg-gradient-to-r from-pink-500 to-rose-500 px-3 py-1.5 text-xs font-black text-white shadow-sm hover:brightness-105 active:translate-y-0.5 active:border-b-0 transition-all sm:px-4 sm:text-sm"
+            className="ui-button ui-button-secondary"
           >
             <span>🎁</span>
             <span className="hidden xs:inline">Sticker</span>
@@ -201,7 +201,7 @@ export default function HomePage() {
                     key={item.title}
                     href={item.href}
                     onClick={() => triggerHaptic('light')}
-                    className="touch-spring group flex flex-col justify-between rounded-2xl border-2 border-slate-200/90 bg-white p-3 shadow-[0_4px_0_0_#e2e8f0] hover:shadow-[0_6px_0_0_#cbd5e1] active:translate-y-1 active:shadow-none transition-all"
+                    className="ui-panel group flex flex-col justify-between gap-3 p-4 hover:border-violet-300 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <span className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl ${item.color} shadow-sm group-hover:scale-105 transition-transform`}>

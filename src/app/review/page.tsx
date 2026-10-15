@@ -6,6 +6,12 @@
 // Nhớ rồi → tăng chu kỳ; Chưa nhớ → reset về hôm nay
 // =============================================
 
+// =============================================
+// VocaKids – Ôn Tập Cá Nhân (Spaced Repetition Review)
+// Hiển thị các từ đến hạn ôn tập theo Spaced Repetition
+// Nhớ rồi → tăng chu kỳ; Chưa nhớ → reset về hôm nay
+// =============================================
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,12 +21,12 @@ import { useProgress } from '@/hooks/useProgress';
 import { ArenaInvite } from '@/components/arena/ArenaInvite';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useTTS } from '@/hooks/useTTS';
-import { getCategoryById, CATEGORIES } from '@/lib/vocabulary';
+import { CATEGORIES } from '@/lib/vocabulary';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
 import { WordProgress, Word, Category } from '@/types';
-import { ChildBadge } from '@/components/ChildBadge';
+
 import { WordImage } from '@/components/WordImage';
-import {ArrowLeft,BookOpen,CalendarDays,CircleCheck,Eye,House,Lightbulb,MessageCircle,PartyPopper,RotateCcw,Trophy,Turtle,Volume2} from 'lucide-react';
+import { BookOpen, CalendarDays, CircleCheck, Eye, House, Lightbulb, MessageCircle, PartyPopper, RotateCcw, Trophy, Turtle, Volume2 } from 'lucide-react';
 
 interface ReviewItem {
   wordId: string;
@@ -221,7 +227,6 @@ function ReviewCard({
 
 // ── Main Review Page ──────────────────────────────────────────────────────────
 export default function ReviewPage() {
-  const router = useRouter();
   const { progress, hydrated, getDueReviewWords, activeProfile } = useProgress();
   const { recordAttempt, demoteWord } = useProfileContext();
   const { categories: customCats } = useCustomCategories();
@@ -301,31 +306,7 @@ export default function ReviewPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-violet-100 px-4 py-3">
-        <div className="max-w-xl mx-auto flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            aria-label="Quay lại"
-            className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center font-bold text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer"
-          >
-            <ArrowLeft aria-hidden="true" className="h-5 w-5"/>
-          </button>
-          <Link
-            href="/"
-            aria-label="Về trang chủ"
-            className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 flex items-center justify-center font-bold transition-colors shadow-xs"
-          >
-            <House aria-hidden="true" className="h-5 w-5"/>
-          </Link>
-          <div className="flex-1">
-            <h1 className="flex items-center gap-2 font-black text-gray-800 text-base"><RotateCcw aria-hidden="true" className="h-4 w-4 text-violet-500"/>Ôn Tập Hôm Nay</h1>
-            <p className="text-xs text-gray-500 font-semibold">
-              {activeProfile.name} {activeProfile.avatar}
-            </p>
-          </div>
-          <ChildBadge variant="compact" />
-        </div>
-      </header>
+      <AppPageHeader title="Ôn tập từ vựng" description="Ôn đúng lúc để nhớ từ lâu hơn." inset/>
 
       <div className="max-w-xl mx-auto px-4 pt-5 pb-24">
         {/* No words due */}

@@ -1,24 +1,25 @@
 'use client';
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
 import Link from 'next/link';
 import { ArenaInvite } from '@/components/arena/ArenaInvite';
-import {ArrowLeft,Play,Square,Volume2} from 'lucide-react';
-import {useRouter,useSearchParams} from 'next/navigation';
-import {useEffect,useRef,useState} from 'react';
-import {useProfileContext} from '@/context/ProfileContext';
-import {useSettings} from '@/hooks/useSettings';
-import {useBackendSession} from '@/hooks/useBackendSession';
-import {useTTS} from '@/hooks/useTTS';
-import {useEnglishAudio} from '@/hooks/useEnglishAudio';
-import {BAND_LABELS,newStorySession,readingBand,readingEvidence,validStorySession} from '@/lib/stories/learning';
-import type {StorySession,StorySource,StoryLesson} from '@/lib/stories/types';
-import type {CurriculumUnit} from '@/lib/learning/types';
-import {StoryActivities} from './StoryActivities';
-import {StoryTools} from './StoryTools';
-import {useStoryAccess} from '@/hooks/useStoryAccess';
-import {useVocabularyCatalog} from '@/hooks/useVocabularyCatalog';
-import {useCustomCategories} from '@/hooks/useCustomCategories';
-import {newStoryVocabulary,mergeExtractedVocabulary} from '@/lib/stories/vocabulary';
-const button='learning-button border border-slate-200 bg-white text-sm disabled:opacity-40';
+import { Play, Square, Volume2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useProfileContext } from '@/context/ProfileContext';
+import { useSettings } from '@/hooks/useSettings';
+import { useBackendSession } from '@/hooks/useBackendSession';
+import { useTTS } from '@/hooks/useTTS';
+import { useEnglishAudio } from '@/hooks/useEnglishAudio';
+import { BAND_LABELS, newStorySession, readingBand, readingEvidence, validStorySession } from '@/lib/stories/learning';
+import type { StorySession, StorySource, StoryLesson } from '@/lib/stories/types';
+import type { CurriculumUnit } from '@/lib/learning/types';
+import { StoryActivities } from './StoryActivities';
+import { StoryTools } from './StoryTools';
+import { useStoryAccess } from '@/hooks/useStoryAccess';
+import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
+import { useCustomCategories } from '@/hooks/useCustomCategories';
+import { newStoryVocabulary, mergeExtractedVocabulary } from '@/lib/stories/vocabulary';
+const button='ui-button ui-button-secondary text-sm disabled:opacity-40';
 type Tab='passage'|'sentences'|'vocabulary'|'activities';
 export function StoryReader({unit,source}:{unit:CurriculumUnit;source:StorySource}) {
   const ctx=useProfileContext();
@@ -106,15 +107,15 @@ function Reader({unit,source,canManage}:{unit:CurriculumUnit;source:StorySource;
     const regex=new RegExp(`(${terms.map(v=>v.en.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'gi');
     return text.split(regex).map((part,i)=>{const term=terms.find(v=>v.en.toLowerCase()===part.toLowerCase());return term?<button key={i} className="rounded bg-orange-50 px-0.5 text-orange-800 underline decoration-orange-300 underline-offset-4 hover:bg-orange-100" onClick={()=>setSelectedTerm(term)}>{part}</button>:<span key={i}>{part}</span>;});
   };
-  return <main className="learning-shell min-h-screen bg-slate-50 px-4 py-6 pb-20"><div className="mx-auto max-w-6xl space-y-5">
-    <header className="flex flex-wrap items-center justify-between gap-3"><Link href="/curriculum" className={button}><ArrowLeft aria-hidden="true" className="h-4 w-4"/>Các bài đọc</Link><button className={button} onClick={ctx.openProfileModal}>{ctx.activeProfile.avatar} {ctx.activeProfile.name} · Lớp {grade}</button></header>
-    <section><p className="text-sm font-bold text-orange-700">Lớp {unit.grade} · Unit {source.number} · {source.topic}</p><h1 className="mt-2 text-3xl font-bold text-slate-900">{unit.emoji} {lesson?.title??'Học qua đoạn văn'}</h1><p className="mt-2 text-sm text-slate-500">{lesson?.origin==='manual'?'Đoạn văn tự viết · Nội dung do bạn cung cấp.':`${lesson?BAND_LABELS[lesson.band]:BAND_LABELS[band]} · Dựa trên mẫu câu của unit và kết quả tự làm đã lưu.`}</p></section>
+  return <main className="learning-shell min-h-screen bg-slate-50 px-4 py-6 pb-20"><div className="mx-auto max-w-5xl space-y-5">
+    <AppPageHeader title={lesson?.title??"Học qua đoạn văn"} description={`Lớp ${unit.grade} · Unit ${source.number} · ${source.topic}`} backHref="/curriculum" backLabel="Các bài đọc"/>
+    <section><p className="text-sm font-bold text-orange-700">Lớp {unit.grade} · Unit {source.number} · {source.topic}</p><p className="mt-2 text-sm text-slate-500">{lesson?.origin==='manual'?'Đoạn văn tự viết · Nội dung do bạn cung cấp.':`${lesson?BAND_LABELS[lesson.band]:BAND_LABELS[band]} · Dựa trên mẫu câu của unit và kết quả tự làm đã lưu.`}</p></section>
     {!matchingGrade&&<p role="alert" className="rounded-xl bg-amber-50 p-4">Bài này thuộc lớp {unit.grade}. Chọn bài đúng lớp trong hồ sơ của con. <Link className="underline" href="/curriculum">Quay lại chọn bài</Link></p>}
     {message&&<p role="alert" className="rounded-xl bg-orange-50 p-4 text-orange-900">{message}</p>}
     {canManage&&matchingGrade&&<StoryTools key={session?.id??'empty'} session={session} sessions={savedSessions} unitId={unit.id} source={source} terms={newVocabulary} onImported={terms=>setImportedTerms(current=>[...current,...terms])} onOpen={openStory} onDelete={removeStory} onSave={()=>{if(session&&save(session))setMessage('Đã lưu đoạn văn và tiến độ. Mở lại trong Đoạn văn đã lưu.');}} onCreate={lesson=>{stop();controllerRef.current?.abort();setBusy(false);setScanning(false);const next=newStorySession(lesson,ctx.activeProfileId);if(save(next)){setActiveLine(0);setTab('passage');setSelectedTerm(null);setMessage('Đã lưu đoạn văn tự viết.');}}}/>}
-    {!lesson&&!canManage?<p className="rounded-2xl border bg-white p-5 text-slate-600">Phụ huynh hoặc admin cần chuẩn bị bài học cho unit này trước khi con luyện tập.</p>:!lesson?<section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6"><h2 className="text-xl font-bold">Một đoạn văn mới cho chủ đề {source.topic}</h2><p className="text-slate-600">AI viết đoạn văn ngắn, bản dịch, từ vựng và câu hỏi theo mẫu câu SGK của unit này. Bài được lưu để học tiếp; mở lại không cần tạo lại.</p><button className="learning-button bg-orange-600 text-white disabled:opacity-40" disabled={busy||scanning||!matchingGrade||admin.loading} onClick={()=>void generate(0)}>{busy?'Đang tạo đoạn văn…':'Tạo bài đọc bằng AI'}</button></section>:<>
+    {!lesson&&!canManage?<p className="rounded-2xl border bg-white p-5 text-slate-600">Phụ huynh hoặc admin cần chuẩn bị bài học cho unit này trước khi con luyện tập.</p>:!lesson?<section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6"><h2 className="text-xl font-bold">Một đoạn văn mới cho chủ đề {source.topic}</h2><p className="text-slate-600">AI viết đoạn văn ngắn, bản dịch, từ vựng và câu hỏi theo mẫu câu SGK của unit này. Bài được lưu để học tiếp; mở lại không cần tạo lại.</p><button className="ui-button ui-button-primary disabled:opacity-40" disabled={busy||scanning||!matchingGrade||admin.loading} onClick={()=>void generate(0)}>{busy?'Đang tạo đoạn văn…':'Tạo bài đọc bằng AI'}</button></section>:<>
       <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm">
-        <button className="learning-button bg-orange-600 text-white text-sm disabled:opacity-40" disabled={!audioAvailable} onClick={playAll}>{isSpeaking?<Square aria-hidden="true" className="h-4 w-4"/>:<Play aria-hidden="true" className="h-4 w-4"/>}{isSpeaking?'Dừng nghe':'Nghe cả bài'}</button>
+        <button className="ui-button ui-button-primary text-sm disabled:opacity-40" disabled={!audioAvailable} onClick={playAll}>{isSpeaking?<Square aria-hidden="true" className="h-4 w-4"/>:<Play aria-hidden="true" className="h-4 w-4"/>}{isSpeaking?'Dừng nghe':'Nghe cả bài'}</button>
         <label className="flex items-center gap-2 text-sm">Tốc độ<select aria-label="Tốc độ đọc" className="min-h-10 rounded-lg border px-2" value={rate} onChange={e=>{stop();setRate(Number(e.target.value));}}>{[0.7,0.85,1,1.2].map(r=><option key={r} value={r}>{r}×</option>)}</select></label>
         {canManage&&<><button className={button} aria-pressed={translation} onClick={()=>setTranslation(!translation)}>{translation?'Ẩn dịch':'Hiện dịch'}</button><button className={button} aria-pressed={columns} onClick={()=>setColumns(!columns)}>{columns?'Một cột':'Hai cột'}</button></>}
         <span className="ml-auto text-xs text-slate-500">{lesson.sentences.length} câu · {newVocabulary.length} từ/cụm từ mới</span>

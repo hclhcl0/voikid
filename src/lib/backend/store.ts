@@ -1,4 +1,5 @@
 import { defaultPronunciationSettings } from '@/lib/pronunciation/settings';
+import {defaultParentAiSettings} from '@/lib/stories/parentAiSettings';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { CATEGORIES } from '@/lib/vocabulary';
@@ -6,7 +7,7 @@ import { defaultSettings, validateContent, type ContentStore, type ManagedCatego
 const directory = process.env.VOCAKIDS_CONTENT_DIR || path.join(process.cwd(), 'data', 'backend');
 const file = path.join(directory, 'content.json');
 export function readContent(): ContentStore {
-  if (fs.existsSync(/* turbopackIgnore: true */ file)) { const data = JSON.parse(fs.readFileSync(file, 'utf8')) as ContentStore; data.settings.pronunciation = { ...defaultPronunciationSettings, ...data.settings.pronunciation }; return data; }
+  if (fs.existsSync(/* turbopackIgnore: true */ file)) { const data = JSON.parse(fs.readFileSync(file, 'utf8')) as ContentStore; data.settings.pronunciation = { ...defaultPronunciationSettings, ...data.settings.pronunciation }; data.settings.parentAi = {...defaultParentAiSettings,...data.settings.parentAi}; return data; }
   return { revision: 0, categories: structuredClone(CATEGORIES) as ManagedCategory[], settings: { ...defaultSettings }, updatedAt: '' };
 }
 export function writeContent(input: unknown): ContentStore {
@@ -17,7 +18,7 @@ export function writeContent(input: unknown): ContentStore {
     const old = current.categories.find(c => c.id === cat.id)?.words.find(w => w.id === word.id);
     if ((!old || old.en !== word.en || old.vi !== word.vi) && (!word.en.trim() || !word.vi.trim())) throw new Error('Từ mới hoặc nghĩa được sửa cần đủ tiếng Anh và tiếng Việt.');
   }
-  const next = { ...input, settings: { ...input.settings, pronunciation: input.settings.pronunciation ?? current.settings.pronunciation }, revision: current.revision + 1, updatedAt: new Date().toISOString() };
+  const next = { ...input, settings: { ...input.settings, pronunciation: input.settings.pronunciation ?? current.settings.pronunciation, parentAi: input.settings.parentAi ?? current.settings.parentAi }, revision: current.revision + 1, updatedAt: new Date().toISOString() };
   fs.mkdirSync(directory, { recursive: true });
   const temporary = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(temporary, JSON.stringify(next, null, 2), { mode: 0o600 });

@@ -5,9 +5,13 @@
 // Danh sách tất cả bài học & chọn dạng bài tập
 // =============================================
 
+// =============================================
+// VocaKids – 8 Dạng Bài Tập & Phòng Luyện Thi Hub
+// Danh sách tất cả bài học & chọn dạng bài tập
+// =============================================
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+
 import { GRADE_LEVELS, GRADE_METAS } from '@/lib/vocabulary';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';

@@ -1,0 +1,1 @@
+export const PRONUNCIATION_NOT_CONFIGURED = 'AI chấm phát âm chưa sẵn sàng trên server. Quản trị viên cần cấu hình Gemini tại Admin → AI & Thiết bị → API key cho AI. Phụ huynh không cần nhập key riêng.';

@@ -589,7 +589,7 @@ export function MediaOptions(){
 
         <button
           disabled={busy}
-          className="learning-button bg-orange-600 text-white disabled:opacity-50 text-sm font-medium mt-2"
+          className="ui-button ui-button-primary disabled:opacity-50 text-sm font-medium mt-2"
           onClick={()=>void save()}
         >
           {busy ? 'Đang lưu…' : 'Lưu cấu hình giọng đọc'}

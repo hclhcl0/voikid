@@ -12,6 +12,17 @@
 // 8. Nghe và sắp xếp tranh (Nghe chuỗi từ)
 // =============================================
 
+// =============================================
+// VocaKids – Hệ Thống Luyện Tập & Bài Thi 8 Dạng
+// 1. Nghe và chọn hình (Nghe hiểu)
+// 2. Nhìn hình và chọn từ (Nhận diện mặt chữ)
+// 3. Ghép từ với hình (Ghi nhớ nghĩa)
+// 4. Nghe và chọn chữ cái (Nhận biết chữ & âm)
+// 5. Điền chữ còn thiếu (Tập viết từ)
+// 6. Lật thẻ tìm cặp (Trò chơi trí nhớ)
+// 7. Nghe, nói và nghe lại giọng mình (Luyện nói)
+// 8. Nghe và sắp xếp tranh (Nghe chuỗi từ)
+// =============================================
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -21,23 +32,11 @@ import { CATEGORIES } from '@/lib/vocabulary';
 import { ArenaInvite } from '@/components/arena/ArenaInvite';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useProfileContext } from '@/context/ProfileContext';
-import { useTTS } from '@/hooks/useTTS';
+
 import { useCustomCategories } from '@/hooks/useCustomCategories';
 import { ChildBadge } from '@/components/ChildBadge';
 import { Word, UnitTestGrade } from '@/types';
-import {
-  ExerciseListenPickPicture,
-  ExerciseLookPickWord,
-  ExerciseMatchWordPicture,
-  ExerciseListenPickLetter,
-  ExerciseFillMissingLetter,
-  ExerciseMemoryMatch,
-  ExerciseListenRecordReview,
-  ExerciseListenOrderSequence,
-  EXERCISE_METAS,
-  ExerciseType,
-  ExerciseMeta,
-} from '@/components/exercises';
+import { ExerciseListenPickPicture, ExerciseLookPickWord, ExerciseMatchWordPicture, ExerciseListenPickLetter, ExerciseFillMissingLetter, ExerciseMemoryMatch, ExerciseListenRecordReview, ExerciseListenOrderSequence, EXERCISE_METAS, ExerciseType } from '@/components/exercises';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function shuffle<T>(arr: T[]): T[] {

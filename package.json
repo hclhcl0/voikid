@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:learning": "node --test tests/learning.test.cjs",
+    "test:treasure": "node --test tests/treasure.test.cjs",
+    "test:parent-ai": "node --test tests/parent-ai-quota.test.cjs",
     "audit:learning": "node scripts/audit-learning.cjs",
     "test:backend": "node --test tests/backend.test.cjs",
     "test:family": "node --test tests/family.test.cjs",

@@ -73,6 +73,7 @@ export interface PronunciationResult {
 }
 
 export interface WordProgress {
+  dailyLearnedAt?: string;
   lastPronunciationAttemptId?: string;
   wordId: string;
   catId: string;

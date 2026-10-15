@@ -18,10 +18,10 @@ export function LearningEntry() {
   const grade = ([1, 2, 3, 4, 5].includes(number) ? number : 1) as Grade;
   const resume=stories.find(s=>!s.completed&&curriculum.some(u=>u.id===s.unitId&&u.grade===grade));
   const unit = curriculum.find(u => u.id === resume?.unitId&&u.grade===grade) ?? curriculum.find(u => u.grade === grade && storySource(u));
-  if (!unit) return <Link className="learning-button border bg-white" href="/curriculum">Chọn bài đọc →</Link>;
+  if (!unit) return <Link className="ui-button ui-button-secondary" href="/curriculum">Chọn bài đọc →</Link>;
   return <section className="rounded-2xl border border-slate-200 bg-orange-50 p-5 sm:p-7 space-y-3">
     <p className="text-xs font-bold text-orange-700">HỌC THEO ĐOẠN VĂN · LỚP {grade}</p><h2 className="text-xl font-extrabold text-slate-900">{resume ? 'Tiếp tục bài đang đọc' : 'Đọc một câu chuyện, học cả chủ đề'}</h2><p className="text-slate-600">Unit {unit.order} · {storySource(unit)?.topic}</p>
-    <div className="flex flex-wrap gap-2"><Link className="learning-button bg-orange-600 text-white hover:bg-orange-700" href={`/unit/${unit.id}`}>{resume ? 'Tiếp tục học →' : 'Bắt đầu học →'}</Link><Link className="learning-button border border-slate-200 bg-white text-slate-700" href={`/curriculum?grade=${grade}`}>Chọn bài học</Link></div>
+    <div className="flex flex-wrap gap-2"><Link className="ui-button ui-button-primary hover:bg-orange-700" href={`/unit/${unit.id}`}>{resume ? 'Tiếp tục học →' : 'Bắt đầu học →'}</Link><Link className="ui-button ui-button-secondary text-slate-700" href={`/curriculum?grade=${grade}`}>Chọn bài học</Link></div>
     <p className="text-xs text-slate-500">AI tạo đoạn văn từ mẫu câu SGK, điều chỉnh độ hỗ trợ theo kết quả học của con.</p>
   </section>;
 }

@@ -5,7 +5,7 @@ import {gradeListeningTask,listeningLengthHint,listeningTasks} from '@/lib/stori
 import type {ListeningFillScope,ListeningTask} from '@/lib/stories/listeningFill';
 import type {StorySession} from '@/lib/stories/types';
 
-const button='learning-button border border-slate-200 bg-white text-sm disabled:opacity-40';
+const button='ui-button ui-button-secondary text-sm disabled:opacity-40';
 type Props={session:StorySession;save:(session:StorySession)=>void;play:(index:number,onStarted?:()=>void)=>void;stopAudio:()=>void;audioAvailable:boolean};
 
 function Exercise({session,save,play,audioAvailable,task}:Props&{task:ListeningTask}) {
@@ -42,7 +42,7 @@ function Exercise({session,save,play,audioAvailable,task}:Props&{task:ListeningT
     {!audioAvailable&&<p className="text-sm text-amber-800">Thiết bị chưa có giọng tiếng Anh. Con có thể làm bài đọc hoặc điền từ.</p>}
     {!heard&&audioAvailable&&<p className="text-sm text-slate-500">Con nghe câu trước khi kiểm tra nhé.</p>}
     <div className="flex flex-wrap gap-2">
-      <button className="learning-button bg-orange-600 text-white disabled:opacity-40" disabled={!heard||responses.some(value=>!value.trim())} onClick={submit}>Kiểm tra</button>
+      <button className="ui-button ui-button-primary disabled:opacity-40" disabled={!heard||responses.some(value=>!value.trim())} onClick={submit}>Kiểm tra</button>
       <button className={button} onClick={()=>setRevealed(true)}>Xem đáp án</button>
     </div>
     {revealed&&<p className="rounded-xl bg-orange-50 p-3 text-sm">{task.gaps.map((gap,index)=>`(${index+1}) ${gap.answer}`).join(' · ')}</p>}

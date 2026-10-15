@@ -14,6 +14,7 @@ export function useProgress() {
     progress: ctx.progress,
     hydrated: ctx.hydrated,
     recordAttempt: ctx.recordAttempt,
+    markDailyWordLearned:ctx.markDailyWordLearned,
     getWordProgress: ctx.getWordProgress,
     findWordProgress: ctx.findWordProgress,
     demoteWord: ctx.demoteWord,

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 interface KeyRow { id: string; name: string; project: string; enabled: boolean; masked?: string; secret?: string; usage?: { uses:number; successes:number; failures:number; blocked:boolean; retryAt:number|null; lastError:string|null } }
 interface Config { revision:number; mode:'priority'|'round_robin'; maxAttempts:number; cooldownSeconds:number; keys:KeyRow[] }
 const input = 'mt-1 min-h-11 w-full rounded-xl border border-slate-300 px-3';
-const button = 'learning-button border border-slate-200 bg-white text-sm disabled:opacity-40';
+const button = 'ui-button ui-button-secondary text-sm disabled:opacity-40';
 export function ApiKeyOptions() {
   const [config,setConfig]=useState<Config|null>(null);
   const [dirty,setDirty]=useState(false);
@@ -61,7 +61,7 @@ export function ApiKeyOptions() {
         <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-500">{k.usage ? `${k.usage.uses} lượt dùng · ${k.usage.successes} hoàn tất · ${k.usage.failures} lỗi` : 'Chưa lưu'}{k.usage?.blocked?' · Tạm khóa do lỗi quyền/key':k.usage?.retryAt?` · Nghỉ đến ${new Date(k.usage.retryAt).toLocaleTimeString('vi-VN')}`:''}</p><button className={button} disabled={!k.id||dirty} onClick={()=>void test(k.id)}>Kiểm tra kết nối</button></div>
       </div>)}
       {!config.keys.length&&<p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">Chưa có key server: ứng dụng vẫn dùng key thiết bị hoặc GEMINI_API_KEY hiện có. Khi có danh sách, chấm phát âm ưu tiên hoàn toàn danh sách này.</p>}
-      <div className="flex flex-wrap gap-3"><button className={button} disabled={config.keys.length>=10} onClick={()=>update({...config,keys:[...config.keys,{id:'',name:'',project:'',enabled:true,secret:''}]})}>+ Thêm key</button><button className="learning-button bg-orange-600 text-white disabled:opacity-40" disabled={!dirty} onClick={()=>void save()}>Lưu danh sách key</button></div>
+      <div className="flex flex-wrap gap-3"><button className={button} disabled={config.keys.length>=10} onClick={()=>update({...config,keys:[...config.keys,{id:'',name:'',project:'',enabled:true,secret:''}]})}>+ Thêm key</button><button className="ui-button ui-button-primary disabled:opacity-40" disabled={!dirty} onClick={()=>void save()}>Lưu danh sách key</button></div>
       <p className="text-xs text-slate-500">Thống kê và thời gian nghỉ đặt lại khi server khởi động lại. Kiểm tra kết nối có gọi Gemini và dùng hạn mức. Key lỗi quyền chỉ được dùng lại sau khi thay key hoặc kiểm tra kết nối thành công.</p>
     </fieldset>}
   </section>;

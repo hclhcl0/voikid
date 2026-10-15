@@ -111,7 +111,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF7ED] py-8 px-4 flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 flex flex-col items-center justify-center relative overflow-hidden">
       {/* Background accents */}
       <div className="absolute -top-12 -left-12 w-72 h-72 rounded-full bg-orange-300/20 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-12 -right-12 w-72 h-72 rounded-full bg-amber-300/20 blur-3xl pointer-events-none" />
@@ -136,7 +136,7 @@ export default function LoginPage() {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white rounded-3xl shadow-xl border-3 border-orange-200 overflow-hidden relative z-10 p-6 sm:p-7"
+        className="ui-panel w-full max-w-md overflow-hidden relative z-10 sm:p-7"
       >
         {/* Status Message */}
         <AnimatePresence>

@@ -21,6 +21,7 @@ interface UseAudioRecorderReturn {
   error: string | null;
   inputLevel: number;
   hasServerKey: boolean;
+  serverConfigLoaded: boolean;
 }
 
 const SILENCE_THRESHOLD = 0.01;   // RMS below this = silence
@@ -30,7 +31,19 @@ export function useAudioRecorder(taskKind: 'word' | 'sentence' = 'word'): UseAud
   const qualityRef = useRef({ speechMs: 0, clipped: 0, frames: 0 });
   const [inputLevel, setInputLevel] = useState(0);
   const [hasServerKey,setHasServerKey] = useState(false);
-  useEffect(() => { const controller = new AbortController(); fetch('/api/pronunciation/config', { signal: controller.signal, cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(data => { if (data) { configRef.current = data; setHasServerKey(data.hasServerKey === true); } }).catch(() => {}); return () => controller.abort(); }, []);
+  const [serverConfigLoaded,setServerConfigLoaded] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/pronunciation/config', { signal: controller.signal, cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (controller.signal.aborted || !data || typeof data.hasServerKey !== 'boolean') return;
+        configRef.current = data;
+        setHasServerKey(data.hasServerKey);
+        setServerConfigLoaded(true);
+      }).catch(() => {});
+    return () => controller.abort();
+  }, []);
   const [status, setStatus]         = useState<RecorderStatus>('idle');
   const [audioBlob, setAudioBlob]   = useState<Blob | null>(null);
   const [audioBase64, setBase64]    = useState<string | null>(null);
@@ -266,5 +279,5 @@ export function useAudioRecorder(taskKind: 'word' | 'sentence' = 'word'): UseAud
     setInputLevel(0);
   }, [cleanup]);
 
-  return { status, audioBlob, audioBase64, startRecording, stopRecording, resetRecorder, error, inputLevel, hasServerKey };
+  return { status, audioBlob, audioBase64, startRecording, stopRecording, resetRecorder, error, inputLevel, hasServerKey, serverConfigLoaded };
 }

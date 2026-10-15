@@ -1,4 +1,5 @@
 'use client';
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -74,7 +75,7 @@ function Game({category}:{category:Category}) {
     setHint(target.word.id);setHints(hints+1);setMessage(`💡 ${target.word.en}: ô đầu đang sáng trên bảng.`);
   }
   return <div className="min-h-screen bg-emerald-50 pb-20 text-slate-800">
-    <header className="border-b border-emerald-100 bg-white"><div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3"><Link href="/" className="text-sm font-bold">← Trang chủ</Link><h1 className="font-extrabold">🔍 Tìm từ</h1><span className="text-xs">⭐ {progress.totalStars}</span></div></header>
+    <AppPageHeader title="Tìm từ" description="Khám phá từ vựng trong bảng chữ cái." backHref="/games" backLabel="Trò chơi" inset/>
     <main className="mx-auto max-w-3xl space-y-3 px-3 py-4">
       <div className="flex flex-wrap justify-between gap-2"><h2 className="font-bold">{category.emoji} {category.name_vi}</h2>{board&&<span className="text-sm font-bold">{found.length}/{board.placed.length} từ · {Math.floor(elapsed/60)}:{String(elapsed%60).padStart(2,'0')}</span>}</div>
       {!board?<section className="rounded-2xl bg-white p-5"><h2 className="mb-3 font-bold">Chọn độ khó</h2><div className="grid gap-3 sm:grid-cols-3">{wordSearchLevels.map((r,i)=><button key={r.name} onClick={()=>newGame(i)} className="rounded-xl border-2 border-emerald-100 p-4 text-left hover:border-emerald-400"><strong>{r.name}</strong><p className="mt-1 text-sm">{r.size}×{r.size} · tối đa {r.count} từ</p><p className="text-xs text-slate-500">{r.description}</p><span className="mt-2 block text-xs text-amber-700">⭐ {4+i} sao nếu không gợi ý</span></button>)}</div><p className="mt-4 text-xs text-slate-500">Bấm ô đầu rồi ô cuối, hoặc kéo để chọn. Bảng tự tăng khi có từ dài.</p></section>:<>

@@ -11,6 +11,10 @@ Do not translate, complete a sentence, or rewrite grammar. Preserve repetitions
 and self-corrections. Transcribe the words you can hear; do not invent phonetic
 spellings to imply precision that is not audible.
 
+Write spoken English numbers as words (for example, "forty-five" rather than "45").
+Preserve how they were spoken: "four five" is not "forty-five". Do not translate
+numbers spoken in another language into English.
+
 Set speechStatus to clear only if the spoken words can be transcribed adequately.
 Use unclear when speech exists but cannot be transcribed adequately.
 Use no_speech only when no spoken response is audible, with transcript null.
@@ -40,6 +44,13 @@ For contentMatch:
 - match: the audible response follows a permitted response, allowing recognizable
   pronunciation imperfections. A homophone cannot be distinguished by spelling
   from audio alone; do not reject it solely because of spelling.
+  This includes English transcription variants such as "two/to/too", "four/for",
+  and "o'clock/a clock" when the article is pronounced with a weak schwa vowel.
+  Judge the audible sounds: a clearly stressed "a" is not automatically equivalent
+  to "o'clock". Never mark pronunciation acceptable solely from an equivalent spelling.
+  Numeral formatting is not different content: "45" and "forty-five" represent
+  the same English cardinal reading. Still judge the actual English pronunciation
+  from the audio; digit-by-digit reading or another language is not equivalent.
 - partial: clearly audible reading omits words from the permitted response.
 - different: clearly audible speech supplies different content.
 - uncertain: the evidence is insufficient or ambiguous.

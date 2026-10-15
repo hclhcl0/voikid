@@ -23,7 +23,7 @@ export function ChildBadge({ variant = 'pill', showSwitchHint = true }: ChildBad
     );
   }
 
-  if (!activeProfile.id) return <Link href="/parent" className="learning-button border border-slate-200 bg-white text-sm"><UserRound aria-hidden="true" className="h-4 w-4"/>Chọn học sinh</Link>;
+  if (!activeProfile.id) return <Link href="/parent" className="ui-button ui-button-secondary text-sm"><UserRound aria-hidden="true" className="h-4 w-4"/>Chọn học sinh</Link>;
 
   const theme = COLOR_THEMES[activeProfile.color] || COLOR_THEMES.orange;
   const grade = GRADE_LEVELS.find((g) => g.id === activeProfile.gradeId) || GRADE_LEVELS[1];

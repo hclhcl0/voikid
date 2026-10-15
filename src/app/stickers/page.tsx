@@ -1,8 +1,9 @@
 'use client';
 
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChildBadge } from '@/components/ChildBadge';
+
 import { StickerArtwork } from '@/components/StickerArtwork';
 import { StickerPreview } from '@/components/StickerPreview';
 import { useProfileContext } from '@/context/ProfileContext';
@@ -110,14 +111,14 @@ export default function StickersPage() {
   const openDetails = (id:string) => setSelection({profileId:activeProfileId,id});
 
   if (!hydrated) return <main className="mx-auto max-w-5xl px-4 py-16" aria-busy="true"><p className="text-center text-slate-500">Đang mở album của bé…</p></main>;
-  if (!activeProfileId) return <main className="mx-auto max-w-lg space-y-4 p-8"><Link href="/" className="text-sm text-slate-500">← Trang chủ</Link><h1 className="text-2xl font-bold">Mở album của học sinh</h1><p className="text-slate-600">Thêm hồ sơ học sinh để lưu bộ sưu tập và những phần thưởng của bé.</p><Link href="/parent" className="learning-button bg-orange-600 text-white">Thêm học sinh</Link></main>;
+  if (!activeProfileId) return <main className="mx-auto max-w-lg space-y-4 p-8"><Link href="/" className="text-sm text-slate-500">← Trang chủ</Link><h1 className="text-2xl font-bold">Mở album của học sinh</h1><p className="text-slate-600">Thêm hồ sơ học sinh để lưu bộ sưu tập và những phần thưởng của bé.</p><Link href="/parent" className="ui-button ui-button-primary">Thêm học sinh</Link></main>;
   return <div className="min-h-screen bg-slate-50 text-slate-800">
-    <header className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4 sm:px-6"><Link href="/" className="flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-orange-600"><Arrow className="rotate-180" />Trang chủ</Link><ChildBadge /></div></header>
+    <AppPageHeader title="Album sticker" description="Mỗi cố gắng nhỏ, thêm một niềm vui." inset/>
     <main className="mx-auto max-w-5xl space-y-7 px-4 py-6 sm:px-6 sm:py-8">
       {edition && <section aria-labelledby="grade-gifts-title" className="rounded-3xl border border-violet-100 bg-white p-5 sm:p-6"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 id="grade-gifts-title" className="text-lg font-bold">Quà {edition.label} · Phiên bản {edition.name}</h2><p className="mt-1 text-sm leading-6 text-slate-500">6 quà riêng cho lớp của bé. Càng lên lớp, phiên bản càng quý và mốc học càng cao.</p></div><button onClick={() => setFilter('edition')} className="rounded-xl bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200">Khám phá quà theo lớp ↓</button></div><div aria-label="Các phiên bản quà theo lớp" className="mt-4 grid grid-cols-5 gap-1.5 sm:gap-3">{GRADE_REWARD_EDITIONS.map(item => <div key={item.gradeId} data-edition={item.level} aria-current={edition.gradeId === item.gradeId ? 'step' : undefined} className={`${styles.editionBadge} rounded-2xl border px-1 py-3 text-center ${edition.gradeId === item.gradeId ? 'ring-2 ring-violet-500 ring-offset-2' : 'opacity-60'}`}><span className="block text-[11px] sm:text-xs">{item.label}</span><span className="mt-1 block text-[11px] font-bold sm:text-sm">{item.name}</span></div>)}</div><p className="mt-4 text-xs leading-5 text-slate-500">Tiến độ đã học được cộng dồn. Quà đã nhận giữ nguyên phiên bản, kể cả khi bé lên lớp.</p></section>}
       <section className="relative overflow-hidden rounded-[2rem] border border-orange-100 bg-gradient-to-br from-white via-orange-50 to-rose-50 p-6 sm:p-8">
         <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="max-w-lg"><p className="text-xs font-bold uppercase tracking-[.16em] text-orange-600">Mỗi cố gắng, một niềm vui</p><h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Album sticker của bé</h1><p className="mt-3 text-sm leading-6 text-slate-600">{activeProfile.name} ơi, cùng lấp đầy album bằng những bước học nhỏ mỗi ngày nhé!</p>
+          <div className="max-w-lg"><p className="text-xs font-bold uppercase tracking-[.16em] text-orange-600">Mỗi cố gắng, một niềm vui</p><h2 className="mt-3 text-2xl font-bold tracking-tight">Một bộ sưu tập dành riêng cho bé</h2><p className="mt-3 text-sm leading-6 text-slate-600">{activeProfile.name} ơi, cùng lấp đầy album bằng những bước học nhỏ mỗi ngày nhé!</p>
             <div className="mt-5 flex flex-wrap items-center gap-3"><span className="rounded-full border border-amber-200 bg-white px-4 py-2 text-sm font-bold text-amber-800">{earned.length} sticker đã nhận</span><span className="text-sm text-slate-500">{collected}/{STICKER_MILESTONES.length} mốc trong {STICKER_COLLECTIONS.length} bộ sưu tập</span></div>
             <div className="mt-4 max-w-sm"><ProgressBar value={Math.min(collected,STICKER_MILESTONES.length)} total={STICKER_MILESTONES.length} label="Bộ sưu tập đã hoàn thành" /></div>
           </div>

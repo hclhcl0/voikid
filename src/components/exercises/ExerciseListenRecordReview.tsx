@@ -14,6 +14,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { useProfileContext } from '@/context/ProfileContext';
 import confetti from 'canvas-confetti';
 import { ExerciseIllustration } from './ExerciseIllustration';
+import { PRONUNCIATION_NOT_CONFIGURED } from '@/lib/pronunciation/messages';
 
 interface Props {
   targetWord: Word;
@@ -188,7 +189,7 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer, badgeTitle, s
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         if (err.error === 'NO_API_KEY') {
-          setAiError('Chưa có Gemini API Key. Bạn vào mục Cài đặt (⚙️) nhập key miễn phí để kích hoạt AI nhé!');
+          setAiError(PRONUNCIATION_NOT_CONFIGURED);
           setAiLoading(false);
           return;
         }
@@ -208,7 +209,7 @@ export function ExerciseListenRecordReview({ targetWord, onAnswer, badgeTitle, s
       }
     } catch (e: any) {
       console.warn('AI evaluation error:', e);
-      setAiError('Không thể kết nối AI. Kiểm tra internet hoặc API Key.');
+      setAiError('Chưa kết nối được dịch vụ chấm phát âm. Kiểm tra mạng và thử lại nhé!');
     } finally {
       setAiLoading(false);
     }

@@ -1,9 +1,10 @@
 'use client';
 
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
 import Link from 'next/link';
 import { Suspense, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, Shield, Sparkles, Swords, Volume2, Zap } from 'lucide-react';
+import { Shield, Sparkles, Swords, Volume2, Zap } from 'lucide-react';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
 import { useProfileContext } from '@/context/ProfileContext';
@@ -55,7 +56,7 @@ function ArenaPageContent() {
     .filter((category, index, all) => arenaWords(category.words).length >= 2 && all.findIndex(c => c.id === category.id) === index);
 
   return <div className={styles.page}>
-    <header className={styles.header}><Link href="/" className={styles.back}><ArrowLeft size={18} /> Trang chủ</Link><span className={styles.brand}><Swords size={19} /> Đấu trường từ vựng</span><span className={styles.profile}>{profile.activeProfile.name || 'VocaKids'}</span></header>
+    <AppPageHeader title="Đấu trường từ vựng" description="Chơi theo chủ đề, nhớ từ qua từng thử thách." inset/>
     <main className={styles.main}>
       {!profile.hydrated || !customHydrated || !entry ? <p role="status">Đang nạp đấu trường…</p>
         : !settings.showGames ? <div className={styles.card}><h1>Trò chơi đang tạm nghỉ</h1><p>Con có thể tiếp tục học từ và luyện tập nhé.</p><Link href="/" className={styles.primary}>Về trang chủ</Link></div>

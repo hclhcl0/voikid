@@ -30,6 +30,7 @@ export function WordStudyCard({
   audioSource,
   prevStars,
   playbackControls,
+  audioDisabled = false,
 }: {
   word: Word;
   onListenNormal: () => void;
@@ -38,6 +39,7 @@ export function WordStudyCard({
   audioSource: ReturnType<typeof useTTS>['audioSource'];
   prevStars: number;
   playbackControls?: ReactNode;
+  audioDisabled?: boolean;
 }) {
   const {phonics,loading:phonicsLoading,error:phonicsError,refresh:refreshPhonics}=useKidsPhonics(word.en,word.phonetic,word.kids_phonics);
   const [showIpaDecoder, setShowIpaDecoder] = useState(false);
@@ -105,6 +107,7 @@ export function WordStudyCard({
             <motion.button
               whileTap={{ scale: 0.93 }}
               onClick={onListenNormal}
+              disabled={audioDisabled}
               className={`min-w-0 flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl font-bold text-sm shadow-sm transition-all cursor-pointer min-h-11 ${
                 primarySpeaking
                   ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white ring-2 ring-violet-300 animate-pulse-ring'
@@ -120,6 +123,7 @@ export function WordStudyCard({
             {onListenSlow && <motion.button
               whileTap={{ scale: 0.93 }}
               onClick={onListenSlow}
+              disabled={audioDisabled}
               className={`min-w-0 flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl font-bold text-sm shadow-sm transition-all cursor-pointer min-h-11 ${
                 speakingMode === 'slow' || speakingMode === 'superslow'
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white ring-2 ring-amber-300 animate-pulse-ring'

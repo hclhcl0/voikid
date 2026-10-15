@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { load } = require('./ts-loader.cjs');
+const { load, createLoader } = require('./ts-loader.cjs');
 const { compareContent } = load('src/lib/pronunciation/comparator.ts');
 const { decideAttemptResult } = load('src/lib/pronunciation/decisionEngine.ts');
 const { parsePerception, parseAssessment } = load('src/lib/pronunciation/validation.ts');
@@ -24,6 +24,120 @@ test('sentence omissions are separate from different content', () => {
   assert.equal(compareContent('I have cat',sentence),'omissions_only');
   assert.equal(compareContent('I have a dog',sentence),'other');
 });
+
+const numberPolicy = (targetText, extra = {}) => ({...policy,targetText,acceptedResponses:[targetText],acceptedTranscriptAliases:[],...extra});
+
+test('spoken cardinals match numeral transcriptions across words, phrases and sentences', () => {
+  for (const [digits, words] of [
+    ['0','zero'], ['1','one'], ['12','twelve'], ['20','twenty'], ['45','Forty-five'],
+    ['80','eighty'], ['99','ninety-nine'], ['100','one hundred'],
+    ['105','one hundred and five'], ['245','two hundred and forty-five'],
+    ['1000','one thousand'], ['1,005','one thousand and five'],
+    ['12345','twelve thousand three hundred and forty-five'],
+    ['999,999','nine hundred and ninety-nine thousand nine hundred and ninety-nine'],
+  ]) {
+    assert.equal(compareContent(digits,numberPolicy(words)),'allowed_match',`${digits} = ${words}`);
+    assert.equal(compareContent(words,numberPolicy(digits)),'allowed_match',`${words} = ${digits}`);
+  }
+  assert.equal(compareContent('45.',numberPolicy('forty-five')),'allowed_match');
+  assert.equal(compareContent('forty five',numberPolicy('forty-five')),'allowed_match');
+  assert.equal(compareContent('45',numberPolicy('Forty‑five')),'allowed_match');
+  assert.equal(compareContent('the 45',numberPolicy('forty-five',{acceptedResponses:['forty-five','the forty-five']})),'allowed_match');
+  assert.equal(compareContent('I have 45 books.',numberPolicy('I have forty-five books',{taskKind:'sentence'})),'allowed_match');
+  assert.equal(compareContent('I have 45',numberPolicy('I have forty-five books',{taskKind:'sentence'})),'omissions_only');
+});
+
+test('number formatting does not accept a different number, digit reading or ambiguous numeric format', () => {
+  const target = numberPolicy('Forty-five');
+  for (const transcript of ['54','forty-four','forty','five','four five','4 5','45 six','45th','045','+45','-45','−45','–45','45.0','4.5','4:5','45/1','45-50','45%','$45','A45','45B','45,0']) {
+    assert.equal(compareContent(transcript,target),'other',transcript);
+  }
+  assert.equal(compareContent('45',numberPolicy('four five')),'other');
+  assert.equal(compareContent('45',numberPolicy('forty-fifth')),'other');
+  assert.equal(compareContent('45',numberPolicy('four')),'other');
+  assert.equal(compareContent('45 45',target),'allowed_match');
+  assert.equal(compareContent('45 45',{...target,allowRepetitions:false}),'other');
+  assert.equal(compareContent('cats and dogs',numberPolicy('cats dogs')),'other');
+});
+
+test('a numeral transcript passes only when the independent audio assessment accepts pronunciation', async () => {
+  const target = numberPolicy('Forty-five');
+  const heard = {...perception,transcript:'45'};
+  for (const [audioAssessment, expectedStatus] of [
+    [assessment,'pass'],
+    [{...assessment,pronunciation:'needs_practice',issues:[{kind:'sound',targetTokenIndex:0,suggestionVi:'Con đọc rõ âm /v/ ở cuối nhé.'}]},'practice'],
+    [{...assessment,pronunciation:'uncertain'},'retry'],
+    [{...assessment,contentMatch:'different',pronunciation:'not_applicable'},'retry'],
+  ]) {
+    const loadEngine = createLoader({'./geminiAdapter':{
+      runPerceptionBranch:async()=>heard,
+      runAssessmentBranch:async()=>audioAssessment,
+    }});
+    const {evaluatePronunciationDual} = loadEngine('src/lib/pronunciation/index.ts');
+    const result = await evaluatePronunciationDual('number-attempt','mock-recording','audio/webm',target,'mock-key');
+    assert.equal(result.status,expectedStatus);
+    assert.equal(result.passed,expectedStatus==='pass'?true:expectedStatus==='practice'?false:null);
+    assert.equal(result.score,null);
+    assert.doesNotMatch(result.feedbackVi,/Cô nghe thấy từ "45"/);
+    if (expectedStatus==='practice') assert.match(result.feedbackVi,/âm \/v\//);
+  }
+});
+test('o clock transcription variants match complete readings without admitting missing or different sounds', () => {
+  const clock = {...policy,targetText:"O'clock",acceptedResponses:["O'clock"]};
+  for (const transcript of ["O'clock",'o’clock','O Clock','oclock','a clock','a clock a clock']) {
+    assert.equal(compareContent(transcript,clock),'allowed_match',transcript);
+  }
+  for (const transcript of ['clock','the clock','a lock','a cock','o lock','a clock dog','dog a clock']) {
+    assert.equal(compareContent(transcript,clock),'other',transcript);
+  }
+  assert.equal(compareContent('a clock a clock',{...clock,allowRepetitions:false}),'other');
+  assert.equal(compareContent("o'clock",{...clock,targetText:'clock',acceptedResponses:['clock']}),'other');
+  const sentence = {...clock,taskKind:'sentence',targetText:"It's six o'clock.",acceptedResponses:["It's six o'clock."]};
+  assert.equal(compareContent("It's 6 a clock.",sentence),'allowed_match');
+  assert.equal(compareContent('six a clock',sentence),'omissions_only');
+  assert.equal(compareContent("It's six clock",sentence),'omissions_only');
+  assert.equal(compareContent("It's seven a clock.",sentence),'other');
+});
+
+test('English sound-alike spellings match whole tokens and keep other words and locales distinct', () => {
+  for (const [target, transcript] of [['two','too'],['two','to'],['four','for'],['one','won'],['eight','ate'],['see','sea'],['hear','here'],['right','write'],['week','weak']]) {
+    const sameSound = {...policy,targetText:target,acceptedResponses:[target]};
+    assert.equal(compareContent(transcript,sameSound),'allowed_match');
+    assert.equal(compareContent(transcript,{...sameSound,locale:'vi-VN'}),'other');
+  }
+  assert.equal(compareContent('tooth',{...policy,targetText:'two',acceptedResponses:['two']}),'other');
+  assert.equal(compareContent('too cats',{...policy,targetText:'two cats',acceptedResponses:['two cats']}),'allowed_match');
+  assert.equal(compareContent('too dogs',{...policy,targetText:'two cats',acceptedResponses:['two cats']}),'other');
+});
+
+test('a clock spelling never overrides pronunciation, uncertainty, interference or provider failures', async () => {
+  const clock = {...policy,targetText:"O'clock",acceptedResponses:["O'clock"]};
+  const cases = [
+    [{...perception,transcript:'a clock'},assessment,'pass'],
+    [{...perception,transcript:'a clock'},{...assessment,pronunciation:'needs_practice',issues:[{kind:'sound',targetTokenIndex:0,suggestionVi:'Con đọc nhẹ âm đầu nhé.'}]},'practice'],
+    [{...perception,transcript:'a clock'},{...assessment,pronunciation:'uncertain'},'retry'],
+    [{...perception,transcript:'a clock'},{...assessment,contentMatch:'different',pronunciation:'not_applicable'},'retry'],
+    [{...perception,transcript:'a clock',interference:'suspected'},assessment,'retry'],
+    [{...perception,transcript:'a clock',speechStatus:'unclear'},assessment,'retry'],
+    [{...perception,transcript:'a lock'},assessment,'retry'],
+    [{...perception,transcript:'a clock'},null,'service_error'],
+  ];
+  for (const [heard, audioAssessment, expectedStatus] of cases) {
+    const loadEngine = createLoader({'./geminiAdapter':{
+      runPerceptionBranch:async()=>heard,
+      runAssessmentBranch:async()=>{if (!audioAssessment) throw new Error('mock-provider-failure'); return audioAssessment;},
+    }});
+    const {evaluatePronunciationDual} = loadEngine('src/lib/pronunciation/index.ts');
+    const result = await evaluatePronunciationDual('clock-attempt','mock-recording','audio/webm',clock,'mock-key');
+    assert.equal(result.status,expectedStatus);
+    assert.equal(result.passed,expectedStatus==='pass'?true:expectedStatus==='practice'?false:null);
+    assert.equal(result.score,null);
+    assert.doesNotMatch(result.feedbackVi,/Cô nghe thấy từ/);
+    if (expectedStatus==='practice') assert.match(result.feedbackVi,/đọc nhẹ âm đầu/);
+    if (result.reason==='conflicting_evidence') assert.match(result.feedbackVi,/chưa chắc chắn/);
+  }
+});
+
 test('correct spelling never overrides an acoustic pronunciation issue', () => {
   const a = {...assessment,pronunciation:'needs_practice',issues:[{kind:'sound',targetTokenIndex:0,suggestionVi:'Con thử âm cuối nhẹ hơn nhé.'}]};
   assert.equal(decide(perception,a).status,'practice');

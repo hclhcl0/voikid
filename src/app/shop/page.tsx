@@ -1,9 +1,10 @@
 'use client';
 
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Gift, HelpCircle, RotateCcw, ShoppingBag, Sparkles, Star, Volume2 } from 'lucide-react';
+import { ArrowRight, Check, Gift, HelpCircle, RotateCcw, ShoppingBag, Sparkles, Star, Volume2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
@@ -82,7 +83,9 @@ function ShopGame() {
   }
   function lobby(){stop();setPhase('lobby');}
   return <div className={styles.page} data-motion={motionEnabled?'on':'off'}>
-    <header className={styles.header}><Link href="/" className={styles.back}><ArrowLeft size={17}/> Trang chủ</Link><span className={styles.brand}><ShoppingBag size={18}/> LITTLE MARKET</span><div className={styles.headerActions}><button className={styles.motionToggle} aria-pressed={motionEnabled} aria-label={motionEnabled?'Tắt chuyển động trong cửa hàng':'Bật chuyển động trong cửa hàng'} onClick={()=>setMotionEnabled(enabled=>!enabled)}><Sparkles size={15}/><span>Chuyển động: {motionEnabled?'Bật':'Tắt'}</span></button><span className={styles.balance}><Star size={15}/>{hydrated?progress.totalStars:0}</span></div></header>
+    <AppPageHeader title="Cửa hàng nhỏ" description="Nghe từ và cùng bé khám phá cửa hàng." inset actions={<>
+<button className={styles.motionToggle} aria-pressed={motionEnabled} aria-label={motionEnabled?'Tắt chuyển động trong cửa hàng':'Bật chuyển động trong cửa hàng'} onClick={()=>setMotionEnabled(enabled=>!enabled)}><Sparkles size={15}/><span>Chuyển động: {motionEnabled?'Bật':'Tắt'}</span></button>
+</>}/>
     <main className={styles.main}>
       {!hydrated?<p>Đang mở cửa hàng…</p>:!settings.showGames?<section className={styles.empty}><h1>Cửa hàng đang tạm nghỉ</h1><Link href="/">Về trang chủ</Link></section>:!activeProfile.id?<section className={styles.empty}><h1>Chọn hồ sơ để mở tiệm</h1><button className={styles.primary} onClick={openProfileModal}>Chọn hồ sơ</button></section>:phase==='lobby'?<>
         <div className={styles.intro}><span className={styles.eyebrow}>MỘT MÓN HÀNG · MỘT TỪ MỚI</span><h1>Cửa hàng <em>tí hon.</em></h1><p>Mở tiệm, lắng nghe và mang niềm vui đến những vị khách nhỏ.</p></div>

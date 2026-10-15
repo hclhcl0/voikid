@@ -1,29 +1,28 @@
 'use client';
-import {ArrowLeft,BookOpen,Headphones,House,Search,Speech,Volume2} from 'lucide-react';
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
+import { BookOpen, Headphones, Search, Volume2 } from 'lucide-react';
 
 // =============================================
 // VocaKids – 44 Standard IPA Phonemes Page
 // Bảng 44 Âm Phiên Âm Quốc Tế Chuẩn IPA Cho Bé
 // =============================================
 
+// =============================================
+// VocaKids – 44 Standard IPA Phonemes Page
+// Bảng 44 Âm Phiên Âm Quốc Tế Chuẩn IPA Cho Bé
+// =============================================
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+
 import { useRouter } from 'next/navigation';
-import {
-  ALL_44_IPA_SOUNDS,
-  IPA_TYPE_METAS,
-  IpaSound,
-  IpaSoundType,
-} from '@/data/ipaChart';
+import { ALL_44_IPA_SOUNDS, IPA_TYPE_METAS, IpaSound, IpaSoundType } from '@/data/ipaChart';
 import { useTTS } from '@/hooks/useTTS';
 import { IpaSoundDetailModal } from '@/components/IpaSoundDetailModal';
 import { IpaPractice } from '@/components/learning/IpaPractice';
-import { ChildBadge } from '@/components/ChildBadge';
+
 import { useProfileContext } from '@/context/ProfileContext';
 
 export default function IpaChartPage() {
-  const router = useRouter();
   const { speak } = useTTS();
   const [filterType, setFilterType] = useState<IpaSoundType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,42 +66,12 @@ export default function IpaChartPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* ── TOP HEADER ── */}
-      <header className="bg-white/90 backdrop-blur sticky top-0 z-40 border-b border-orange-100 px-4 py-3 shadow-xs">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.back()}
-              className="w-10 h-10 rounded-2xl bg-orange-50 hover:bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-lg transition-colors cursor-pointer"
-              title="Quay lại"
-            >
-              <ArrowLeft aria-hidden="true" className="h-5 w-5"/>
-            </button>
-            <Link
-              href="/"
-              className="w-10 h-10 rounded-2xl bg-orange-500 text-white flex items-center justify-center font-bold text-lg shadow-sm hover:bg-orange-600 transition-colors"
-              title="Về trang chủ"
-            >
-              <House aria-hidden="true" className="h-5 w-5"/>
-            </Link>
-          </div>
-
-          <div className="text-center flex-1 min-w-0">
-            <h1 className="text-lg sm:text-xl font-black text-gray-800 truncate">
-              <Speech aria-hidden="true" className="mr-1.5 inline h-5 w-5 text-orange-500"/>Luyện âm tiếng Anh
-            </h1>
-            <p className="text-[11px] text-gray-500 font-semibold truncate">
-              Nghe rõ · Đọc theo · Dùng trong từ và câu
-            </p>
-          </div>
-
-          <ChildBadge />
-        </div>
-      </header>
+      <AppPageHeader title="Luyện âm tiếng Anh" description="Nghe rõ, đọc theo và luyện âm trong từ, câu." inset/>
 
       {/* ── MAIN CONTENT ── */}
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        <nav aria-label="Chế độ luyện âm" className="flex gap-1 rounded-2xl border border-slate-200 bg-white p-1">
-          {([['today','Bài luyện hôm nay'],['review','Âm cần ôn'],['chart','Bảng âm']] as const).map(([id,label])=><button key={id} aria-pressed={view===id} onClick={()=>{setPracticeSound(null);setView(id);}} className={`flex-1 rounded-xl px-2 py-3 text-sm font-bold transition-colors ${view===id?'bg-orange-600 text-white':'text-slate-600 hover:bg-slate-50'}`}>{label}</button>)}
+      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <nav aria-label="Chế độ luyện âm" className="ui-tabs">
+          {([['today','Bài luyện hôm nay'],['review','Âm cần ôn'],['chart','Bảng âm']] as const).map(([id,label])=><button key={id} aria-pressed={view===id} onClick={()=>{setPracticeSound(null);setView(id);}} className={`flex-1 rounded-xl px-2 py-3 text-sm font-bold transition-colors ${view===id?'bg-violet-50 text-violet-800 ring-1 ring-violet-200':'text-slate-600 hover:bg-slate-50'}`}>{label}</button>)}
         </nav>
         {view!=='chart'&&<IpaPractice key={`${activeProfileId}:${view}:${practiceSound?.ipa??''}`} view={view} initialSound={practiceSound} onLookup={()=>{setPracticeSound(null);setView('chart');}}/>}
         {view==='chart'&&<>

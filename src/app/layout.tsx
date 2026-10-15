@@ -65,10 +65,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi" className={`${nunito.variable} ${baloo2.variable} ${lexend.variable} ${andika.variable}`}>
-      <body className="font-nunito antialiased bg-[#FFF7ED] min-h-screen">
+      <body className="font-nunito antialiased min-h-screen">
+        <a className="ui-skip-link" href="#app-content">Đến nội dung chính</a>
         <AppProviders>
-          {children}
           <BottomNavBar />
+          <div id="app-content" className="app-shell" tabIndex={-1}>{children}</div>
         </AppProviders>
       </body>
     </html>

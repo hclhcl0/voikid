@@ -3,7 +3,7 @@ import { compareContent } from './comparator';
 import { decideAttemptResult } from './decisionEngine';
 import { LessonPolicy, AttemptResult, AssessmentResult, PerceptionResult } from './types';
 
-export const ENGINE_VERSION = '3.0.0-validated-dual-branch';
+export const ENGINE_VERSION = '3.0.2-spoken-form-normalization';
 
 export async function evaluatePronunciationDual(
   attemptId: string,
@@ -89,10 +89,7 @@ function generateFeedback(
       return 'Có tiếng ồn xung quanh hoặc tiếng người khác nói. Con tìm chỗ yên tĩnh đọc lại nhé! 🤫';
     }
     if (result.reason === 'conflicting_evidence') {
-      if (perception?.transcript) {
-        return `Cô nghe thấy từ "${perception.transcript}". Con đọc lại từ "${policy.targetText}" nhé! 🎤`;
-      }
-      return 'Chưa nghe rõ từ con đọc. Con nói to và rõ hơn vào mic nhé! 🎤';
+      return 'Cô chưa chắc chắn lần đọc này. Con nghe mẫu và thử đọc lại nhé! 🎤';
     }
     if (result.reason === 'uncertain_assessment') {
       return 'Âm thanh chưa đủ rõ để chấm. Con nói to và gần mic hơn một chút nhé! 🎤';

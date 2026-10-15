@@ -4,7 +4,7 @@ import {useAudioRecorder} from '@/hooks/useAudioRecorder';
 import {normalizeReading,recordStoryAnswer} from '@/lib/stories/learning';
 import type {StorySession} from '@/lib/stories/types';
 import {StoryListeningFill} from './StoryListeningFill';
-const button='learning-button border border-slate-200 bg-white text-sm disabled:opacity-40';
+const button='ui-button ui-button-secondary text-sm disabled:opacity-40';
 type Mode='quiz'|'dictation'|'listen-fill'|'fill'|'shadowing';
 function Shadowing({session,index,play,stopAudio,save}:{session:StorySession;index:number;play:(index:number,onStarted?:()=>void)=>void;stopAudio:()=>void;save:(session:StorySession)=>void}) {
   const recorder=useAudioRecorder('sentence'); const audioRef=useRef<HTMLAudioElement>(null);
@@ -42,7 +42,7 @@ export function StoryActivities({session,save,play,stopAudio,audioAvailable}:{se
           <label className="block text-sm font-bold">{mode==='dictation'?'Câu con nghe được':'Từ còn thiếu'}<input className="mt-2 min-h-11 w-full rounded-xl border bg-white px-3" value={response} onChange={e=>setResponse(e.target.value)} maxLength={600} autoComplete="off"/></label>
         </>}
         {listening&&!audioAvailable&&<p className="text-sm text-amber-800">Thiết bị chưa có giọng tiếng Anh. Con có thể làm bài đọc hoặc điền từ.</p>}
-        <div className="flex flex-wrap gap-2"><button className="learning-button bg-orange-600 text-white disabled:opacity-40" disabled={!response.trim()||listening&&!heard} onClick={submit}>Kiểm tra</button><button className={button} onClick={()=>setRevealed(true)}>Xem gợi ý / đáp án</button></div>
+        <div className="flex flex-wrap gap-2"><button className="ui-button ui-button-primary disabled:opacity-40" disabled={!response.trim()||listening&&!heard} onClick={submit}>Kiểm tra</button><button className={button} onClick={()=>setRevealed(true)}>Xem gợi ý / đáp án</button></div>
         {revealed&&<p className="rounded-xl bg-orange-50 p-3 text-sm">{answer}{mode==='quiz'?` · ${question.explanationVi}`:''}</p>}
         <p role="status" className="text-sm font-bold text-orange-800">{result}</p>
       </>}

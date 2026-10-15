@@ -1,25 +1,10 @@
 'use client';
 
+import { AppPageHeader } from '@/components/ui/AppPageHeader';
 import Link from 'next/link';
-import Image from 'next/image';
+
 import { useState } from 'react';
-import {
-  BookOpen,
-  Sparkles,
-  Mic,
-  ShoppingBag,
-  Gift,
-  ShieldCheck,
-  Star,
-  Flame,
-  ChevronRight,
-  HelpCircle,
-  Volume2,
-  Trophy,
-  ArrowLeft,
-  CheckCircle2,
-  Phone,
-} from 'lucide-react';
+import { Sparkles, ShieldCheck, ChevronRight, HelpCircle, Trophy, CheckCircle2, Phone } from 'lucide-react';
 
 export default function GuidePage() {
   const [activeTab, setActiveTab] = useState<'student' | 'parent'>('student');
@@ -27,26 +12,7 @@ export default function GuidePage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-24">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-20">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-orange-600 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Về Trang Chủ
-          </Link>
-          <div className="flex items-center gap-2.5">
-            <div className="relative h-8 w-8 overflow-hidden rounded-xl shadow-sm border border-orange-200">
-              <Image src="/logo.png" alt="Logo" width={32} height={32} className="h-full w-full object-cover" />
-            </div>
-            <span className="font-extrabold text-lg tracking-tight text-orange-600">VocaKids</span>
-            <span className="text-xs bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded-full">
-              Cẩm nang
-            </span>
-          </div>
-        </div>
-      </header>
+      <AppPageHeader title="Hướng dẫn sử dụng" description="Những bước đơn giản để bắt đầu cùng bé." inset/>
 
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 space-y-8">
         {/* Hero Banner */}
@@ -333,7 +299,7 @@ export default function GuidePage() {
           </div>
           <Link
             href="/daily"
-            className="learning-button bg-orange-600 text-white text-sm"
+            className="ui-button ui-button-primary text-sm"
           >
             Bắt đầu học ngay 🚀
           </Link>

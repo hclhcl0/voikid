@@ -42,12 +42,23 @@ test('pronunciation options persist and older clients preserve saved options', (
   assert.throws(()=>validateContent(invalid));
 });
 test('admin sessions reject absent, forged and password-rotated tokens', () => {
-  const request=token=>({cookies:{get:()=>token?{value:token}:undefined}});
+  const request=token=>({headers:new Headers(),cookies:{get:key=>key==='vocakids_backend_session'&&token?{value:token}:undefined}});
   assert.equal(isBackendAdmin(request('')),false);
   const token=newAdminToken(); assert.equal(isBackendAdmin(request(token)),true);
   assert.equal(isBackendAdmin(request(token.slice(0,-1)+'z')),false);
   assert.equal(passwordMatches('wrong'),false); assert.equal(passwordMatches(process.env.VOCAKIDS_ADMIN_PASSWORD),true);
   const password=process.env.VOCAKIDS_ADMIN_PASSWORD; process.env.VOCAKIDS_ADMIN_PASSWORD='rotated'; assert.equal(isBackendAdmin(request(token)),false); process.env.VOCAKIDS_ADMIN_PASSWORD=password;
+});
+
+test('parent AI settings persist and older clients cannot erase the configured limit', () => {
+  const data=readContent();
+  data.settings.parentAi={enabled:true,dailyLimit:3};
+  const saved=writeContent(data);
+  assert.deepEqual(readContent().settings.parentAi,{enabled:true,dailyLimit:3});
+  const legacy=structuredClone(saved);delete legacy.settings.parentAi;
+  writeContent(legacy);
+  assert.deepEqual(readContent().settings.parentAi,{enabled:true,dailyLimit:3});
+  for(const parentAi of [null,{enabled:true,dailyLimit:-1},{enabled:true,dailyLimit:2.5}]) assert.throws(()=>validateContent({...readContent(),settings:{...readContent().settings,parentAi}}));
 });
 
 test('unconfigured admin is reported separately from a wrong password', async () => {
@@ -69,7 +80,10 @@ test('unconfigured admin is reported separately from a wrong password', async ()
     assert.ok(cookie?.value);
     assert.equal(cookie.path, '/api/admin');
     assert.equal(cookie.httpOnly, true);
-    assert.deepEqual(await valid.json(), { authenticated: true });
+    const result=await valid.json();
+    assert.equal(result.authenticated,true);
+    assert.equal(result.success,true);
+    assert.equal(result.account.role,'admin');
   } finally { process.env.VOCAKIDS_ADMIN_PASSWORD = password; }
 });
 test('rejects cross-origin writes', () => {

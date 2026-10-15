@@ -11,6 +11,7 @@ import { generateStory } from '@/lib/stories/generate';
 import { readStory, saveStory } from '@/lib/stories/store';
 import type { StoryLesson, ReadingEvidence } from '@/lib/stories/types';
 import {validateStoryOutput} from '@/lib/stories/validation';
+import {reserveParentAi,finishParentAi,ParentAiQuotaError} from '@/lib/backend/parentAiQuota';
 export const runtime='nodejs';
 const pending=new Map<string,Promise<StoryLesson>>();
 const limits=new Map<string,{count:number;until:number}>();
@@ -55,13 +56,18 @@ export async function POST(req:NextRequest) {
       const id=account?.id||req.headers.get('x-forwarded-for')||'local';
       const limit=limits.get(id)||{count:0,until:now+60000};limits.set(id,limit);
       if(++limit.count>6||pending.size>=30) return NextResponse.json({message:'Đang tạo nhiều bài đọc. Hãy thử lại sau một phút.'},{status:429});
-      const promise=generateStory(source,band,unit.vocabulary.slice(0,24).map(v=>({en:v.text,vi:v.senses[0].meaningVi})),model,timeout,typeof body.apiKey==='string'&&body.apiKey.length<=300?body.apiKey.trim():undefined).then(result=>{
-        const story:StoryLesson={...result,id:`story_${hash}`,unitId:unit.id,grade:unit.grade,topic:source.topic,band,variant:body.variant,patterns:source.patterns,sourceVersion:STORY_SOURCE_VERSION,generatedAt:new Date().toISOString()};
-        saveStory(hash,story);return story;
-      }).finally(()=>pending.delete(hash));pending.set(hash,promise);
+      const promise=(async()=>{
+        const reservation=await reserveParentAi(account.id,account.role,content.settings.parentAi);
+        try {
+          const result=await generateStory(source,band,unit.vocabulary.slice(0,24).map(v=>({en:v.text,vi:v.senses[0].meaningVi})),model,timeout,typeof body.apiKey==='string'&&body.apiKey.length<=300?body.apiKey.trim():undefined);
+          const story:StoryLesson={...result,id:`story_${hash}`,unitId:unit.id,grade:unit.grade,topic:source.topic,band,variant:body.variant,patterns:source.patterns,sourceVersion:STORY_SOURCE_VERSION,generatedAt:new Date().toISOString()};
+          saveStory(hash,story);await finishParentAi(reservation,true);return story;
+        } catch(error) {await finishParentAi(reservation,false);throw error;}
+      })().finally(()=>pending.delete(hash));pending.set(hash,promise);
     }
     return NextResponse.json(await pending.get(hash),{headers:{'Cache-Control':'no-store'}});
   } catch(error) {
+    if(error instanceof ParentAiQuotaError) return NextResponse.json({code:'PARENT_AI_DAILY_LIMIT',message:error.message,limit:error.limit,resetsAt:error.resetsAt},{status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil((Date.parse(error.resetsAt)-Date.now())/1000)))}});
     if(error instanceof SyntaxError) return NextResponse.json({message:'Yêu cầu không hợp lệ.'},{status:400});
     return NextResponse.json({message:error instanceof Error&&error.message==='NO_API_KEY'?'Chưa có API key. Phụ huynh cấu hình key trong admin để tạo bài đọc.':'Chưa tạo được đoạn văn phù hợp. Kiểm tra key/model hoặc thử lại.'},{status:503});
   }

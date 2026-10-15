@@ -1,5 +1,6 @@
 'use client';
 
+import {AppPageHeader} from '@/components/ui/AppPageHeader';
 import { useBackendSession } from '@/hooks/useBackendSession';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -568,24 +569,8 @@ export default function ImportPage() {
     <div className="min-h-screen bg-slate-50">
 
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-slate-200 px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <button onClick={() => router.back()}
-              className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-orange-700 hover:bg-violet-100 transition-colors cursor-pointer"
-              title="Quay lại"
-            >←</button>
-            <Link href="/"
-              className="w-10 h-10 rounded-xl bg-orange-100/80 text-orange-600 hover:bg-orange-200/80 flex items-center justify-center font-bold text-base transition-colors shadow-xs cursor-pointer"
-              title="Về trang chủ"
-            >🏠</Link>
-          </div>
-          <div className="flex-1 min-w-0 px-2">
-            <h1 className="font-bold text-lg md:text-xl text-gray-800 leading-tight">📥 Thêm từ vựng</h1>
-            <p className="text-xs text-slate-500 font-semibold truncate">Tự động phân loại theo chủ đề bằng AI</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <button
+      <AppPageHeader title="Thêm từ vựng" description="Nhập học liệu và phân loại theo chủ đề." inset actions={<>
+<button
               onClick={logoutAdmin}
               title="Khóa quyền Admin"
               className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
@@ -593,20 +578,7 @@ export default function ImportPage() {
               <span>🔒</span>
               <span className="hidden sm:inline">Khóa</span>
             </button>
-            <div className="flex gap-1.5 items-center">
-              {(['input', 'preview', 'save', 'done'] as Step[]).map((s, i) => {
-                const order: Step[] = ['input', 'preview', 'save', 'done'];
-                const cur = order.indexOf(step);
-                return (
-                  <div key={s} className={`rounded-full transition-all duration-300 ${
-                    step === s ? 'w-5 h-2 bg-violet-500' : i < cur ? 'w-2 h-2 bg-violet-300' : 'w-2 h-2 bg-gray-200'
-                  }`} />
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </header>
+</>}/>
 
       <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
         <AnimatePresence mode="wait">

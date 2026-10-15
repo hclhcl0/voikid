@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { load } = require('./ts-loader.cjs');
 
-const { selectDailyWords, getTodayDateString } = load('src/lib/dailyWords.ts');
+const { selectDailyWords } = load('src/lib/dailyWords.ts');
 const { validateContent, defaultSettings } = load('src/lib/backend/types.ts');
 
 const mockCategories = [
@@ -121,22 +121,37 @@ test('prioritizes unstudied words over already mastered words', () => {
 
 test('tracks isLearned and isSpoken states correctly', () => {
   const wordProgress = {
-    'cat_animals:w_cat': { wordId: 'w_cat', catId: 'cat_animals', stars: 1, attempts: 1, bestScore: 90 },
+    'cat_animals:w_cat': { wordId: 'w_cat', catId: 'cat_animals', stars: 3, attempts: 1, bestScore: 0, lastPronunciationAttemptId:'ai-test-attempt',consecutivePasses:1 },
   };
 
   const words = selectDailyWords({
     categories: mockCategories.slice(0, 1),
     gradeId: 'lop1',
-    count: 1,
+    count: 4,
     wordProgress,
   });
 
   const catWord = words.find(w => w.word.id === 'w_cat');
+  assert.ok(catWord);
   if (catWord) {
     assert.equal(catWord.isLearned, true);
     assert.equal(catWord.isSpoken, true);
     assert.equal(catWord.isCompleted, true);
   }
+});
+
+test('remembering a daily word never creates pronunciation evidence or free stars',()=>{
+  const {markDailyWordLearned,dailyWordStatus}=load('src/lib/dailyWordProgress.ts');
+  const progress={totalStars:7,wordProgress:{},dailyStats:[],stickers:[]};
+  const next=markDailyWordLearned(progress,'cat_animals','w_cat','2026-10-15T01:00:00Z');
+  const word=next.wordProgress['cat_animals:w_cat'];
+  assert.equal(next.totalStars,7);assert.equal(word.attempts,0);assert.equal(word.stars,0);
+  assert.equal(word.lastPronunciationAttemptId,undefined);
+  assert.deepEqual(dailyWordStatus(word),{isLearned:true,isSpoken:false,isCompleted:false});
+  assert.equal(markDailyWordLearned(next,'cat_animals','w_cat'),next);
+  assert.deepEqual(dailyWordStatus({...word,lastPronunciationAttemptId:'pass-1',consecutivePasses:1,stars:3}),{isLearned:true,isSpoken:true,isCompleted:true});
+  assert.equal(dailyWordStatus({...word,lastPronunciationAttemptId:'practice-1',consecutivePasses:0}).isCompleted,false);
+  assert.equal(dailyWordStatus({...word,attempts:1,bestScore:100}).isSpoken,false);
 });
 
 test('validates dailyNewWordsCount setting in SiteSettings', () => {

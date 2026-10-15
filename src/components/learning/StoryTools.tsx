@@ -7,7 +7,7 @@ import {useCustomCategories} from '@/hooks/useCustomCategories';
 import {manualStory,splitPassage} from '@/lib/stories/library';
 import type {StoryLesson,StorySession,StorySource} from '@/lib/stories/types';
 import {useStoryAccess} from '@/hooks/useStoryAccess';
-const button='learning-button border border-slate-200 bg-white text-sm disabled:opacity-40';
+const button='ui-button ui-button-secondary text-sm disabled:opacity-40';
 const field='mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-normal';
 type Props={session:StorySession|null;sessions:StorySession[];unitId:string;source:StorySource;terms:StoryLesson['vocabulary'];onImported:(terms:StoryLesson['vocabulary'])=>void;onOpen:(session:StorySession)=>void;onDelete:(id:string)=>void;onSave:()=>void;onCreate:(lesson:StoryLesson)=>void};
 
@@ -56,13 +56,13 @@ export function StoryTools({session,sessions,unitId,source,terms,onImported,onOp
       {text.trim()&&<details className="rounded-xl bg-slate-50 p-3 text-sm"><summary className="cursor-pointer font-bold">Xem thứ tự các câu để nhập bản dịch</summary><ol className="mt-2 list-decimal space-y-2 pl-5">{splitPassage(text).map((sentence,index)=><li key={index}>{sentence}</li>)}</ol></details>}
       <label className="block text-sm font-bold">Bản dịch tiếng Việt (không bắt buộc)<textarea className={field} rows={3} maxLength={12000} value={translation} onChange={e=>setTranslation(e.target.value)} placeholder="Mỗi dòng dịch ứng với một câu tiếng Anh, theo đúng thứ tự."/></label>
       <label className="block text-sm font-bold">Từ vựng trong đoạn (không bắt buộc)<textarea className={field} rows={3} maxLength={8000} value={vocabulary} onChange={e=>setVocabulary(e.target.value)} placeholder={'friend | người bạn\nhappy | vui vẻ'}/></label>
-      <button className="learning-button bg-orange-600 text-white" type="submit">Lưu & mở đoạn văn</button>
+      <button className="ui-button ui-button-primary" type="submit">Lưu & mở đoạn văn</button>
     </form>}
     {panel==='words'&&session&&<div className="space-y-3">
       <h2 className="font-bold">Chọn từ để thêm · Lớp {session.lesson.grade} · {session.lesson.topic}</h2>
       <p className="text-sm text-slate-500">Lưu nghĩa, phiên âm và câu ví dụ của bài đọc. Bỏ qua từ đã có trong cùng chủ đề.</p>
       <div className="grid gap-2 sm:grid-cols-2">{terms.map(term=><label key={term.id} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3 text-sm"><input type="checkbox" checked={selected.includes(term.id)} onChange={e=>setSelected(e.target.checked?[...selected,term.id]:selected.filter(id=>id!==term.id))}/><span><strong>{term.en}</strong> · {term.vi}</span></label>)}</div>
-      <button className="learning-button bg-orange-600 text-white disabled:opacity-40" disabled={busy||!selectedIds.length} onClick={()=>void addWords()}>{busy?'Đang lưu từ…':`Thêm ${selectedIds.length} từ đã chọn`}</button>
+      <button className="ui-button ui-button-primary disabled:opacity-40" disabled={busy||!selectedIds.length} onClick={()=>void addWords()}>{busy?'Đang lưu từ…':`Thêm ${selectedIds.length} từ đã chọn`}</button>
       {wordCategory&&<Link className={`${button} ml-2 inline-flex`} href={`/learn/${wordCategory}`}>Luyện từ trong kho →</Link>}
     </div>}
     {message&&<p role="status" className="rounded-xl bg-orange-50 p-3 text-sm text-orange-900">{message}</p>}

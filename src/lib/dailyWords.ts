@@ -1,6 +1,7 @@
 import type { Category, Word, WordProgress } from '@/types';
 import { shopThemes } from '@/lib/shop';
 import type { DailyWordSource } from '@/lib/backend/types';
+import {dailyWordStatus} from '@/lib/dailyWordProgress';
 
 export interface DailyWordItem {
   word: Word;
@@ -129,9 +130,7 @@ export function selectDailyWords(params: {
   return selectedEntries.map(entry => {
     const key = `${entry.category.id}:${entry.word.id}`;
     const p = wordProgress[key];
-    const isLearned = (p?.stars ?? 0) > 0;
-    const isSpoken = (p?.attempts ?? 0) > 0 || !!p?.lastPronunciationAttemptId || (p?.bestScore ?? 0) > 0;
-    const isCompleted = isLearned && isSpoken;
+    const {isLearned,isSpoken,isCompleted}=dailyWordStatus(p);
 
     return {
       word: entry.word,

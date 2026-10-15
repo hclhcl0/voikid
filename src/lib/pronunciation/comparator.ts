@@ -1,16 +1,17 @@
 import { LessonPolicy, ContentComparison } from './types';
+import { expandCardinalDigits, normalizeCardinalConjunctions } from './numberText';
+import { normalizeSoundAlikes } from './soundAlikes';
 
-function cleanAndNormalize(text: string): string[] {
+function cleanAndNormalize(text: string, locale: string): string[] {
   if (!text) return [];
   // Chuẩn hóa Unicode, lowercase, bỏ tất cả dấu câu, ngoặc kép, nháy đơn/kép, gạch nối, ký tự đặc biệt
-  const normalized = text
-    .normalize('NFC')
+  const normalized = expandCardinalDigits(text.normalize('NFC'))
     .toLowerCase()
-    .replace(/[.,!?;:()[\]{}"'’“”\-—_/~#@$%^&*+=\\]/g, ' ')
+    .replace(/[.,!?;:()[\]{}"'’“”\-‐‑‒–—_/~#@$%^&*+=\\]/g, ' ')
     .trim();
   
   if (!normalized) return [];
-  return normalized.split(/\s+/).filter(Boolean);
+  return normalizeSoundAlikes(normalizeCardinalConjunctions(normalized.split(/\s+/).filter(Boolean)), locale);
 }
 
 export function compareContent(
@@ -19,7 +20,7 @@ export function compareContent(
 ): ContentComparison {
   if (!transcript) return 'other';
 
-  const tTokens = cleanAndNormalize(transcript);
+  const tTokens = cleanAndNormalize(transcript, policy.locale);
   if (tTokens.length === 0) return 'other';
 
   const tStr = tTokens.join(' ');
@@ -28,7 +29,7 @@ export function compareContent(
   const allAllowed = [
     ...policy.acceptedResponses,
     ...policy.acceptedTranscriptAliases,
-  ].map(ans => cleanAndNormalize(ans).join(' ')).filter(Boolean);
+  ].map(ans => cleanAndNormalize(ans, policy.locale).join(' ')).filter(Boolean);
 
   if (allAllowed.includes(tStr)) {
     return 'allowed_match';

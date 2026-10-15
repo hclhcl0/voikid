@@ -1,5 +1,6 @@
 'use client';
 
+import {AppPageHeader} from '@/components/ui/AppPageHeader';
 import { useBackendSession } from '@/hooks/useBackendSession';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useMemo, useRef } from 'react';
@@ -316,34 +317,8 @@ export default function ManageVocabularyPage() {
       />
 
       {/* ── HEADER ── */}
-      <header className="bg-white/90 backdrop-blur sticky top-0 z-40 border-b border-slate-200 px-4 py-3 shadow-2xs">
-        <div className="max-w-6xl mx-auto flex items-center justify-between w-full">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => router.back()}
-                className="w-10 h-10 rounded-2xl bg-orange-100/70 hover:bg-orange-200/70 flex items-center justify-center font-bold text-orange-700 transition-colors cursor-pointer"
-                title="Quay lại"
-              >
-                ←
-              </button>
-              <Link
-                href="/"
-                className="w-10 h-10 rounded-2xl bg-orange-100/70 hover:bg-orange-200/70 flex items-center justify-center font-bold text-orange-700 transition-colors shadow-xs cursor-pointer"
-                title="Về trang chủ"
-              >
-                🏠
-              </Link>
-            </div>
-            <div>
-              <h1 className="font-bold text-lg md:text-xl text-gray-800 leading-tight">📚 Quản lý từ vựng</h1>
-              <p className="text-xs text-gray-500 font-semibold truncate">Chỉnh sửa, xóa &amp; sao lưu từ tự thêm</p>
-            </div>
-          </div>
-
-          {/* Action icons */}
-          <div className="flex items-center gap-2">
-            <button
+      <AppPageHeader title="Kho từ vựng" description="Thêm, chỉnh sửa và sắp xếp từ vựng của gia đình." inset actions={<>
+<button
               onClick={logoutAdmin}
               title="Khóa quyền Admin"
               className="px-3 py-2 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
@@ -351,7 +326,7 @@ export default function ManageVocabularyPage() {
               <span>🔒</span>
               <span className="hidden sm:inline">Khóa</span>
             </button>
-            <button
+<button
               onClick={handleExport}
               title="Xuất file JSON sao lưu"
               className="px-3 py-2 rounded-xl bg-orange-100/70 hover:bg-orange-200/80 text-orange-800 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
@@ -359,7 +334,7 @@ export default function ManageVocabularyPage() {
               <span>📤</span>
               <span className="hidden sm:inline">Xuất JSON</span>
             </button>
-            <button
+<button
               onClick={() => fileInputRef.current?.click()}
               title="Nhập file JSON sao lưu"
               className="px-3 py-2 rounded-xl bg-violet-100/80 hover:bg-violet-200 text-orange-700 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
@@ -367,9 +342,7 @@ export default function ManageVocabularyPage() {
               <span>📥</span>
               <span className="hidden sm:inline">Nhập JSON</span>
             </button>
-          </div>
-        </div>
-      </header>
+</>}/>
 
       {/* ── TOAST NOTIFICATION ── */}
       <AnimatePresence>

@@ -12,6 +12,8 @@ import { useBackendSession } from '@/hooks/useBackendSession';
 import { applyLearningSession } from '@/lib/learning/progress';
 import { applyStickerRewards, isDueIpaReview } from '@/lib/stickers';
 import { profileScope, profileStorageKeys, profilesForScope, selectProfile } from '@/lib/profileScope';
+import { pronunciationStarGain } from '@/lib/pronunciation/rewards';
+import {markDailyWordLearned as applyDailyWordLearned} from '@/lib/dailyWordProgress';
 
 export const PROFILES_STORAGE_KEY = 'vocakids_profiles_v1';
 export const ACTIVE_PROFILE_STORAGE_KEY = 'vocakids_active_profile_id';
@@ -134,6 +136,7 @@ interface ProfileContextType {
   // Active profile progress (directly backward-compatible with useProgress)
   progress: AppProgress;
   hydrated: boolean;
+  markDailyWordLearned:(catId:string,wordId:string)=>void;
   recordAttempt: (
     catId: string,
     wordId: string,
@@ -560,6 +563,17 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Record a word attempt with Consecutive Pass & Spaced Repetition logic
+  const markDailyWordLearned=useCallback((catId:string,wordId:string)=>{
+    if(!hydrated||!activeProfileId)return;
+    setProgress(prev=>{
+      const next=applyDailyWordLearned(prev,catId,wordId);
+      if(next===prev)return prev;
+      try{localStorage.setItem(getProfileProgressKey(activeProfileId),JSON.stringify(next));}catch{}
+      syncToServer(activeProfileId,next,activeProfile);
+      return next;
+    });
+  },[hydrated,activeProfileId,activeProfile,syncToServer]);
+
   const recordAttempt = useCallback(
     (catId: string, wordId: string, score: number | null, status: 'pass' | 'practice' | 'retry' | 'service_error', attemptId?: string) => {
       if (!hydrated || !activeProfileId) return;
@@ -610,8 +624,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         }
 
         const updated: WordProgress = {
-          lastPronunciationAttemptId: attemptId,
           ...existing,
+          lastPronunciationAttemptId: attemptId,
           stars:          Math.max(existing.stars, stars),
           attempts:       existing.attempts + 1,
           bestScore:      Math.max(existing.bestScore, scoreNum),
@@ -638,7 +652,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
         const next: AppProgress = applyStickerRewards(updateStreak({
           ...prev,
-          totalStars:   prev.totalStars + (stars - existing.stars),
+          totalStars:   prev.totalStars + pronunciationStarGain(existing.stars, stars),
           wordProgress: { ...prev.wordProgress, [key]: updated },
           dailyStats,
         }),activeProfileId,undefined,false,activeProfile.gradeId);
@@ -827,7 +841,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       closeProfileModal,
       progress: hydrated ? progress : defaultProgress(),
       hydrated,
-      recordAttempt,
+      recordAttempt,markDailyWordLearned,
       getWordProgress,
       findWordProgress,
       demoteWord,
@@ -860,7 +874,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       closeProfileModal,
       progress,
       hydrated,
-      recordAttempt,
+      recordAttempt,markDailyWordLearned,
       getWordProgress,
       findWordProgress,
       demoteWord,
@@ -902,6 +916,7 @@ export function useProfileContext() {
       progress: defaultProgress(),
       hydrated: false,
       recordAttempt: () => {},
+      markDailyWordLearned:()=>{},
       getWordProgress: () => null,
       findWordProgress: () => null,
       demoteWord: () => {},
