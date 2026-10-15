@@ -54,11 +54,7 @@ export async function POST(req: NextRequest) {
       const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
       const password = typeof body.password === 'string' ? body.password : '';
 
-      const isSystemAdmin = body.action === 'login' && (
-        passwordMatches(password) ||
-        ((email === 'admin' || email === 'admin@vocakids.com' || email === 'admin@vocakids.local') &&
-         (password === 'admin123' || password === '123456' || password === 'admin' || passwordMatches(password)))
-      );
+      const isSystemAdmin = body.action === 'login' && passwordMatches(password);
 
       if (isSystemAdmin) {
         account = { id: 'backend_admin', email: email.includes('@') ? email : 'admin@vocakids.com', displayName: 'Quản trị viên (Admin)', passwordHash: '', role: 'admin' as const };

@@ -7,7 +7,7 @@ import { GRADE_METAS, GRADE_LEVELS } from '@/lib/vocabulary';
 import { triggerHaptic } from '@/lib/haptics';
 import { useProgress } from '@/hooks/useProgress';
 import { useCustomCategories, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
-import { useAdminContext } from '@/context/AdminContext';
+import {canManageFamily} from '@/lib/access';
 import { useAuth } from '@/context/AuthContext';
 import { useBackendSession } from '@/hooks/useBackendSession';
 import { ChildBadge } from '@/components/ChildBadge';
@@ -24,7 +24,6 @@ export default function HomePage() {
   const { categories: serverCategories, settings } = useVocabularyCatalog();
   const { progress, hydrated, activeProfile, getDueReviewWords } = useProgress();
   const { categories: customCats, hydrated: customHydrated } = useCustomCategories();
-  const { isAdmin, logoutAdmin } = useAdminContext();
   const { isAuthenticated, isLoading: authLoading, openAuthModal, account } = useAuth();
   const adminSession = useBackendSession();
   const [query, setQuery] = useState('');
@@ -94,14 +93,6 @@ export default function HomePage() {
             )}
           </div>
 
-          {isAdmin && (
-            <button
-              onClick={logoutAdmin}
-              className="min-h-11 px-2.5 inline-flex items-center rounded-xl text-xs font-bold text-orange-700 hover:bg-orange-50 whitespace-nowrap transition-colors"
-            >
-              Khóa quản trị
-            </button>
-          )}
 
           {/* Guide link */}
           <Link
@@ -399,7 +390,7 @@ export default function HomePage() {
               </nav>
             )}
 
-            {isAdmin && (
+            {canManageFamily(account?.role,adminSession.authenticated) && (
               <div className="pt-2">
                 <Link
                   href={`/import?targetGrade=${selectedGrade}`}

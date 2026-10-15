@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 export const AUTH_COOKIE_NAME = 'vocakids_auth_token';
+export const ADMIN_SESSION_COOKIE_NAME = 'vocakids_backend_session';
 export const JWT_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 export const BCRYPT_SALT_ROUNDS = 12;
 
@@ -68,6 +69,13 @@ export function setAuthCookie(res: NextResponse, token: string): void {
     maxAge: JWT_EXPIRY_SECONDS,
     path: '/',
   });
+  if(verifyJWT(token)?.role!=='admin')clearAdminSessionCookies(res);
+}
+
+export function clearAdminSessionCookies(res:NextResponse):void {
+  // ResponseCookies indexes by name, so two set() calls would lose the first path.
+  // Append after other cookie setters to expire both legacy paths in the browser.
+  for(const cookiePath of ['/','/api/admin'])res.headers.append('Set-Cookie',`${ADMIN_SESSION_COOKIE_NAME}=; Path=${cookiePath}; Max-Age=0; HttpOnly; SameSite=Lax${process.env.NODE_ENV==='production'?'; Secure':''}`);
 }
 
 export function clearAuthCookie(res: NextResponse): void {

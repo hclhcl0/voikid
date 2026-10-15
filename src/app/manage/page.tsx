@@ -8,14 +8,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomCategories, CustomCategory, NEW_WORDS_CAT_ID } from '@/hooks/useCustomCategories';
-import { useAdminContext } from '@/context/AdminContext';
+import {canManageFamily} from '@/lib/access';
 import { Word } from '@/types';
 import { WordImage } from '@/components/WordImage';
 
 const EMOJIS_PRESET = ['📚','🎓','✏️','🌍','🏫','🎯','🌟','📖','🧠','🏆','🎪','🌈','🦁','🌺','🚀','🎵','🐶','🐱','🍎','🍌'];
 
 export default function ManageVocabularyPage() {
-  const { account } = useAuth();
+  const { account,isLoading:authLoading,openAuthModal } = useAuth();
   const adminSession = useBackendSession();
   const router = useRouter();
   const {
@@ -258,10 +258,9 @@ export default function ManageVocabularyPage() {
     showToast(`Đã thêm từ "${wordToAdd.en}" vào chủ đề và tự động cập nhật vào mục Từ Mới! 👏`);
   };
 
-  const { isAdmin, openAdminModal, logoutAdmin } = useAdminContext();
 
   if (syncError) return <main className="p-8"><p role="alert">{syncError}</p><button className="learning-button border" onClick={() => window.location.reload()}>Tải lại kho từ</button></main>;
-  if (!hydrated) {
+  if (!hydrated||authLoading||adminSession.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-4xl animate-bounce-slow">🦉</div>
@@ -270,7 +269,7 @@ export default function ManageVocabularyPage() {
   }
 
   if (account?.role === 'student') return <main className="p-8">Phần này dành cho phụ huynh. <Link href="/">Về học bài</Link></main>;
-  if (!isAdmin && account?.role !== 'parent' && !adminSession.authenticated) {
+  if (!canManageFamily(account?.role,adminSession.authenticated)) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <motion.div
@@ -288,10 +287,10 @@ export default function ManageVocabularyPage() {
             </p>
           </div>
           <button
-            onClick={() => openAdminModal()}
+            onClick={() => openAuthModal('login')}
             className="w-full py-3.5 rounded-2xl bg-orange-600 hover:bg-orange-700 hover:bg-orange-700 text-white font-bold text-sm shadow-sm transition-all cursor-pointer"
           >
-            🔑 Mở Khóa Quyền Admin
+            Đăng nhập phụ huynh
           </button>
           <button
             onClick={() => router.push('/')}
@@ -318,14 +317,6 @@ export default function ManageVocabularyPage() {
 
       {/* ── HEADER ── */}
       <AppPageHeader title="Kho từ vựng" description="Thêm, chỉnh sửa và sắp xếp từ vựng của gia đình." inset actions={<>
-<button
-              onClick={logoutAdmin}
-              title="Khóa quyền Admin"
-              className="px-3 py-2 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
-            >
-              <span>🔒</span>
-              <span className="hidden sm:inline">Khóa</span>
-            </button>
 <button
               onClick={handleExport}
               title="Xuất file JSON sao lưu"

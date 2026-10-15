@@ -156,6 +156,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setCloudProfiles([data.firstProfile]);
         }
         setIsAuthModalOpen(false);
+        try { sessionStorage.removeItem('vocakids_admin_session_v1'); } catch {}
+        window.dispatchEvent(new Event('vocakids:admin-session-changed'));
       }
 
       return data;
@@ -187,8 +189,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (data.account.role === 'admin') {
           try { sessionStorage.setItem('vocakids_admin_session_v1', 'true'); } catch {}
-          window.dispatchEvent(new Event('vocakids:admin-session-changed'));
+        } else {
+          try { sessionStorage.removeItem('vocakids_admin_session_v1'); } catch {}
         }
+        window.dispatchEvent(new Event('vocakids:admin-session-changed'));
       }
 
       return data;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_COOKIE, adminPassword, isBackendAdmin, newAdminToken, passwordMatches, sameOrigin } from '@/lib/backend/auth';
-import { signJWT, setAuthCookie, clearAuthCookie } from '@/lib/auth';
+import { signJWT, setAuthCookie, clearAuthCookie,clearAdminSessionCookies } from '@/lib/auth';
 export const runtime = 'nodejs';
 const attempts = new Map<string, { count: number; until: number }>();
 export function GET(req: NextRequest) { return NextResponse.json({ authenticated: isBackendAdmin(req), configured: !!adminPassword() }, { headers: { 'Cache-Control': 'no-store' } }); }
@@ -29,9 +29,8 @@ export async function POST(req: NextRequest) {
 export function DELETE(req: NextRequest) {
   if (!sameOrigin(req)) return NextResponse.json({ message: 'Nguồn yêu cầu không hợp lệ.' }, { status: 403 });
   const response = NextResponse.json({ authenticated: false, success: true });
-  response.cookies.set(ADMIN_COOKIE, '', { path: '/', maxAge: 0 });
-  response.cookies.set(ADMIN_COOKIE, '', { path: '/api/admin', maxAge: 0 });
   clearAuthCookie(response);
+  clearAdminSessionCookies(response);
   return response;
 }
 

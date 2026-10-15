@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
+import {useAuth} from '@/context/AuthContext';
 
 export function useBackendSession() {
+  const {account}=useAuth();
   const [session, setSession] = useState({ authenticated: false, loading: true });
   useEffect(() => {
     const controller = new AbortController();
@@ -19,5 +21,5 @@ export function useBackendSession() {
     window.addEventListener('vocakids:admin-session-changed', refresh);
     return () => { controller.abort(); window.removeEventListener('focus', refresh); window.removeEventListener('vocakids:admin-session-changed', refresh); };
   }, []);
-  return session;
+  return {...session,authenticated:session.authenticated&&(!account||account.role==='admin')};
 }

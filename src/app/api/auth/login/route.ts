@@ -56,10 +56,7 @@ export async function POST(req: NextRequest) {
     const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
     // --- Admin Check ---
-    const isSystemAdmin =
-      passwordMatches(password) ||
-      ((cleanEmail === 'admin' || cleanEmail === 'admin@vocakids.com' || cleanEmail === 'admin@vocakids.local' || cleanEmail === 'admin@vocakids.vn') &&
-       (password === 'admin123' || password === '123456' || password === 'admin' || passwordMatches(password)));
+    const isSystemAdmin = passwordMatches(password);
 
     if (isSystemAdmin) {
       const adminEmail = cleanEmail.includes('@') ? cleanEmail : 'admin@vocakids.com';

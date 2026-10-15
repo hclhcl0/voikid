@@ -9,6 +9,7 @@ import { UserProfile } from '@/types';
 import { useAdminContext } from '@/context/AdminContext';
 import { useAuth } from '@/context/AuthContext';
 import { useBackendSession } from '@/hooks/useBackendSession';
+import {canManageFamily} from '@/lib/access';
 
 export function ProfileModal() {
   const {
@@ -17,6 +18,7 @@ export function ProfileModal() {
     openAuthModal,
   } = useAuth();
   const adminSession = useBackendSession();
+  const familyManager=canManageFamily(account?.role,adminSession.authenticated);
 
   const {
     profiles,
@@ -50,6 +52,7 @@ export function ProfileModal() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const handleOpenCreate = () => {
+    if(account?.role==='student')return;
     setName('');
     const usedAvatars = new Set(profiles.map((p) => p.avatar));
     const nextAv = AVATAR_LIST.find((a) => !usedAvatars.has(a.emoji)) || AVATAR_LIST[0];
@@ -63,6 +66,7 @@ export function ProfileModal() {
 
   const handleOpenEdit = (profile: UserProfile, e: React.MouseEvent) => {
     e.stopPropagation();
+    if(account?.role==='student')return;
     setEditingProfileId(profile.id);
     setName(profile.name);
     setAvatar(profile.avatar);
@@ -74,6 +78,7 @@ export function ProfileModal() {
   };
 
   const handleSave = async () => {
+    if(account?.role==='student')return;
     const cleanName = name.trim();
     if (!cleanName) {
       setError('Vui lòng nhập tên của bé!');
@@ -140,6 +145,7 @@ export function ProfileModal() {
 
   const handleDelete = (profile: UserProfile, e: React.MouseEvent) => {
     e.stopPropagation();
+    if(account?.role==='student')return;
     if (profiles.length <= 1) {
       alert('Cần giữ lại ít nhất 1 tài khoản bé!');
       return;
@@ -151,7 +157,7 @@ export function ProfileModal() {
       }
     };
 
-    if (!isAdmin) {
+    if (!familyManager&&!isAdmin) {
       openAdminModal(doDelete);
     } else {
       doDelete();
@@ -160,6 +166,7 @@ export function ProfileModal() {
 
   const handleResetProgress = (profile: UserProfile, e: React.MouseEvent) => {
     e.stopPropagation();
+    if(account?.role==='student')return;
     const doReset = () => {
       if (confirm(`Đặt lại toàn bộ số sao và tiến trình học của "${profile.name}" về 0?`)) {
         resetProfileProgress(profile.id);
@@ -167,7 +174,7 @@ export function ProfileModal() {
       }
     };
 
-    if (!isAdmin) {
+    if (!familyManager&&!isAdmin) {
       openAdminModal(doReset);
     } else {
       doReset();
@@ -334,7 +341,7 @@ export function ProfileModal() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-1 shrink-0">
+                        {account?.role!=='student'&&<div className="flex items-center gap-1 shrink-0">
                           <button
                             onClick={(e) => handleOpenEdit(p, e)}
                             className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-bold transition-colors"
@@ -351,19 +358,19 @@ export function ProfileModal() {
                               🗑️
                             </button>
                           )}
-                        </div>
+                        </div>}
                       </motion.div>
                     );
                   })}
                 </div>
 
                 {/* Add child button */}
-                <button
+                {account?.role!=='student'&&<button
                   onClick={handleOpenCreate}
                   className="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-orange-300 bg-orange-50/60 hover:bg-orange-100/70 text-orange-600 font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                 >
                   <span className="text-lg">+</span> Thêm tài khoản bé mới
-                </button>
+                </button>}
               </div>
             ) : mode === 'code_login' ? (
               /* Code / Name Login Form */

@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSettings } from '@/hooks/useSettings';
 import { useCustomCategories, CustomCategory } from '@/hooks/useCustomCategories';
-import { useAdminContext } from '@/context/AdminContext';
+import {canManageFamily} from '@/lib/access';
 import { Word } from '@/types';
 import { WordImage } from '@/components/WordImage';
 import { checkWordInDatabase, WordMatchInfo } from '@/lib/vocabularyChecker';
@@ -358,7 +358,7 @@ function ManualEntryPanel({ onDone }: { onDone: (words: Word[]) => void }) {
 
 // ── Main Import Page ──────────────────────────────────────────────────────────
 export default function ImportPage() {
-  const { account } = useAuth();
+  const { account,isLoading:authLoading,openAuthModal } = useAuth();
   const adminSession = useBackendSession();
   const router = useRouter();
   const { apiKey } = useSettings();
@@ -513,7 +513,6 @@ export default function ImportPage() {
     setSaveMode('auto'); setTargetCatId(''); setSelectedFilterTopic('all');
   };
 
-  const { isAdmin, openAdminModal, logoutAdmin } = useAdminContext();
 
   const src = SOURCES.find((s) => s.id === activeSource)!;
 
@@ -530,8 +529,9 @@ export default function ImportPage() {
     return true;
   });
 
+  if(authLoading||adminSession.loading)return <p role="status" className="p-8">Đang kiểm tra tài khoản…</p>;
   if (account?.role === 'student') return <main className="p-8">Phần này dành cho phụ huynh. <Link href="/">Về học bài</Link></main>;
-  if (!isAdmin && account?.role !== 'parent' && !adminSession.authenticated) {
+  if (!canManageFamily(account?.role,adminSession.authenticated)) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <motion.div
@@ -549,10 +549,10 @@ export default function ImportPage() {
             </p>
           </div>
           <button
-            onClick={() => openAdminModal()}
+            onClick={() => openAuthModal('login')}
             className="w-full py-3.5 rounded-2xl bg-orange-600 hover:bg-orange-700 hover:bg-orange-700 text-white font-bold text-sm shadow-sm transition-all cursor-pointer"
           >
-            🔑 Mở Khóa Quyền Admin
+            Đăng nhập phụ huynh
           </button>
           <button
             onClick={() => router.push('/')}
@@ -569,16 +569,7 @@ export default function ImportPage() {
     <div className="min-h-screen bg-slate-50">
 
       {/* Header */}
-      <AppPageHeader title="Thêm từ vựng" description="Nhập học liệu và phân loại theo chủ đề." inset actions={<>
-<button
-              onClick={logoutAdmin}
-              title="Khóa quyền Admin"
-              className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
-            >
-              <span>🔒</span>
-              <span className="hidden sm:inline">Khóa</span>
-            </button>
-</>}/>
+      <AppPageHeader title="Thêm từ vựng" description="Nhập học liệu và phân loại theo chủ đề." inset/>
 
       <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
         <AnimatePresence mode="wait">

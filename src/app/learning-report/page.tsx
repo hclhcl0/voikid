@@ -8,21 +8,20 @@ import { LearningSummary } from '@/components/learning/LearningSummary';
 import { useProfileContext } from '@/context/ProfileContext';
 import { CURRICULUM } from '@/lib/learning/curriculum';
 import { dueVocabularyIds, sessionsFor } from '@/lib/learning/progress';
-import { useAdminContext } from '@/context/AdminContext';
+import {canManageFamily} from '@/lib/access';
 import {mergeIpaPractice} from '@/lib/ipa/practice';
 
 export default function LearningReportPage() {
-  const { account } = useAuth();
+  const { account,isLoading:authLoading,openAuthModal } = useAuth();
   const adminSession = useBackendSession();
   const ctx = useProfileContext();
-  const { isAdmin, openAdminModal } = useAdminContext();
   const sessions = sessionsFor(ctx.progress.learningSessions, ctx.activeProfileId);
   const due = dueVocabularyIds(sessions);
   const reviewUnits = CURRICULUM.filter(u => u.vocabulary.some(v => due.includes(v.id)));
   const ipaRecords=Object.values(mergeIpaPractice(ctx.progress.ipaPractice,{},ctx.activeProfileId));
-  if (!ctx.hydrated) return <p role="status" className="p-8">Đang mở báo cáo…</p>;
+  if (!ctx.hydrated||authLoading||adminSession.loading) return <p role="status" className="p-8">Đang mở báo cáo…</p>;
   if (account?.role === 'student') return <main className="p-8">Phần này dành cho phụ huynh. <Link href="/">Về học bài</Link></main>;
-  if (!isAdmin && account?.role !== 'parent' && !adminSession.authenticated) return <main className="min-h-screen flex items-center justify-center p-6"><section className="rounded-2xl bg-white p-8 space-y-4 max-w-md"><h1 className="text-2xl font-bold">Báo cáo dành cho phụ huynh</h1><p>Mở bằng mã PIN phụ huynh hiện có.</p><button className="ui-button ui-button-primary" onClick={() => openAdminModal()}>Mở báo cáo</button><Link href="/curriculum" className="learning-button inline-flex bg-orange-50">Quay lại bài học</Link></section></main>;
+  if (!canManageFamily(account?.role,adminSession.authenticated)) return <main className="min-h-screen flex items-center justify-center p-6"><section className="rounded-2xl bg-white p-8 space-y-4 max-w-md"><h1 className="text-2xl font-bold">Báo cáo dành cho phụ huynh</h1><p>Đăng nhập phụ huynh để xem tiến độ của các bé trong gia đình.</p><button className="ui-button ui-button-primary" onClick={() => openAuthModal('login')}>Đăng nhập phụ huynh</button><Link href="/curriculum" className="learning-button inline-flex bg-orange-50">Quay lại bài học</Link></section></main>;
   return <main className="learning-shell min-h-screen bg-slate-50 p-4 py-6"><div className="max-w-5xl mx-auto space-y-5">
     <AppPageHeader title="Tiến độ học tập" description="Xem kết quả và những nội dung bé cần luyện thêm." actions={<>
 <Link href="/curriculum" className="learning-button bg-white">← Bài học</Link>

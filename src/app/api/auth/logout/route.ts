@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clearAuthCookie } from '@/lib/auth';
-import { ADMIN_COOKIE } from '@/lib/backend/auth';
+import { clearAuthCookie,clearAdminSessionCookies } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 
@@ -8,8 +7,7 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   const res = NextResponse.json({ success: true, message: 'Đã đăng xuất thành công.' });
   clearAuthCookie(res);
-  res.cookies.set(ADMIN_COOKIE, '', { path: '/', maxAge: 0 });
-  res.cookies.set(ADMIN_COOKIE, '', { path: '/api/admin', maxAge: 0 });
+  clearAdminSessionCookies(res);
   return res;
 }
 
@@ -17,8 +15,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const res = NextResponse.json({ success: true, message: 'Đã đăng xuất thành công.' });
   clearAuthCookie(res);
-  res.cookies.set(ADMIN_COOKIE, '', { path: '/', maxAge: 0 });
-  res.cookies.set(ADMIN_COOKIE, '', { path: '/api/admin', maxAge: 0 });
+  clearAdminSessionCookies(res);
   return res;
 }
 
