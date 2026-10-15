@@ -35,7 +35,7 @@ export default function HomePage() {
   const categories = [
     ...(customHydrated ? customCats.filter(c => c.id === NEW_WORDS_CAT_ID ? c.words.length > 0 : !c.gradeId || c.gradeId === selectedGrade) : []),
     ...(serverCategories as GradeCategory[]).filter(c => c.gradeId === selectedGrade),
-  ];
+  ].filter((category,index,all)=>all.findIndex(item=>item.id===category.id)===index);
   const search = query.trim().toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
   const visible = categories.filter(c => `${c.name_vi} ${c.name_en}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').includes(search));
   const pageSize = 6;

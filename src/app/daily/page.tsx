@@ -24,7 +24,7 @@ function DailyLearningContent(){
   const {hydrated,activeProfile}=useProgress();
   if(!hydrated||!customHydrated)return <p role="status" className="p-8 text-center">Đang chuẩn bị từ mới hôm nay…</p>;
   const grade=activeProfile.gradeId;
-  const categories=[...custom.filter(c=>c.id===NEW_WORDS_CAT_ID?c.words.length>0:!c.gradeId||c.gradeId===grade),...server.filter(c=>!c.gradeId||c.gradeId===grade)];
+  const categories=[...custom.filter(c=>c.id===NEW_WORDS_CAT_ID?c.words.length>0:!c.gradeId||c.gradeId===grade),...server.filter(c=>!c.gradeId||c.gradeId===grade)].filter((category,index,all)=>all.findIndex(item=>item.id===category.id)===index);
   return <DailyLearningSession key={`${activeProfile.id}:${grade}:${getTodayDateString()}:${settings.dailyNewWordsCount}:${settings.dailyNewWordsSource}:${searchParams.get('wordId')}:${searchParams.get('tab')}`} categories={categories} settings={settings}/>;
 }
 

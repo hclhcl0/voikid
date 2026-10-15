@@ -13,6 +13,7 @@ import type { StoryLesson, ReadingEvidence } from '@/lib/stories/types';
 import {validateStoryOutput} from '@/lib/stories/validation';
 import {reserveParentAi,finishParentAi,ParentAiQuotaError} from '@/lib/backend/parentAiQuota';
 import {resolveFamilyAi,familyAiScope,FamilyAiError} from '@/lib/backend/familyAi';
+import {publishSharedStory} from '@/lib/stories/shared';
 export const runtime='nodejs';
 const pending=new Map<string,Promise<StoryLesson>>();
 const limits=new Map<string,{count:number;until:number}>();
@@ -50,7 +51,8 @@ export async function POST(req:NextRequest) {
     const hash=createHash('sha256').update(JSON.stringify([STORY_SOURCE_VERSION,STORY_GENERATION_VERSION,unit.id,source,unit.vocabulary.map(v=>[v.text,v.senses[0].meaningVi]),band,body.variant,model])).digest('hex');
     const cached=readStory(hash);
     if(cached) {
-      try {validateStoryOutput(cached,source,band);return NextResponse.json(cached,{headers:{'Cache-Control':'no-store'}});} catch { /* Regenerate older cached output that no longer satisfies the checks. */ }
+      let valid=false;try {validateStoryOutput(cached,source,band);valid=true;} catch { /* Regenerate older cached output that no longer satisfies the checks. */ }
+      if(valid){if(account.role==='admin')publishSharedStory(cached);return NextResponse.json(cached,{headers:{'Cache-Control':'no-store'}});}
     }
     const personal=resolveFamilyAi(req),workId=`${hash}:${familyAiScope(personal)}`;
     if(!pending.has(workId)) {
@@ -67,7 +69,9 @@ export async function POST(req:NextRequest) {
         } catch(error) {await finishParentAi(reservation,false);throw error;}
       })().finally(()=>pending.delete(workId));pending.set(workId,promise);
     }
-    return NextResponse.json(await pending.get(workId),{headers:{'Cache-Control':'no-store'}});
+    const lesson=await pending.get(workId);
+    if(account.role==='admin')publishSharedStory(lesson);
+    return NextResponse.json(lesson,{headers:{'Cache-Control':'no-store'}});
   } catch(error) {
     if(error instanceof FamilyAiError)return NextResponse.json({code:'FAMILY_AI_'+error.code.toUpperCase(),message:error.message},{status:error.code==='quota'?429:503,headers:{'Cache-Control':'no-store'}});
     if(error instanceof ParentAiQuotaError) return NextResponse.json({code:'PARENT_AI_DAILY_LIMIT',message:error.message,limit:error.limit,resetsAt:error.resetsAt},{status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil((Date.parse(error.resetsAt)-Date.now())/1000)))}});

@@ -92,7 +92,7 @@ test('story API enforces parent quota across children, keeps cached reads free, 
     '@/lib/stories/learning':{readingEvidence:()=>({total:0,independent:0}),readingBand:()=> 'support'},
     '@/lib/stories/validation':{validateStoryOutput:()=>{}},
     '@/lib/stories/store':{readStory:hash=>cached.get(hash),saveStory:(hash,story)=>cached.set(hash,story)},
-    '@/lib/stories/generate':{generateStory:async()=>{calls++;if(fail)throw new Error('MOCK_PROVIDER_FAILURE');return {title:'Test',sentences:[],vocabulary:[],questions:[]};}},
+    '@/lib/stories/generate':{generateStory:async()=>{calls++;if(fail)throw new Error('MOCK_PROVIDER_FAILURE');return {title:'Test',sentences:[{id:'s1',en:'Hello.',vi:'Xin chào.',patternIndexes:[]}],vocabulary:[],questions:[]};}},
   });
   const {POST}=routeLoader('src/app/api/story/route.ts');
   const req=(variant=0,profileId='child-a',headers={},unitId='unit-a')=>new NextRequest('https://app.test/api/story',{method:'POST',headers,body:JSON.stringify({unitId,profileId,gradeId:'lop1',variant})});

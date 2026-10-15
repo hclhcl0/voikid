@@ -355,6 +355,7 @@ export default function ManageVocabularyPage() {
       </AnimatePresence>
 
       <div className="max-w-4xl lg:max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {account?.role==='parent'&&<section className="space-y-2 rounded-2xl border border-orange-200 bg-orange-50 p-4"><h2 className="font-bold">Kho từ admin được dùng chung</h2><p className="text-sm text-slate-600">Các bé đã dùng được từ vựng admin tại trang Học từ. Phần bên dưới dành cho từ riêng gia đình bạn thêm.</p><Link href="/" className="ui-button ui-button-secondary text-sm">Mở kho từ học chung</Link></section>}
 
         {/* ── STATS CARD ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">

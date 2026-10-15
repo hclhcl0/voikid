@@ -15,6 +15,7 @@ import type { StorySession, StorySource, StoryLesson } from '@/lib/stories/types
 import type { CurriculumUnit } from '@/lib/learning/types';
 import { StoryActivities } from './StoryActivities';
 import { StoryTools } from './StoryTools';
+import {SharedStoryLibrary} from './SharedStoryLibrary';
 import { useStoryAccess } from '@/hooks/useStoryAccess';
 import { useVocabularyCatalog } from '@/hooks/useVocabularyCatalog';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
@@ -32,6 +33,7 @@ function Reader({unit,source,canManage}:{unit:CurriculumUnit;source:StorySource;
   const catalog=useVocabularyCatalog(),custom=useCustomCategories();
   const [importedTerms,setImportedTerms]=useState<StoryLesson['vocabulary']>([]);
   const [scanning,setScanning]=useState(false);
+  const [sharedRevision,setSharedRevision]=useState(0);
   const requested=useSearchParams().get('story');
   const router=useRouter();
   const savedSessions=Object.values(ctx.progress.storySessions??{}).filter(s=>validStorySession(s,ctx.activeProfileId)&&s.unitId===unit.id).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
@@ -49,6 +51,16 @@ function Reader({unit,source,canManage}:{unit:CurriculumUnit;source:StorySource;
     sessionRef.current=updated;setSession(updated);return true;
   }
   function stop() {playbackRef.current++;cancel();}
+  async function shareCreatedStory(lesson:StoryLesson){
+    if(!admin.authenticated)return;
+    try{const response=await fetch('/api/story/library',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lesson})});const result=await response.json();if(!response.ok)throw new Error(result.message);setSharedRevision(value=>value+1);setMessage('Đã lưu bài đọc chung cho phụ huynh. Tiến độ của mỗi bé lưu riêng.');}
+    catch(error){setMessage(`Đã lưu vào hồ sơ, nhưng chưa chia sẻ được: ${error instanceof Error?error.message:'Hãy thử lại.'}`);}
+  }
+  function openShared(lesson:StoryLesson){
+    const existing=savedSessions.find(s=>s.id===lesson.id);
+    const next=existing??newStorySession(lesson,ctx.activeProfileId);
+    if(save(next)){openStory(next);setMessage('Đã mở bài đọc chung. Kết quả luyện tập được lưu riêng cho bé.');}
+  }
   useEffect(()=>()=>{controllerRef.current?.abort();playbackRef.current++;},[]);
   function openStory(next:StorySession) {
     stop();controllerRef.current?.abort();setBusy(false);setScanning(false);sessionRef.current=next;setSession(next);router.replace(`/unit/${unit.id}?story=${encodeURIComponent(next.id)}`,{scroll:false});setActiveLine(0);setTab('passage');setSelectedTerm(null);setSearch('');setVariant(next.lesson.variant??0);setMessage('');
@@ -62,6 +74,13 @@ function Reader({unit,source,canManage}:{unit:CurriculumUnit;source:StorySource;
     }
     setMessage('Đã xóa đoạn văn khỏi kho bài của hồ sơ này.');
   }
+  function saveCurrent(){
+    if(session&&save(session)){if(admin.authenticated)void shareCreatedStory(session.lesson);else setMessage('Đã lưu đoạn văn và tiến độ. Mở lại trong Đoạn văn đã lưu.');}
+  }
+  function createManual(lesson:StoryLesson){
+    stop();controllerRef.current?.abort();setBusy(false);setScanning(false);
+    if(save(newStorySession(lesson,ctx.activeProfileId))){setActiveLine(0);setTab('passage');setSelectedTerm(null);setMessage('Đã lưu đoạn văn tự viết.');if(admin.authenticated)void shareCreatedStory(lesson);}
+  }
   async function generate(nextVariant:number) {
     if(!canManage) return;
     stop();setBusy(true);setMessage('');controllerRef.current?.abort();const controller=new AbortController();controllerRef.current=controller;
@@ -72,6 +91,7 @@ function Reader({unit,source,canManage}:{unit:CurriculumUnit;source:StorySource;
       const existing=ctx.progress.storySessions?.[lesson.id];
       if(!save(existing&&validStorySession(existing,ctx.activeProfileId)?existing:newStorySession(lesson,ctx.activeProfileId))) return;
       setVariant(nextVariant);setActiveLine(0);setTab('passage');setSelectedTerm(null);
+      setSharedRevision(value=>value+1);
     } catch(error) {if(!controller.signal.aborted) setMessage(error instanceof Error?error.message:'Chưa tạo được bài đọc.');}
     finally {if(!controller.signal.aborted) setBusy(false);}
   }
@@ -112,7 +132,8 @@ function Reader({unit,source,canManage}:{unit:CurriculumUnit;source:StorySource;
     <section><p className="text-sm font-bold text-orange-700">Lớp {unit.grade} · Unit {source.number} · {source.topic}</p><p className="mt-2 text-sm text-slate-500">{lesson?.origin==='manual'?'Đoạn văn tự viết · Nội dung do bạn cung cấp.':`${lesson?BAND_LABELS[lesson.band]:BAND_LABELS[band]} · Dựa trên mẫu câu của unit và kết quả tự làm đã lưu.`}</p></section>
     {!matchingGrade&&<p role="alert" className="rounded-xl bg-amber-50 p-4">Bài này thuộc lớp {unit.grade}. Chọn bài đúng lớp trong hồ sơ của con. <Link className="underline" href="/curriculum">Quay lại chọn bài</Link></p>}
     {message&&<p role="alert" className="rounded-xl bg-orange-50 p-4 text-orange-900">{message}</p>}
-    {canManage&&matchingGrade&&<StoryTools key={session?.id??'empty'} session={session} sessions={savedSessions} unitId={unit.id} source={source} terms={newVocabulary} onImported={terms=>setImportedTerms(current=>[...current,...terms])} onOpen={openStory} onDelete={removeStory} onSave={()=>{if(session&&save(session))setMessage('Đã lưu đoạn văn và tiến độ. Mở lại trong Đoạn văn đã lưu.');}} onCreate={lesson=>{stop();controllerRef.current?.abort();setBusy(false);setScanning(false);const next=newStorySession(lesson,ctx.activeProfileId);if(save(next)){setActiveLine(0);setTab('passage');setSelectedTerm(null);setMessage('Đã lưu đoạn văn tự viết.');}}}/>}
+    {canManage&&matchingGrade&&<SharedStoryLibrary key={`${ctx.activeProfileId}:${unit.id}`} unitId={unit.id} admin={admin.authenticated} lesson={lesson??null} revision={sharedRevision} onOpen={openShared}/>}
+    {canManage&&matchingGrade&&<StoryTools key={session?.id??'empty'} session={session} sessions={savedSessions} unitId={unit.id} source={source} terms={newVocabulary} onImported={terms=>setImportedTerms(current=>[...current,...terms])} onOpen={openStory} onDelete={removeStory} onSave={saveCurrent} onCreate={createManual}/>}
     {!lesson&&!canManage?<p className="rounded-2xl border bg-white p-5 text-slate-600">Phụ huynh hoặc admin cần chuẩn bị bài học cho unit này trước khi con luyện tập.</p>:!lesson?<section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6"><h2 className="text-xl font-bold">Một đoạn văn mới cho chủ đề {source.topic}</h2><p className="text-slate-600">AI viết đoạn văn ngắn, bản dịch, từ vựng và câu hỏi theo mẫu câu SGK của unit này. Bài được lưu để học tiếp; mở lại không cần tạo lại.</p><button className="ui-button ui-button-primary disabled:opacity-40" disabled={busy||scanning||!matchingGrade||admin.loading} onClick={()=>void generate(0)}>{busy?'Đang tạo đoạn văn…':'Tạo bài đọc bằng AI'}</button></section>:<>
       <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm">
         <button className="ui-button ui-button-primary text-sm disabled:opacity-40" disabled={!audioAvailable} onClick={playAll}>{isSpeaking?<Square aria-hidden="true" className="h-4 w-4"/>:<Play aria-hidden="true" className="h-4 w-4"/>}{isSpeaking?'Dừng nghe':'Nghe cả bài'}</button>

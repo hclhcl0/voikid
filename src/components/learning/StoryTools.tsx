@@ -34,7 +34,7 @@ export function StoryTools({session,sessions,unitId,source,terms,onImported,onOp
   if(access.loading||!access.canManage) return null;
   return <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
     <div className="flex flex-wrap gap-2">
-      {session&&<button className={button} onClick={onSave}>Lưu đoạn văn</button>}
+      {session&&<button className={button} onClick={onSave}>{admin.authenticated?'Lưu bài dùng chung':'Lưu đoạn văn'}</button>}
       <button className={button} aria-expanded={panel==='saved'} onClick={()=>toggle('saved')}>Đoạn văn đã lưu ({sessions.length})</button>
       <button className={button} aria-expanded={panel==='paste'} onClick={()=>toggle('paste')}>Dán đoạn văn tự viết</button>
       {session&&canAddWords&&<button className={button} disabled={admin.loading||!terms.length} aria-expanded={panel==='words'} onClick={()=>toggle('words')}>Thêm từ vào kho từ vựng</button>}
@@ -56,7 +56,7 @@ export function StoryTools({session,sessions,unitId,source,terms,onImported,onOp
       {text.trim()&&<details className="rounded-xl bg-slate-50 p-3 text-sm"><summary className="cursor-pointer font-bold">Xem thứ tự các câu để nhập bản dịch</summary><ol className="mt-2 list-decimal space-y-2 pl-5">{splitPassage(text).map((sentence,index)=><li key={index}>{sentence}</li>)}</ol></details>}
       <label className="block text-sm font-bold">Bản dịch tiếng Việt (không bắt buộc)<textarea className={field} rows={3} maxLength={12000} value={translation} onChange={e=>setTranslation(e.target.value)} placeholder="Mỗi dòng dịch ứng với một câu tiếng Anh, theo đúng thứ tự."/></label>
       <label className="block text-sm font-bold">Từ vựng trong đoạn (không bắt buộc)<textarea className={field} rows={3} maxLength={8000} value={vocabulary} onChange={e=>setVocabulary(e.target.value)} placeholder={'friend | người bạn\nhappy | vui vẻ'}/></label>
-      <button className="ui-button ui-button-primary" type="submit">Lưu & mở đoạn văn</button>
+      <button className="ui-button ui-button-primary" type="submit">{admin.authenticated?'Lưu & chia sẻ bài chung':'Lưu & mở đoạn văn'}</button>
     </form>}
     {panel==='words'&&session&&<div className="space-y-3">
       <h2 className="font-bold">Chọn từ để thêm · Lớp {session.lesson.grade} · {session.lesson.topic}</h2>
