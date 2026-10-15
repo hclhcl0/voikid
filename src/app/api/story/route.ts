@@ -12,6 +12,7 @@ import { readStory, saveStory } from '@/lib/stories/store';
 import type { StoryLesson, ReadingEvidence } from '@/lib/stories/types';
 import {validateStoryOutput} from '@/lib/stories/validation';
 import {reserveParentAi,finishParentAi,ParentAiQuotaError} from '@/lib/backend/parentAiQuota';
+import {resolveFamilyAi,familyAiScope,FamilyAiError} from '@/lib/backend/familyAi';
 export const runtime='nodejs';
 const pending=new Map<string,Promise<StoryLesson>>();
 const limits=new Map<string,{count:number;until:number}>();
@@ -51,7 +52,8 @@ export async function POST(req:NextRequest) {
     if(cached) {
       try {validateStoryOutput(cached,source,band);return NextResponse.json(cached,{headers:{'Cache-Control':'no-store'}});} catch { /* Regenerate older cached output that no longer satisfies the checks. */ }
     }
-    if(!pending.has(hash)) {
+    const personal=resolveFamilyAi(req),workId=`${hash}:${familyAiScope(personal)}`;
+    if(!pending.has(workId)) {
       const now=Date.now();for(const [id,entry] of limits) if(entry.until<now) limits.delete(id);
       const id=account?.id||req.headers.get('x-forwarded-for')||'local';
       const limit=limits.get(id)||{count:0,until:now+60000};limits.set(id,limit);
@@ -59,14 +61,15 @@ export async function POST(req:NextRequest) {
       const promise=(async()=>{
         const reservation=await reserveParentAi(account.id,account.role,content.settings.parentAi);
         try {
-          const result=await generateStory(source,band,unit.vocabulary.slice(0,24).map(v=>({en:v.text,vi:v.senses[0].meaningVi})),model,timeout,typeof body.apiKey==='string'&&body.apiKey.length<=300?body.apiKey.trim():undefined);
+          const result=await generateStory(source,band,unit.vocabulary.slice(0,24).map(v=>({en:v.text,vi:v.senses[0].meaningVi})),model,timeout,typeof body.apiKey==='string'&&body.apiKey.length<=300?body.apiKey.trim():undefined,personal);
           const story:StoryLesson={...result,id:`story_${hash}`,unitId:unit.id,grade:unit.grade,topic:source.topic,band,variant:body.variant,patterns:source.patterns,sourceVersion:STORY_SOURCE_VERSION,generatedAt:new Date().toISOString()};
           saveStory(hash,story);await finishParentAi(reservation,true);return story;
         } catch(error) {await finishParentAi(reservation,false);throw error;}
-      })().finally(()=>pending.delete(hash));pending.set(hash,promise);
+      })().finally(()=>pending.delete(workId));pending.set(workId,promise);
     }
-    return NextResponse.json(await pending.get(hash),{headers:{'Cache-Control':'no-store'}});
+    return NextResponse.json(await pending.get(workId),{headers:{'Cache-Control':'no-store'}});
   } catch(error) {
+    if(error instanceof FamilyAiError)return NextResponse.json({code:'FAMILY_AI_'+error.code.toUpperCase(),message:error.message},{status:error.code==='quota'?429:503,headers:{'Cache-Control':'no-store'}});
     if(error instanceof ParentAiQuotaError) return NextResponse.json({code:'PARENT_AI_DAILY_LIMIT',message:error.message,limit:error.limit,resetsAt:error.resetsAt},{status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil((Date.parse(error.resetsAt)-Date.now())/1000)))}});
     if(error instanceof SyntaxError) return NextResponse.json({message:'Yêu cầu không hợp lệ.'},{status:400});
     return NextResponse.json({message:error instanceof Error&&error.message==='NO_API_KEY'?'Chưa có API key. Phụ huynh cấu hình key trong admin để tạo bài đọc.':'Chưa tạo được đoạn văn phù hợp. Kiểm tra key/model hoặc thử lại.'},{status:503});

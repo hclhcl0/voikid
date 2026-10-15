@@ -52,3 +52,17 @@ test('retry/service feedback never offers pass-only next controls; a confirmed p
   assert.ok(!render('pass',true,null).includes('Tiếp<'));
   assert.ok(!render('retry',true).includes('Tiếp<'));
 });
+
+test('feedback distinguishes uncertain AI from recording problems and exposes reassessment only when appropriate',()=>{
+  const {SpeakingFeedback}=load('src/components/learning/WordSpeakingPractice.tsx');
+  const render=(status,reason,busy=false)=>renderToStaticMarkup(React.createElement(SpeakingFeedback,{word:words[0],recordedBlob:new Blob(['test']),result:{status,reason,passed:null,score:null,feedbackVi:'Phản hồi'},onRetry:()=>{},onReassess:()=>{},busy}));
+  const uncertain=render('retry','conflicting_evidence');
+  assert.match(uncertain,/AI chưa kết luận/);assert.match(uncertain,/Chấm lại bản ghi này/);
+  assert.ok(!uncertain.includes('Chưa rõ tiếng!'));assert.match(uncertain,/không làm mất sao/);
+  assert.match(render('service_error','provider_unavailable'),/Chấm lại bản ghi này/);
+  for(const [status,reason] of [['retry','no_clear_speech'],['retry','interference'],['pass','acceptable'],['practice','pronunciation_needs_practice']]){
+    assert.ok(!render(status,reason).includes('Chấm lại bản ghi này'));
+  }
+  const checking=render('retry','uncertain_assessment',true);
+  assert.match(checking,/Đang chấm lại/);assert.match(checking,/aria-busy="true"/);
+});

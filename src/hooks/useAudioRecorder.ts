@@ -6,7 +6,7 @@
 'use client';
 
 import { defaultPronunciationSettings, type PronunciationSettings } from '@/lib/pronunciation/settings';
-import { frameQuality, recordingProblem } from '@/lib/pronunciation/audioQuality';
+import { floatFrameQuality, voiceThresholds, recordingProblem } from '@/lib/pronunciation/audioQuality';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type RecorderStatus = 'idle' | 'requesting' | 'recording' | 'processing' | 'error';
@@ -23,8 +23,6 @@ interface UseAudioRecorderReturn {
   hasServerKey: boolean;
   serverConfigLoaded: boolean;
 }
-
-const SILENCE_THRESHOLD = 0.01;   // RMS below this = silence
 
 export function useAudioRecorder(taskKind: 'word' | 'sentence' = 'word'): UseAudioRecorderReturn {
   const configRef = useRef<PronunciationSettings>(defaultPronunciationSettings);
@@ -151,7 +149,8 @@ export function useAudioRecorder(taskKind: 'word' | 'sentence' = 'word'): UseAud
       if (!mountedRef.current || generation !== generationRef.current) { stream.getTracks().forEach(t => t.stop()); void audioCtx.close().catch(() => {}); return; }
       const source   = audioCtx.createMediaStreamSource(stream);
       const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 256;
+      // A longer floating-point window stabilizes detection and preserves soft /s/, /f/, /t/.
+      analyser.fftSize = 2048;
       source.connect(analyser);
       analyserRef.current = analyser;
 
@@ -198,7 +197,7 @@ export function useAudioRecorder(taskKind: 'word' | 'sentence' = 'word'): UseAud
       setStatus('recording');
 
       // VAD loop: Wait for speech first, then detect end-of-speech silence
-      const dataArr = new Uint8Array(analyser.fftSize);
+      const dataArr = new Float32Array(analyser.fftSize);
       const startTime = Date.now();
       let hasSpoken = false;
       let silenceAfterSpeechStart: number | null = null;
@@ -207,33 +206,37 @@ export function useAudioRecorder(taskKind: 'word' | 'sentence' = 'word'): UseAud
       let noiseFloor = 0.004;
       let previousFrame = startTime;
       let lastMeter = startTime;
+      let speechStartMs = 0;
 
       const vadLoop = () => {
-        analyser.getByteTimeDomainData(dataArr);
-        const { rms, clippedFraction } = frameQuality(dataArr);
+        analyser.getFloatTimeDomainData(dataArr);
+        const { rms, clippedFraction } = floatFrameQuality(dataArr);
         const now = Date.now();
         const elapsed = Math.min(100,now - previousFrame); previousFrame = now;
         if (!hasSpoken && now - startTime < 350 && rms < SPEECH_THRESHOLD) noiseFloor = 0.9 * noiseFloor + 0.1 * rms;
-        const speechThreshold = config.adaptiveVad ? Math.min(0.08, Math.max(0.012,noiseFloor * 3)) : SPEECH_THRESHOLD;
-        const silenceThreshold = config.adaptiveVad ? Math.max(0.006,noiseFloor * 1.8) : SILENCE_THRESHOLD;
+        const {speech:speechThreshold,silence:silenceThreshold}=voiceThresholds(noiseFloor,config.adaptiveVad);
         if (rms >= speechThreshold) qualityRef.current.speechMs += elapsed;
         qualityRef.current.clipped += clippedFraction; qualityRef.current.frames++;
         if (now-lastMeter >= 120) { setInputLevel(Math.min(1,rms*8)); lastMeter=now; }
 
         if (!hasSpoken) {
           if (rms >= speechThreshold) {
-            hasSpoken = true;
+            speechStartMs+=elapsed;
+            // A single mic click must not start the trailing-silence countdown.
+            if(speechStartMs>=60)hasSpoken = true;
           } else if (Date.now() - startTime > MAX_WAIT_TO_SPEAK) {
             // Hết thời gian chờ mà chưa phát hiện tiếng nói.
             stopRecording();
             return;
+          } else {
+            speechStartMs=0;
           }
         } else {
           // User already spoke at least once, now monitor trailing silence
           if (rms < silenceThreshold) {
             if (!silenceAfterSpeechStart) {
               silenceAfterSpeechStart = Date.now();
-            } else if (Date.now() - silenceAfterSpeechStart > config.silenceDurationMs) {
+            } else if (Date.now() - silenceAfterSpeechStart > Math.max(1000,config.silenceDurationMs)) {
               stopRecording();
               return;
             }

@@ -7,9 +7,10 @@ import {readContent} from '@/lib/backend/store';
 import {curriculumForCategories} from '@/lib/learning/curriculum';
 import {validStorySession,newStorySession} from '@/lib/stories/learning';
 import {newStoryVocabulary} from '@/lib/stories/vocabulary';
-import {extractVocabulary,validateExtractedVocabulary} from '@/lib/stories/extractVocabulary';
+import {extractVocabulary,validateExtractedVocabulary,VocabularyScanError} from '@/lib/stories/extractVocabulary';
 import {readVocabulary,saveVocabulary} from '@/lib/stories/store';
 import type {StoryLesson} from '@/lib/stories/types';
+import {resolveFamilyAi,familyAiScope,FamilyAiError} from '@/lib/backend/familyAi';
 export const runtime='nodejs';
 const pending=new Map<string,Promise<StoryLesson['vocabulary']>>(),limits=new Map<string,{count:number;until:number}>();
 export async function POST(req:NextRequest) {
@@ -31,15 +32,30 @@ export async function POST(req:NextRequest) {
     let vocabulary:StoryLesson['vocabulary']|null=null;
     try {const cached=readVocabulary(hash);if(cached)vocabulary=validateExtractedVocabulary(cached,lesson);}catch { /* Ignore invalid cached output. */ }
     if(!vocabulary) {
-      if(!pending.has(hash)) {
+      const personal=resolveFamilyAi(req),workId=`${hash}:${familyAiScope(personal)}`;
+      if(!pending.has(workId)) {
         const now=Date.now();for(const [id,entry]of limits)if(entry.until<now)limits.delete(id);
         const limit=limits.get(account.id)??{count:0,until:now+60000};limits.set(account.id,limit);
         if(++limit.count>6||pending.size>=30)return NextResponse.json({message:'Hãy thử lại sau một phút.'},{status:429});
-        const work=extractVocabulary(lesson,model,timeout,typeof body.apiKey==='string'&&body.apiKey.length<=300?body.apiKey.trim():undefined).then(terms=>{saveVocabulary(hash,terms);return terms;}).finally(()=>pending.delete(hash));pending.set(hash,work);
+        const work=extractVocabulary(lesson,model,timeout,typeof body.apiKey==='string'&&body.apiKey.length<=300?body.apiKey.trim():undefined,personal).then(terms=>{saveVocabulary(hash,terms);return terms;}).finally(()=>pending.delete(workId));pending.set(workId,work);
       }
-      vocabulary=(await pending.get(hash))!;
+      vocabulary=(await pending.get(workId))!;
     }
     const categories=[...content.categories,...(families.categories[familyId(account)]??[])];
     return NextResponse.json({vocabulary:newStoryVocabulary({...lesson,vocabulary},categories,lesson.grade),scanned:true},{headers:{'Cache-Control':'no-store'}});
-  } catch(error) {return NextResponse.json({message:error instanceof SyntaxError?'Dữ liệu không hợp lệ.':error instanceof Error&&error.message==='NO_API_KEY'?'Chưa có API key để rà soát từ vựng.':'Chưa rà soát được từ vựng. Kiểm tra key/model hoặc thử lại.'},{status:error instanceof SyntaxError?400:503});}
+  } catch(error) {
+    if(error instanceof FamilyAiError)return NextResponse.json({code:'FAMILY_AI_'+error.code.toUpperCase(),message:error.message},{status:error.code==='quota'?429:503,headers:{'Cache-Control':'no-store'}});
+    if(error instanceof VocabularyScanError) {
+      const messages:Record<VocabularyScanError['code'],string>={
+        NO_API_KEY:'Chưa cấu hình Gemini API key trên server. Nhờ admin thêm key trong cài đặt AI; phụ huynh không cần nhập key riêng.',
+        auth:'Gemini từ chối API key dùng để rà soát. Admin kiểm tra key và quyền truy cập model trong cài đặt AI.',
+        quota:'Gemini đang hết hạn mức hoặc các key đang tạm nghỉ. Hãy thử lại sau.',
+        transient:'Gemini phản hồi chậm hoặc mất kết nối. Hãy thử rà soát lại.',
+        invalid_output:'AI chưa trả được danh sách từ khớp đoạn văn sau khi sửa lại. Hãy thử rà soát lại.',
+        provider:'Chưa gọi được Gemini để rà soát. Admin kiểm tra model đang chọn và trạng thái các key trong cài đặt AI.',
+      };
+      return NextResponse.json({code:error.code,message:messages[error.code]},{status:error.code==='quota'?429:503,headers:{'Cache-Control':'no-store'}});
+    }
+    return NextResponse.json({message:error instanceof SyntaxError?'Dữ liệu không hợp lệ.':'Chưa rà soát được từ vựng. Hãy thử lại.'},{status:error instanceof SyntaxError?400:503});
+  }
 }

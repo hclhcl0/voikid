@@ -134,7 +134,7 @@ test('a clock spelling never overrides pronunciation, uncertainty, interference 
     assert.equal(result.score,null);
     assert.doesNotMatch(result.feedbackVi,/Cô nghe thấy từ/);
     if (expectedStatus==='practice') assert.match(result.feedbackVi,/đọc nhẹ âm đầu/);
-    if (result.reason==='conflicting_evidence') assert.match(result.feedbackVi,/chưa chắc chắn/);
+    if (result.reason==='conflicting_evidence') assert.match(result.feedbackVi,/chưa thống nhất.*chưa kết luận con đọc sai/);
   }
 });
 

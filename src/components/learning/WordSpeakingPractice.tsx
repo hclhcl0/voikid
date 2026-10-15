@@ -9,6 +9,7 @@ import {useSettings} from '@/hooks/useSettings';
 import {WordStudyCard} from './WordStudyCard';
 import {WordCardSlider} from './WordCardSlider';
 import {PRONUNCIATION_NOT_CONFIGURED} from '@/lib/pronunciation/messages';
+import {canReassessRecording,pronunciationResultTitle,recordingAttemptFor} from '@/lib/pronunciation/recordingReview';
 import type {PronunciationResult, Word} from '@/types';
 import {ArrowRight,CircleCheck,Ear,Headphones,Keyboard,Lightbulb,LoaderCircle,Mic,PlugZap,RotateCcw,Square,Star,Target,Volume2} from 'lucide-react';
 
@@ -22,7 +23,9 @@ export function WordSpeakingPractice({word,categoryId,onPrevious,onNext}:{word:W
   const [error,setError]=useState<string|null>(null);
   const [playing,setPlaying]=useState(false);
   const [pace,setPace]=useState<'normal'|'slow'>('normal');
-  const submitted=useRef<Blob|null>(null);
+  const [reviewNumber,setReviewNumber]=useState(0);
+  const submitted=useRef<{blob:Blob;review:number}|null>(null);
+  const recordingAttempt=useRef<{blob:Blob;id:string}|null>(null);
   const request=useRef<AbortController|null>(null);
   const selfAudio=useRef<{audio:HTMLAudioElement;url:string}|null>(null);
   const target=useRef(word);
@@ -33,10 +36,11 @@ export function WordSpeakingPractice({word,categoryId,onPrevious,onNext}:{word:W
   },[]);
   useEffect(()=>()=>{request.current?.abort();cancel();stopSelfAudio();},[cancel,stopSelfAudio]);
   useEffect(()=>{
-    if(!recorder.audioBase64||!recorder.audioBlob||submitted.current===recorder.audioBlob)return;
-    submitted.current=recorder.audioBlob;
+    if(!recorder.audioBase64||!recorder.audioBlob||(submitted.current?.blob===recorder.audioBlob&&submitted.current.review===reviewNumber))return;
+    submitted.current={blob:recorder.audioBlob,review:reviewNumber};
+    recordingAttempt.current=recordingAttemptFor(recorder.audioBlob,recordingAttempt.current,()=>crypto.randomUUID());
     const controller=new AbortController();request.current=controller;
-    const attemptId=crypto.randomUUID(),current=target.current;
+    const attemptId=recordingAttempt.current.id,current=target.current;
     const timer=setTimeout(()=>controller.abort(),60000);
     void (async()=>{
       setLoading(true);setError(null);
@@ -47,7 +51,8 @@ export function WordSpeakingPractice({word,categoryId,onPrevious,onNext}:{word:W
         if(!response.ok)throw new Error(data.error==='NO_API_KEY'?PRONUNCIATION_NOT_CONFIGURED:data.message||'Chưa chấm được lần đọc này. Bé thử lại nhé!');
         if(data.attemptId!==attemptId||!['pass','practice','retry','service_error'].includes(data.status)||(data.status==='pass'&&data.passed!==true))throw new Error('Cô chưa xác nhận được lần đọc này. Bé thử lại nhé!');
         setResult(data);
-        record.current(categoryId,current.id,data.score,data.status,data.attemptId);
+        // Uncertain/service results are ungraded. Rechecking the same recording keeps its ID.
+        if(data.status==='pass'||data.status==='practice')record.current(categoryId,current.id,data.score,data.status,data.attemptId);
         if(data.status==='pass'&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)confetti({particleCount:50,spread:55,origin:{y:0.6}});
       } catch(e) {
         if(request.current===controller)setError(e instanceof Error&&!controller.signal.aborted?e.message:'Kết nối đang chậm. Bé thử lại nhé!');
@@ -56,11 +61,15 @@ export function WordSpeakingPractice({word,categoryId,onPrevious,onNext}:{word:W
         if(request.current===controller){request.current=null;setLoading(false);}
       }
     })();
-    return ()=>{clearTimeout(timer);controller.abort();if(request.current===controller)request.current=null;};
-  },[recorder.audioBase64,recorder.audioBlob,apiKey,categoryId]);
+    return ()=>{clearTimeout(timer);controller.abort();if(request.current===controller){request.current=null;submitted.current=null;}};
+  },[recorder.audioBase64,recorder.audioBlob,apiKey,categoryId,reviewNumber]);
   const busy=loading||recorder.status==='processing'||recorder.status==='requesting';
   const locked=busy||recorder.status==='recording';
   const progress=getWordProgress(categoryId,word.id);
+  function reassess(){
+    if(locked||!recorder.audioBlob||!canReassessRecording(result))return;
+    cancel();stopSelfAudio();setPlaying(false);setError(null);setReviewNumber(number=>number+1);
+  }
   const retry=useCallback(()=>{cancel();stopSelfAudio();setPlaying(false);setResult(null);setError(null);recorder.resetRecorder();},[cancel,stopSelfAudio,recorder]);
   const mic=useCallback(()=>{
     if(busy)return;
@@ -96,11 +105,11 @@ export function WordSpeakingPractice({word,categoryId,onPrevious,onNext}:{word:W
       {recorder.status==='recording'&&<div className="w-48 text-center"><div role="meter" aria-label="Mức âm thanh micro" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(recorder.inputLevel*100)} className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full bg-orange-500" style={{width:`${Math.round(recorder.inputLevel*100)}%`}}/></div><p className="mt-2 text-xs text-slate-500">Con đọc rõ vào micro nhé</p></div>}
       {recorder.audioBlob&&!loading&&<button onClick={listenSelf} className="flex min-h-11 items-center gap-2 rounded-xl bg-rose-50 px-4 text-sm font-bold text-rose-700"><Headphones aria-hidden="true" className="h-4 w-4"/>{playing?'Dừng nghe':'Nghe lại giọng bé vừa thu'}</button>}
       {(error||recorder.error)&&<p role="alert" className="text-center text-sm font-semibold text-rose-700">{error||recorder.error}</p>}
-      {error&&recorder.audioBlob&&<button onClick={retry} className="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-bold">Thu lại</button>}
+      {error&&recorder.audioBlob&&<div className="flex flex-wrap justify-center gap-2"><button onClick={reassess} disabled={busy} className="ui-button ui-button-primary">Chấm lại bản ghi này</button><button onClick={retry} className="ui-button ui-button-secondary">Thu lại</button></div>}
       {hydrated&&recorder.serverConfigLoaded&&!hasKey&&!recorder.hasServerKey&&!error&&<p role="status" className="rounded-2xl bg-violet-50 p-3 text-center text-xs text-violet-700">{PRONUNCIATION_NOT_CONFIGURED}</p>}
       <p className="text-center text-xs font-semibold text-slate-500"><Lightbulb aria-hidden="true" className="mr-1 inline h-4 w-4 text-amber-500"/>Nói to rõ ràng · Máy tự dừng khi bé ngưng nói</p>
     </div>}
-    <AnimatePresence>{result&&<SpeakingFeedback result={result} word={word} recordedBlob={recorder.audioBlob} consecutivePasses={progress?.consecutivePasses??0} onRetry={retry} onNext={onNext?()=>move(onNext):undefined}/>}</AnimatePresence>
+    <AnimatePresence>{result&&<SpeakingFeedback result={result} word={word} recordedBlob={recorder.audioBlob} consecutivePasses={progress?.consecutivePasses??0} busy={loading} reviewError={error} onReassess={reassess} onRetry={retry} onNext={onNext?()=>move(onNext):undefined}/>}</AnimatePresence>
   </section>;
 }
 
@@ -147,59 +156,50 @@ function MicButton({ status, onClick }: { status: string; onClick: () => void })
 }
 
 // ── Score display ──────────────────────────────────────────────────────────
-export function SpeakingFeedback({ result, word, recordedBlob, consecutivePasses = 0, onNext, onRetry }: {
+export function SpeakingFeedback({ result, word, recordedBlob, consecutivePasses = 0, onNext, onRetry, onReassess, busy=false, reviewError }: {
   result: PronunciationResult;
   word: Word;
   recordedBlob: Blob | null;
   consecutivePasses?: number;
   onNext?: () => void;
   onRetry: () => void;
+  onReassess?: () => void;
+  busy?: boolean;
+  reviewError?: string|null;
 }) {
   const isPassed = result.status === 'pass' && result.passed === true;
   const scoreNum = result.score ?? 0;
   const stars = scoreNum >= 85 ? 3 : scoreNum >= 70 ? 2 : scoreNum >= 50 ? 1 : 0;
 
-  const { speak, isSpeaking: isModelSpeaking } = useTTS();
+  const { speak, cancel:cancelModel, isSpeaking: isModelSpeaking } = useTTS();
   const [isPlayingUserAudio, setIsPlayingUserAudio] = useState(false);
   const userAudioRef = useRef<HTMLAudioElement | null>(null);
+  const userUrlRef = useRef<string|null>(null);
+  const stopUserAudio=useCallback(()=>{
+    userAudioRef.current?.pause();userAudioRef.current=null;
+    if(userUrlRef.current){URL.revokeObjectURL(userUrlRef.current);userUrlRef.current=null;}
+    setIsPlayingUserAudio(false);
+  },[]);
 
   const handlePlayUserAudio = () => {
     if (!recordedBlob) return;
     if (isPlayingUserAudio && userAudioRef.current) {
-      userAudioRef.current.pause();
-      userAudioRef.current = null;
-      setIsPlayingUserAudio(false);
+      stopUserAudio();
       return;
     }
-    window.speechSynthesis?.cancel();
+    cancelModel();stopUserAudio();
     const url = URL.createObjectURL(recordedBlob);
     const audio = new Audio(url);
+    userUrlRef.current=url;
     userAudioRef.current = audio;
     setIsPlayingUserAudio(true);
 
-    audio.onended = () => {
-      setIsPlayingUserAudio(false);
-      userAudioRef.current = null;
-      URL.revokeObjectURL(url);
-    };
-    audio.onerror = () => {
-      setIsPlayingUserAudio(false);
-      userAudioRef.current = null;
-      URL.revokeObjectURL(url);
-    };
-    audio.play().catch((e) => {
-      console.warn('[Audio Play Error]', e);
-      setIsPlayingUserAudio(false);
-      userAudioRef.current = null;
-    });
+    const finish=()=>{if(userAudioRef.current===audio)stopUserAudio();};
+    audio.onended=finish;audio.onerror=finish;void audio.play().catch(finish);
   };
 
   const handlePlayModelAudio = () => {
-    if (userAudioRef.current) {
-      userAudioRef.current.pause();
-      userAudioRef.current = null;
-      setIsPlayingUserAudio(false);
-    }
+    stopUserAudio();
     speak(word.en, 'en-US', 0.85);
   };
 
@@ -209,8 +209,10 @@ export function SpeakingFeedback({ result, word, recordedBlob, consecutivePasses
         userAudioRef.current.pause();
         userAudioRef.current = null;
       }
+      if(userUrlRef.current){URL.revokeObjectURL(userUrlRef.current);userUrlRef.current=null;}
+      cancelModel();
     };
-  }, []);
+  }, [cancelModel]);
 
   return (
     <motion.div
@@ -273,20 +275,16 @@ export function SpeakingFeedback({ result, word, recordedBlob, consecutivePasses
           )}
           <p className="flex items-center gap-1.5 font-bold text-sm text-gray-600">
             {isPassed?<CircleCheck aria-hidden="true" className="h-4 w-4 text-emerald-600"/>:result.status==='service_error'?<PlugZap aria-hidden="true" className="h-4 w-4"/>:result.status==='retry'?<Ear aria-hidden="true" className="h-4 w-4"/>:<RotateCcw aria-hidden="true" className="h-4 w-4"/>}
-            {isPassed
-              ? 'Tuyệt lắm!'
-              : result.status === 'service_error'
-              ? 'Lỗi kết nối!'
-              : result.status === 'retry'
-              ? 'Chưa rõ tiếng!'
-              : 'Cố lên, đọc lại nhé!'}
+            {pronunciationResultTitle(result)}
           </p>
         </div>
       </div>
 
       {/* Feedback */}
       <div className={`rounded-2xl p-3 mb-3 ${isPassed ? 'bg-emerald-100' : 'bg-amber-100'}`}>
-        <p className="font-bold text-sm text-gray-700">{result.feedbackVi}</p>
+        <p role="status" className="font-bold text-sm text-gray-700">{busy?'Đang kiểm tra lại bản ghi của con…':result.feedbackVi}</p>
+        {(result.status==='retry'||result.status==='service_error')&&<p className="mt-2 text-xs text-slate-600">Lần này chưa được chấm đúng hoặc sai và không làm mất sao.</p>}
+        {reviewError&&<p role="alert" className="mt-2 text-sm text-rose-700">{reviewError}</p>}
       </div>
 
       {/* ── Compare audio box: Giọng của bé & Giọng mẫu ── */}
@@ -309,7 +307,7 @@ export function SpeakingFeedback({ result, word, recordedBlob, consecutivePasses
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={handlePlayUserAudio}
-            disabled={!recordedBlob}
+            disabled={!recordedBlob||busy}
             className={`py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm ${
               isPlayingUserAudio
                 ? 'bg-rose-500 text-white ring-2 ring-rose-300 animate-pulse'
@@ -325,6 +323,7 @@ export function SpeakingFeedback({ result, word, recordedBlob, consecutivePasses
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={handlePlayModelAudio}
+            disabled={busy}
             className={`py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm ${
               isModelSpeaking
                 ? 'bg-violet-600 text-white ring-2 ring-violet-300 animate-pulse'
@@ -337,8 +336,9 @@ export function SpeakingFeedback({ result, word, recordedBlob, consecutivePasses
         </div>
       </div>
 
-      <div className="flex gap-2">
-        <button onClick={onRetry} className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm bg-white border-2 border-gray-200 text-gray-600 hover:border-violet-300 transition-colors">
+      <div className="flex flex-wrap gap-2" aria-busy={busy}>
+        {recordedBlob&&onReassess&&canReassessRecording(result)&&<button onClick={()=>{stopUserAudio();cancelModel();onReassess();}} disabled={busy} className="ui-button ui-button-primary flex-1 disabled:opacity-50">{busy?'Đang chấm lại…':'Chấm lại bản ghi này'}</button>}
+        <button onClick={onRetry} disabled={busy} className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm bg-white border-2 border-gray-200 text-gray-600 hover:border-violet-300 transition-colors disabled:opacity-50">
           <RotateCcw aria-hidden="true" className="h-4 w-4"/>Thử lại
         </button>
         {isPassed && onNext && (

@@ -5,6 +5,7 @@ import { storyLimits } from './learning';
 import { validateStoryOutput } from './validation';
 import type { ReadingBand, StorySource } from './types';
 import {STORY_SOURCES} from './source';
+import {runFamilyAi,type FamilyAiChoice} from '@/lib/backend/familyAi';
 const string:Schema={type:SchemaType.STRING};
 const schema:Schema={type:SchemaType.OBJECT,properties:{
   title:string,
@@ -12,7 +13,7 @@ const schema:Schema={type:SchemaType.OBJECT,properties:{
   vocabulary:{type:SchemaType.ARRAY,items:{type:SchemaType.OBJECT,properties:{en:string,vi:string,ipa:string,sentenceId:string},required:['en','vi','ipa','sentenceId']}},
   questions:{type:SchemaType.ARRAY,items:{type:SchemaType.OBJECT,properties:{en:string,vi:string,options:{type:SchemaType.ARRAY,items:string},answerIndex:{type:SchemaType.INTEGER},sentenceId:string,explanationVi:string},required:['en','vi','options','answerIndex','sentenceId','explanationVi']}},
 },required:['title','sentences','vocabulary','questions']};
-export async function generateStory(source:StorySource,band:ReadingBand,terms:{en:string;vi:string}[],modelName:string,timeoutMs:number,clientKey?:string) {
+export async function generateStory(source:StorySource,band:ReadingBand,terms:{en:string;vi:string}[],modelName:string,timeoutMs:number,clientKey?:string,personal:FamilyAiChoice|null=null) {
   const limits=storyLimits(source.grade,band);
   const earlierGrammar=STORY_SOURCES.filter(s=>s.grade===source.grade&&s.number<source.number).flatMap(s=>s.patterns);
   const prompt=`Write an ORIGINAL coherent short English reading passage for a Vietnamese primary school learner.
@@ -50,13 +51,16 @@ ${JSON.stringify({grade:source.grade,topic:source.topic,patterns:source.patterns
     } catch(error) {return {value:null,failure:classifyProviderError(error)};}
   };
   const pool=readApiKeys();
-  if(pool.keys.length) {
-    const result=await runKeyPool(pool,execute,timeoutMs);
+  const shared=async(budget:number)=>{
+  if(pool.keys.some(key=>key.enabled)) {
+    const result=await runKeyPool(pool,execute,budget);
     if(!result) throw new Error('STORY_GENERATION_FAILED');
     return result;
   }
-  const key=clientKey||process.env.GEMINI_API_KEY;
+  const key=process.env.GEMINI_API_KEY?.trim()||(!personal?clientKey:undefined);
   if(!key) throw new Error('NO_API_KEY');
-  const {value}=await execute(key,timeoutMs);
+  const {value}=await execute(key,budget);
   if(!value) throw new Error('STORY_GENERATION_FAILED');return value;
+  };
+  return personal?runFamilyAi(personal,execute,shared,timeoutMs):shared(timeoutMs);
 }
